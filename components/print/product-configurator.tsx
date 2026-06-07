@@ -57,29 +57,24 @@ export function PrintProductConfigurator({ config, categorySlug }: { config: Pro
           product_uuid: currentSize.productUuid,
           colorspec_uuid: selectedColorspec,
           runsize_uuid: selectedQuantity,
-          turnaround_uuid: selectedTurnaround,
+          turnaroundtime_uuid: selectedTurnaround,
         })
         
         const res = await fetch(`/api/4over/quote?${params}`)
         const data = await res.json()
         
         if (data.success && data.price) {
-          // Apply markup (35%)
-          const markup = 1.35
-          setPrice(data.price * markup)
-        } else if (data.base_price) {
-          setPrice(data.base_price * 1.35)
+          setPrice(data.price)
+        } else if (data.total_price) {
+          // productquote returns total_price — apply markup from config
+          const { getMarkupMultiplierBySlug } = await import("@/lib/4over-config")
+          const markup = getMarkupMultiplierBySlug(categorySlug)
+          setPrice(data.total_price * markup)
         } else {
-          // Fallback pricing based on quantity
-          const qty = currentQuantity?.qty || 1000
-          const basePerPiece = categorySlug === "postcards" ? 0.08 : categorySlug === "business-cards" ? 0.12 : 0.10
-          setPrice(qty * basePerPiece)
+          setPrice(null)
         }
       } catch (e) {
-        // Fallback pricing
-        const qty = currentQuantity?.qty || 1000
-        const basePerPiece = categorySlug === "postcards" ? 0.08 : categorySlug === "business-cards" ? 0.12 : 0.10
-        setPrice(qty * basePerPiece)
+        setPrice(null)
       } finally {
         setPriceLoading(false)
       }

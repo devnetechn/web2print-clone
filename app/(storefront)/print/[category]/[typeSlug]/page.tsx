@@ -76,6 +76,14 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "square-business-cards": ["square"],
     "standard-business-cards": [], // catch-all
   },
+  "presentation-folders": {
+    "9x12-presentation-folder": ["9\" x 12\"", "9x12"],
+    "6x9-presentation-folder": ["6\" x 9\"", "6x9"],
+    "5x10-presentation-folder": ["5.25", "10.5"],
+    "9x14-presentation-folder": ["9\" x 14.5\"", "14.5"],
+    "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
+    "specialty-presentation-folder": [], // catch-all
+  },
 }
 
 // Type slug -> display label
@@ -96,6 +104,12 @@ const TYPE_LABELS: Record<string, string> = {
   "folded-business-cards": "Folded Business Cards",
   "square-business-cards": "Square Business Cards",
   "standard-business-cards": "Standard Business Cards",
+  "9x12-presentation-folder": '9" x 12" Presentation Folder',
+  "6x9-presentation-folder": '6" x 9" Presentation Folder',
+  "5x10-presentation-folder": '5.25" x 10.5" Presentation Folder',
+  "9x14-presentation-folder": '9" x 14.5" Presentation Folder',
+  "glueless-presentation-folder": "Glue-less Presentation Folder",
+  "specialty-presentation-folder": "Specialty Presentation Folders",
 }
 
 export default async function ProductTypePage({

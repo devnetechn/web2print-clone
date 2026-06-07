@@ -154,6 +154,14 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Square Business Cards", slug: "square-business-cards", keywords: ["square"] },
     { label: "Standard Business Cards", slug: "standard-business-cards", keywords: [] }, // catch-all
   ],
+  "presentation-folders": [
+    { label: '9" x 12" Presentation Folder', slug: "9x12-presentation-folder", keywords: ["9\" x 12\"", "9x12", "9\" x12\"", "9\"x12"] },
+    { label: '6" x 9" Presentation Folder', slug: "6x9-presentation-folder", keywords: ["6\" x 9\"", "6x9", "6\" x9\""] },
+    { label: '5.25" x 10.5" Presentation Folder', slug: "5x10-presentation-folder", keywords: ["5.25", "5.25\"", "10.5"] },
+    { label: '9" x 14.5" Presentation Folder', slug: "9x14-presentation-folder", keywords: ["9\" x 14.5\"", "9x14", "14.5"] },
+    { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
+    { label: "Specialty Presentation Folders", slug: "specialty-presentation-folder", keywords: [] }, // catch-all for Silk, Natural, Pearl, Suede, Akuafoil
+  ],
 }
 
 // Classify a product description into a type slug for a given category

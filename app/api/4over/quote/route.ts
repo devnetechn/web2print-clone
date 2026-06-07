@@ -56,9 +56,10 @@ export async function GET(request: Request) {
       })
       
       if (result.success && result.data) {
-        // Extract wholesale price, then apply retail markup
+        // Extract wholesale price from productquote response
+        // Verified field name from 4over API docs: total_price
         const priceData = result.data
-        const wholesale = parseFloat(priceData.product_baseprice || priceData.base_price || priceData.price || 0)
+        const wholesale = parseFloat(priceData.total_price || priceData.base_price || priceData.product_baseprice || 0)
         const retail = applyMarkup(wholesale, category)
         return NextResponse.json({ 
           success: true, 
