@@ -6,6 +6,7 @@ export class AppError extends Error {
   }
 }
 
+// 4-arg signature is required for Express to treat this as an error handler.
 export function errorHandler(err, req, res, next) {
   const status = err.status || 500;
   const code = err.code || 'INTERNAL_ERROR';
