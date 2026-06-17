@@ -1,8 +1,22 @@
 import { createHmac, createHash } from "crypto"
 
-const FOUROVER_PUBLIC_KEY = process.env.FOUROVER_PUBLIC_KEY || "web2printusa"
-const FOUROVER_PRIVATE_KEY = process.env.FOUROVER_API_SECRET || "3KHNXZFZ"
+// Base URL is not a secret, so a sensible default is fine.
 const FOUROVER_BASE_URL = process.env.FOUROVER_API_URL || "https://api.4over.com"
+
+// Credentials are resolved at call time (not at import time) so a missing
+// env var fails the actual request with a clear error instead of crashing the
+// build or a module import. No hardcoded fallback keys — secrets must come from
+// the environment only (.env.local locally, project env vars in production).
+function getCredentials(): { publicKey: string; privateKey: string } {
+  const publicKey = process.env.FOUROVER_PUBLIC_KEY
+  const privateKey = process.env.FOUROVER_API_SECRET
+  if (!publicKey || !privateKey) {
+    throw new Error(
+      "Missing 4over credentials. Set FOUROVER_PUBLIC_KEY and FOUROVER_API_SECRET in your environment (.env.local or your hosting provider's env vars).",
+    )
+  }
+  return { publicKey, privateKey }
+}
 
 interface FourOverResponse<T> {
   success: boolean
@@ -14,9 +28,10 @@ interface FourOverResponse<T> {
 // Per docs: hash_hmac("sha256", HTTP_METHOD, hash('sha256', $privateKey))
 // PHP hash_hmac(algo, data, key) -> Node createHmac(algo, key).update(data)
 function generateSignature(httpMethod: string): string {
+  const { privateKey } = getCredentials()
   const upperMethod = httpMethod.toUpperCase()
   // First: hash the private key with SHA256
-  const hashedPrivateKey = createHash("sha256").update(FOUROVER_PRIVATE_KEY).digest("hex")
+  const hashedPrivateKey = createHash("sha256").update(privateKey).digest("hex")
   // Then: HMAC-SHA256 with HTTP method as the data, hashed private key as the key
   const signature = createHmac("sha256", hashedPrivateKey).update(upperMethod).digest("hex")
   return signature
@@ -24,17 +39,19 @@ function generateSignature(httpMethod: string): string {
 
 // Generate authentication query string for GET/DELETE requests
 function getAuthParams(httpMethod: string = "GET"): string {
+  const { publicKey } = getCredentials()
   const signature = generateSignature(httpMethod)
-  return `apikey=${FOUROVER_PUBLIC_KEY}&signature=${signature}`
+  return `apikey=${publicKey}&signature=${signature}`
 }
 
 // Generate auth headers for POST/PUT/PATCH requests
 function getAuthHeaders(httpMethod: string = "POST"): Record<string, string> {
+  const { publicKey } = getCredentials()
   const signature = generateSignature(httpMethod)
   return {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "publicapikey": FOUROVER_PUBLIC_KEY,
+    "publicapikey": publicKey,
     "signature": signature,
   }
 }
