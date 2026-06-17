@@ -10,11 +10,15 @@ import {
 import { loadStripe } from "@stripe/stripe-js"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, ShieldCheck, CheckCircle2, Loader2 } from "lucide-react"
+import { ArrowLeft, ShieldCheck, CheckCircle2, Loader2, AlertCircle } from "lucide-react"
 
 import { createSimpleCheckoutSession } from "@/app/actions/checkout"
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+// Guard: only initialize Stripe if a publishable key is configured.
+// Avoids "Please call Stripe() with your publishable key" crash when the
+// NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY env var is empty (e.g. local 4over testing).
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 function CheckoutContent() {
   const searchParams = useSearchParams()
@@ -156,15 +160,25 @@ function CheckoutContent() {
           {/* Stripe Embedded Checkout */}
           <Card>
             <CardContent className="p-0">
-              <EmbeddedCheckoutProvider
-                stripe={stripePromise}
-                options={{ 
-                  fetchClientSecret,
-                  onComplete: handleComplete
-                }}
-              >
-                <EmbeddedCheckout />
-              </EmbeddedCheckoutProvider>
+              {stripePromise ? (
+                <EmbeddedCheckoutProvider
+                  stripe={stripePromise}
+                  options={{
+                    fetchClientSecret,
+                    onComplete: handleComplete
+                  }}
+                >
+                  <EmbeddedCheckout />
+                </EmbeddedCheckoutProvider>
+              ) : (
+                <div className="p-8 text-center">
+                  <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+                  <p className="font-medium">Payments are not configured</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to enable checkout.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
