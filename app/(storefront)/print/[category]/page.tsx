@@ -70,17 +70,17 @@ const GROUPS: Record<string, { label: string; subcategories: SubCategory[] }> = 
     // omitted; 4over has a single "Banners with Stand" category for both indoor
     // and outdoor stands.)
     subcategories: [
-      { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/products/product-default.jpg" },
-      { name: "Rigid Signs", uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", slug: "rigid-signs", image: "/images/products/product-default.jpg" },
-      { name: "Wall Arts", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/products/product-default.jpg" },
-      { name: "Outdoor Banners", uuid: "d9181764-0579-402f-bfc8-4ff65408886e", slug: "outdoor-banners", image: "/images/products/product-default.jpg" },
-      { name: "Indoor Banners", uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", slug: "indoor-banners", image: "/images/products/product-default.jpg" },
-      { name: "Flags", uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", slug: "flags", image: "/images/products/product-default.jpg" },
-      { name: "Window Graphics", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-graphics", image: "/images/products/product-default.jpg" },
-      { name: "Wall Decals", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "wall-decals", image: "/images/products/product-default.jpg" },
-      { name: "Vehicle Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "vehicle-magnets", image: "/images/products/product-default.jpg" },
-      { name: "Banner Stands", uuid: "a98dc51f-d371-479a-8ebb-c65749065971", slug: "banner-stands", image: "/images/products/product-default.jpg" },
-      { name: "Displays", uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", slug: "displays", image: "/images/products/product-default.jpg" },
+      { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/signs/table-covers.jpg" },
+      { name: "Rigid Signs", uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", slug: "rigid-signs", image: "/images/signs/rigid-signs.jpg" },
+      { name: "Wall Arts", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/signs/wall-arts.jpg" },
+      { name: "Outdoor Banners", uuid: "d9181764-0579-402f-bfc8-4ff65408886e", slug: "outdoor-banners", image: "/images/signs/outdoor-banners.jpg" },
+      { name: "Indoor Banners", uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", slug: "indoor-banners", image: "/images/signs/indoor-banners.jpg" },
+      { name: "Flags", uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", slug: "flags", image: "/images/signs/flags.jpg" },
+      { name: "Window Graphics", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-graphics", image: "/images/signs/window-graphics.jpg" },
+      { name: "Wall Decals", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "wall-decals", image: "/images/signs/wall-decals.jpg" },
+      { name: "Vehicle Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "vehicle-magnets", image: "/images/signs/vehicle-magnets.jpg" },
+      { name: "Banner Stands", uuid: "a98dc51f-d371-479a-8ebb-c65749065971", slug: "banner-stands", image: "/images/signs/banner-stands.jpg" },
+      { name: "Displays", uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", slug: "displays", image: "/images/signs/displays.jpg" },
     ],
   },
   "boxes-packaging": {
