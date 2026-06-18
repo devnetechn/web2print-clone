@@ -189,7 +189,7 @@ export default async function ProductTypePage({
             </p>
           </div>
         </div>
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             <div>
@@ -319,7 +319,7 @@ export default async function ProductTypePage({
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">{typeLabel}</h1>
 
         {matchedProducts.length === 0 ? (
