@@ -524,6 +524,20 @@ export function ProductConfiguratorClient({
     selectedExtras,
   ])
 
+  // Extra groups to actually display: apply the allow-list and de-duplicate by
+  // name (the productsfeed can repeat a group like "Foil Color"). Hidden/dup
+  // groups still keep their default selection in selectedExtras for pricing.
+  const visibleExtraGroups = useMemo(() => {
+    const seen = new Set<string>()
+    return extraGroups.filter((g) => {
+      const name = g.group_name.toLowerCase().trim()
+      if (allowedSet && !allowedSet.has(name)) return false
+      if (seen.has(name)) return false
+      seen.add(name)
+      return true
+    })
+  }, [extraGroups, allowedSet])
+
   // ---- renderers ----
   const renderListRow = (
     label: string,
@@ -647,20 +661,18 @@ export function ProductConfiguratorClient({
                 setColorspecUuid,
               )}
 
-              {/* EXTRA OPTION GROUPS (Orientation, Grommets, H-Stakes, Flute, ...) */}
-              {/* Hidden groups still use their default option in the live quote. */}
-              {extraGroups
-                .filter((g) => !allowedSet || allowedSet.has(g.group_name.toLowerCase().trim()))
-                .map((g) => (
-                  <Fragment key={g.group_uuid}>
-                    {renderListRow(
-                      g.group_name,
-                      g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
-                      selectedExtras[g.group_uuid] || "",
-                      (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
-                    )}
-                  </Fragment>
-                ))}
+              {/* EXTRA OPTION GROUPS (Orientation, Grommets, Lamination, Foil Color, ...) */}
+              {/* Hidden/duplicate groups still use their default option in the live quote. */}
+              {visibleExtraGroups.map((g) => (
+                <Fragment key={g.group_uuid}>
+                  {renderListRow(
+                    g.group_name,
+                    g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    selectedExtras[g.group_uuid] || "",
+                    (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                  )}
+                </Fragment>
+              ))}
 
               {/* QUANTITY (runsize) */}
               {renderListRow(
