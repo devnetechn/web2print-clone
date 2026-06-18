@@ -181,9 +181,10 @@ export default async function PrintCategoryPage({
   params: Promise<{ category: string }>
 }) {
   const { category } = await params
-  const supabase = await createClient()
 
   // ============ GROUP PAGE (e.g. /print/marketing-materials) ============
+  // Pure static cards — no Supabase needed, so this renders even if the DB
+  // env vars aren't configured.
   const group = GROUPS[category]
   if (group) {
     return (
@@ -239,6 +240,7 @@ export default async function PrintCategoryPage({
   }
 
   // Fetch ALL products in this category by UUID from DB first
+  const supabase = await createClient()
   let { data: products } = await supabase
     .from("fourover_products")
     .select("product_uuid, product_description, product_code")
