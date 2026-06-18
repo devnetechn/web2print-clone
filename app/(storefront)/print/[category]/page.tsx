@@ -65,26 +65,22 @@ const GROUPS: Record<string, { label: string; subcategories: SubCategory[] }> = 
   },
   "signs-banners": {
     label: "Signs & Banners",
+    // Structure mirrors the fourprintshop Signs & Banners page, mapped to the
+    // real 4over API categories. (Floor Graphics has no 4over category, so it's
+    // omitted; 4over has a single "Banners with Stand" category for both indoor
+    // and outdoor stands.)
     subcategories: [
+      { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/categories/posters.jpg" },
+      { name: "Rigid Signs", uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", slug: "rigid-signs", image: "/images/categories/posters.jpg" },
+      { name: "Wall Arts", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/categories/posters.jpg" },
       { name: "Outdoor Banners", uuid: "d9181764-0579-402f-bfc8-4ff65408886e", slug: "outdoor-banners", image: "/images/categories/posters.jpg" },
       { name: "Indoor Banners", uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", slug: "indoor-banners", image: "/images/categories/posters.jpg" },
-      { name: "Fabric Banners", uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", slug: "fabric-banners", image: "/images/categories/posters.jpg" },
-      { name: "Banners with Stand", uuid: "a98dc51f-d371-479a-8ebb-c65749065971", slug: "banners-with-stand", image: "/images/categories/posters.jpg" },
-      { name: "Signs", uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", slug: "signs", image: "/images/categories/posters.jpg" },
-      { name: "Large Posters", uuid: "393c5a2d-8be0-4134-9161-aa35fdc60685", slug: "large-posters", image: "/images/categories/posters.jpg" },
-      { name: "Backlit Posters", uuid: "8294ed4d-4d8c-4bea-966e-d3ad56913e74", slug: "backlit-posters", image: "/images/categories/posters.jpg" },
-      { name: "Sidewalk Signs", uuid: "900a16a6-7836-4546-b8c5-3b1678c0287e", slug: "sidewalk-signs", image: "/images/categories/posters.jpg" },
-      { name: "Acrylic Signs", uuid: "7ad1aae9-741d-40f5-b3dc-6d75524878ce", slug: "acrylic-signs", image: "/images/categories/posters.jpg" },
-      { name: "Aluminum Signs", uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", slug: "aluminum-signs", image: "/images/categories/posters.jpg" },
       { name: "Flags", uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", slug: "flags", image: "/images/categories/posters.jpg" },
-      { name: "Event Tents", uuid: "de3d843a-b802-4ec5-826f-1b230a17ce3a", slug: "event-tents", image: "/images/categories/posters.jpg" },
-      { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/categories/posters.jpg" },
+      { name: "Window Graphics", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-graphics", image: "/images/categories/posters.jpg" },
+      { name: "Wall Decals", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "wall-decals", image: "/images/categories/posters.jpg" },
+      { name: "Vehicle Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "vehicle-magnets", image: "/images/categories/magnets.jpg" },
+      { name: "Banner Stands", uuid: "a98dc51f-d371-479a-8ebb-c65749065971", slug: "banner-stands", image: "/images/categories/posters.jpg" },
       { name: "Displays", uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", slug: "displays", image: "/images/categories/posters.jpg" },
-      { name: "Fan Cutouts", uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", slug: "fan-cutouts", image: "/images/categories/posters.jpg" },
-      { name: "Mounted Canvas", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "mounted-canvas", image: "/images/categories/posters.jpg" },
-      { name: "Car Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "car-magnets", image: "/images/categories/magnets.jpg" },
-      { name: "8mil Window Cling", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-clings", image: "/images/categories/posters.jpg" },
-      { name: "7mil Window Cling", uuid: "ae3afb44-beb1-4fda-8b2c-3f940f005fc6", slug: "window-graphics", image: "/images/categories/posters.jpg" },
     ],
   },
   "boxes-packaging": {
