@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -540,14 +540,16 @@ export function ProductConfiguratorClient({
               {renderButtonRow("Sides", colorspecOptions, colorspecUuid, setColorspecUuid)}
 
               {/* EXTRA OPTION GROUPS (Orientation, Grommets, H-Stakes, Flute, ...) */}
-              {extraGroups.map((g) =>
-                renderButtonRow(
-                  g.group_name,
-                  g.options,
-                  selectedExtras[g.group_uuid] || "",
-                  (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
-                ),
-              )}
+              {extraGroups.map((g) => (
+                <Fragment key={g.group_uuid}>
+                  {renderButtonRow(
+                    g.group_name,
+                    g.options,
+                    selectedExtras[g.group_uuid] || "",
+                    (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                  )}
+                </Fragment>
+              ))}
 
               {/* QUANTITY (runsize) */}
               {renderListRow(
