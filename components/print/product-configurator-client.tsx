@@ -536,14 +536,19 @@ export function ProductConfiguratorClient({
               )}
 
               {/* SIDES (colorspec) */}
-              {renderButtonRow("Sides", colorspecOptions, colorspecUuid, setColorspecUuid)}
+              {renderListRow(
+                "Sides",
+                colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                colorspecUuid,
+                setColorspecUuid,
+              )}
 
               {/* EXTRA OPTION GROUPS (Orientation, Grommets, H-Stakes, Flute, ...) */}
               {extraGroups.map((g) => (
                 <Fragment key={g.group_uuid}>
-                  {renderButtonRow(
+                  {renderListRow(
                     g.group_name,
-                    g.options,
+                    g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
                     selectedExtras[g.group_uuid] || "",
                     (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
                   )}
@@ -559,7 +564,12 @@ export function ProductConfiguratorClient({
               )}
 
               {/* TURNAROUND TIME */}
-              {renderButtonRow("Turnaround Time", turnaroundOptions, turnaroundUuid, setTurnaroundUuid)}
+              {renderListRow(
+                "Turnaround Time",
+                turnaroundOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                turnaroundUuid,
+                setTurnaroundUuid,
+              )}
 
               {/* PRICE */}
               <div className="pt-4 flex items-center justify-end">
@@ -568,7 +578,7 @@ export function ProductConfiguratorClient({
                 ) : price !== null ? (
                   <span className="text-2xl font-bold">
                     <span className="text-sm font-normal text-slate-500 mr-1">Total:</span>
-                    <span className="text-[#e07b39]">${price.toFixed(2)}</span>
+                    <span className="text-[#078c7a]">${price.toFixed(2)}</span>
                   </span>
                 ) : (
                   <p className="text-sm text-slate-400">{priceNote || "Select options to see pricing"}</p>
