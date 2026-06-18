@@ -191,9 +191,9 @@ export default async function ProductTypePage({
         </div>
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
-          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8">
-            <div className="aspect-square bg-slate-100 rounded flex items-center justify-center">
-              <img src="/images/products/product-default.jpg" alt={productName} className="w-full h-full object-cover rounded" />
+          <div className="grid lg:grid-cols-[360px_1fr] gap-8 items-start">
+            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
+              <img src="/images/products/product-default.jpg" alt={productName} className="w-full h-full object-contain" />
             </div>
             <ProductConfiguratorClient
               categoryUuid={product.category_uuid || leaf?.uuid || ""}
@@ -315,13 +315,13 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8">
+          <div className="grid lg:grid-cols-[360px_1fr] gap-8 items-start">
             {/* Left: product image */}
-            <div className="aspect-square bg-slate-100 rounded overflow-hidden sticky top-8">
+            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
               <img
                 src="/images/products/product-default.jpg"
                 alt={typeLabel}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
 
