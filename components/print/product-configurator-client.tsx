@@ -48,6 +48,10 @@ interface ProductConfiguratorClientProps {
   productName: string
   // optional: restrict to a set of product_uuids that belong to this type
   allowedProductUuids?: string[]
+  // optional: only show these option-group names in the UI (lowercased match).
+  // Hidden groups still use their default option in the live price, so the
+  // quote stays correct — this only trims what the customer sees/selects.
+  allowedGroups?: string[]
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -83,7 +87,13 @@ export function ProductConfiguratorClient({
   categorySlug,
   productName,
   allowedProductUuids,
+  allowedGroups,
 }: ProductConfiguratorClientProps) {
+  // Lowercased allow-list of option-group names to display (null = show all).
+  const allowedSet = useMemo(
+    () => (allowedGroups ? new Set(allowedGroups.map((g) => g.toLowerCase().trim())) : null),
+    [allowedGroups],
+  )
   // Size / Stock / Coating lists from categoryproductslist
   const [sizeList, setSizeList] = useState<ListItem[]>([])
   const [stockList, setStockList] = useState<ListItem[]>([])
@@ -620,7 +630,8 @@ export function ProductConfiguratorClient({
               {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
 
               {/* COATING */}
-              {renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+              {(!allowedSet || allowedSet.has("coating")) &&
+                renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
 
               {loadingOptions && (
                 <div className="flex items-center justify-center py-4">
@@ -637,16 +648,19 @@ export function ProductConfiguratorClient({
               )}
 
               {/* EXTRA OPTION GROUPS (Orientation, Grommets, H-Stakes, Flute, ...) */}
-              {extraGroups.map((g) => (
-                <Fragment key={g.group_uuid}>
-                  {renderListRow(
-                    g.group_name,
-                    g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
-                    selectedExtras[g.group_uuid] || "",
-                    (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
-                  )}
-                </Fragment>
-              ))}
+              {/* Hidden groups still use their default option in the live quote. */}
+              {extraGroups
+                .filter((g) => !allowedSet || allowedSet.has(g.group_name.toLowerCase().trim()))
+                .map((g) => (
+                  <Fragment key={g.group_uuid}>
+                    {renderListRow(
+                      g.group_name,
+                      g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                      selectedExtras[g.group_uuid] || "",
+                      (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                    )}
+                  </Fragment>
+                ))}
 
               {/* QUANTITY (runsize) */}
               {renderListRow(

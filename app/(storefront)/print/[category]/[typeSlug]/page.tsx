@@ -119,6 +119,9 @@ const TYPE_LABELS: Record<string, string> = {
   "specialty-presentation-folder": "Specialty Presentation Folders",
 }
 
+// Signs & Banners price calculator should only expose these option groups.
+const SIGNS_ALLOWED_GROUPS = ["size", "shape", "stock", "sides", "grommets", "quantity", "turnaround time"]
+
 export default async function ProductTypePage({
   params,
   searchParams,
@@ -213,6 +216,7 @@ export default async function ProductTypePage({
               categorySlug={category}
               productName={productName}
               allowedProductUuids={[product.product_uuid]}
+              allowedGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_ALLOWED_GROUPS : undefined}
             />
           </div>
         </div>
@@ -345,6 +349,7 @@ export default async function ProductTypePage({
                 categorySlug={category}
                 productName={typeLabel}
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
+                allowedGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_ALLOWED_GROUPS : undefined}
               />
             </div>
           </div>
