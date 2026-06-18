@@ -59,6 +59,8 @@ const GROUPS: Record<string, { label: string; subcategories: SubCategory[] }> = 
       { name: "Sell Sheets", uuid: "950d2eb7-d1ac-4a3c-b1b0-8c407ce635ed", slug: "sell-sheets", image: "/images/categories/sell-sheets.jpg" },
       { name: "Table Tent Cards", uuid: "e2aa8867-357b-424c-b11d-11125e597cb2", slug: "table-tent-cards", image: "/images/categories/table-tent.jpg" },
       { name: "Tear Off Cards", uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", slug: "tear-off-cards", image: "/images/categories/postcards.jpg" },
+      { name: "EDDM", uuid: "50a1f1a2-3567-4618-a703-074471472e8d", slug: "eddm", image: "/images/categories/postcards.jpg" },
+      { name: "Header Cards", uuid: "a842ec1b-280d-4e13-aa74-18a2be824737", slug: "header-cards", image: "/images/categories/postcards.jpg" },
     ],
   },
   "signs-banners": {
@@ -79,6 +81,10 @@ const GROUPS: Record<string, { label: string; subcategories: SubCategory[] }> = 
       { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/categories/posters.jpg" },
       { name: "Displays", uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", slug: "displays", image: "/images/categories/posters.jpg" },
       { name: "Fan Cutouts", uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", slug: "fan-cutouts", image: "/images/categories/posters.jpg" },
+      { name: "Mounted Canvas", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "mounted-canvas", image: "/images/categories/posters.jpg" },
+      { name: "Car Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "car-magnets", image: "/images/categories/magnets.jpg" },
+      { name: "8mil Window Cling", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-clings", image: "/images/categories/posters.jpg" },
+      { name: "7mil Window Cling", uuid: "ae3afb44-beb1-4fda-8b2c-3f940f005fc6", slug: "window-graphics", image: "/images/categories/posters.jpg" },
     ],
   },
   "boxes-packaging": {
@@ -94,9 +100,6 @@ const GROUPS: Record<string, { label: string; subcategories: SubCategory[] }> = 
       { name: "Roll Labels", uuid: "a2b13bce-0643-41ce-9a03-e21f9a92d7d4", slug: "roll-labels", image: "/images/categories/postcards.jpg" },
       { name: "Stickers", uuid: "7381a85e-5e48-4673-aa67-862dd6553ef0", slug: "stickers", image: "/images/categories/postcards.jpg" },
       { name: "Adhesive Vinyl", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "adhesive-vinyl", image: "/images/categories/postcards.jpg" },
-      { name: "Window Clings", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-clings", image: "/images/categories/postcards.jpg" },
-      { name: "Window Graphics", uuid: "ae3afb44-beb1-4fda-8b2c-3f940f005fc6", slug: "window-graphics", image: "/images/categories/postcards.jpg" },
-      { name: "Car Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "car-magnets", image: "/images/categories/magnets.jpg" },
     ],
   },
   "promo-products": {
@@ -106,7 +109,6 @@ const GROUPS: Record<string, { label: string; subcategories: SubCategory[] }> = 
       { name: "Tote Bags", uuid: "d94b61b1-11a9-44bc-9806-eb67fab2fb2f", slug: "tote-bags", image: "/images/categories/magnets.jpg" },
       { name: "Mugs", uuid: "bfd5e7d7-29e0-4508-bcc4-17ce5115c852", slug: "mugs", image: "/images/categories/magnets.jpg" },
       { name: "Buttons", uuid: "6a5ef04a-7143-444b-b4ed-f623204e7168", slug: "buttons", image: "/images/categories/magnets.jpg" },
-      { name: "Mounted Canvas", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "mounted-canvas", image: "/images/categories/magnets.jpg" },
     ],
   },
 }
