@@ -45,10 +45,17 @@ const SLUG_TO_CATEGORY: Record<string, { uuid: string; name: string; parentSlug:
   "sell-sheets": { uuid: "950d2eb7-d1ac-4a3c-b1b0-8c407ce635ed", name: "Sell Sheets", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/sell-sheets.jpg" },
   "table-tent-cards": { uuid: "e2aa8867-357b-424c-b11d-11125e597cb2", name: "Table Tent Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/table-tent.jpg" },
   "tear-off-cards": { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", name: "Tear Off Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/postcards.jpg" },
+  "table-covers": { uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", name: "Table Covers", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "rigid-signs": { uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", name: "Rigid Signs", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "wall-arts": { uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", name: "Wall Arts", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
   "outdoor-banners": { uuid: "d9181764-0579-402f-bfc8-4ff65408886e", name: "Outdoor Banners", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "acrylic-signs": { uuid: "7ad1aae9-741d-40f5-b3dc-6d75524878ce", name: "Acrylic Signs", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "large-posters": { uuid: "393c5a2d-8be0-4134-9161-aa35fdc60685", name: "Large Posters", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "sidewalk-signs": { uuid: "900a16a6-7836-4546-b8c5-3b1678c0287e", name: "Sidewalk Signs", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "indoor-banners": { uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", name: "Indoor Banners", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "flags": { uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", name: "Flags", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "window-graphics": { uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", name: "Window Graphics", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "wall-decals": { uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", name: "Wall Decals", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "vehicle-magnets": { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", name: "Vehicle Magnets", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/magnets.jpg" },
+  "banner-stands": { uuid: "a98dc51f-d371-479a-8ebb-c65749065971", name: "Banner Stands", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
+  "displays": { uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", name: "Displays", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
   "packaging": { uuid: "c11d8936-67ad-4b59-a48d-1683f42f055c", name: "Packaging", parentSlug: "boxes-packaging", parentLabel: "Boxes & Packaging", image: "/images/categories/notepads.jpg" },
 }
 
@@ -189,7 +196,7 @@ export default async function ProductTypePage({
               <img src={leaf?.image || "/images/products/product-default.jpg"} alt={productName} className="w-full h-full object-cover rounded" />
             </div>
             <ProductConfiguratorClient
-              categoryUuid={leaf?.uuid || ""}
+              categoryUuid={product.category_uuid || leaf?.uuid || ""}
               categorySlug={category}
               productName={productName}
               allowedProductUuids={[product.product_uuid]}
