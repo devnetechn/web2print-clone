@@ -46,13 +46,16 @@ export async function GET(request: Request) {
     const category = searchParams.get("category") || "default"
     
     if (productUuid && colorspecUuid && runsizeUuid && turnaroundUuid) {
+      // Additional option_uuids (Grommets, Orientation, H-Stakes, etc.) that
+      // affect the price. Passed as repeated ?options=<uuid> query params.
+      const optionUuids = searchParams.getAll("options").filter(Boolean)
       // Get live price quote from 4over
       const result = await fourOverClient.getProductQuote({
         product_uuid: productUuid,
         colorspec_uuid: colorspecUuid,
         runsize_uuid: runsizeUuid,
         turnaroundtime_uuid: turnaroundUuid,
-        options: []
+        options: optionUuids
       })
       
       if (result.success && result.data) {

@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Share2 } from "lucide-react"
+import { Loader2, Share2, Palette, Upload, LayoutTemplate } from "lucide-react"
+import Link from "next/link"
 
 interface ListItem {
   name: string
@@ -33,6 +34,15 @@ interface Combination {
   price: number
 }
 
+// An "extra" option group (Orientation, Grommets, H-Stakes, Flute, etc.) that
+// is not part of the size/colorspec/runsize/turnaround pricing axes but can add
+// to the price via the live quote's options[] param.
+interface ExtraGroup {
+  group_uuid: string
+  group_name: string
+  options: OptionItem[]
+}
+
 interface ProductConfiguratorClientProps {
   categoryUuid: string
   categorySlug: string
@@ -49,6 +59,25 @@ function dedupeList(items: ListItem[]): ListItem[] {
     return true
   })
 }
+
+// Option groups handled by the dedicated size/colorspec/runsize/turnaround
+// pricing axes (or that are display-only/internal) — excluded from the generic
+// "extra options" rendering so we don't show them twice.
+const HANDLED_GROUP_NAMES = new Set([
+  "product type",
+  "product category",
+  "short side (inches)",
+  "long side (inches)",
+  "size",
+  "stock",
+  "coating",
+  "colorspec",
+  "runsize",
+  "turn-around",
+  "turnaround",
+  "turn around",
+  "handling fee",
+])
 
 export function ProductConfiguratorClient({
   categoryUuid,
@@ -75,6 +104,10 @@ export function ProductConfiguratorClient({
   const [colorspecUuid, setColorspecUuid] = useState("")
   const [runsizeUuid, setRunsizeUuid] = useState("")
   const [turnaroundUuid, setTurnaroundUuid] = useState("")
+
+  // Extra option groups (Orientation, Grommets, H-Stakes, Flute, ...) + selection
+  const [extraGroups, setExtraGroups] = useState<ExtraGroup[]>([])
+  const [selectedExtras, setSelectedExtras] = useState<Record<string, string>>({})
 
   const [price, setPrice] = useState<number | null>(null)
   const [priceNote, setPriceNote] = useState<string | null>(null)
@@ -108,6 +141,10 @@ export function ProductConfiguratorClient({
 
   // Initial load: get all sizes
   useEffect(() => {
+    if (!categoryUuid) {
+      setLoadingList(false)
+      return
+    }
     let active = true
     setLoadingList(true)
     fetchList({}).then((data) => {
@@ -123,7 +160,7 @@ export function ProductConfiguratorClient({
     return () => {
       active = false
     }
-  }, [fetchList])
+  }, [fetchList, categoryUuid])
 
   const resolveProduct = useCallback(
     (products: ProductOption[] | undefined) => {
@@ -137,12 +174,9 @@ export function ProductConfiguratorClient({
   )
 
   // When size changes -> reset downstream selections IMMEDIATELY, then load stocks.
-  // Clearing stock/coating/product synchronously prevents the product-resolution
-  // effect from firing with a stale (size+oldStock+oldCoating) combo -> 404.
   useEffect(() => {
     if (!sizeUuid) return
     const myReq = ++reqIdRef.current
-    // Synchronous reset so no downstream effect runs with stale values
     setStockList([])
     setStockUuid("")
     setCoatingList([])
@@ -172,7 +206,6 @@ export function ProductConfiguratorClient({
       if (coatings.length > 0) {
         setCoatingUuid(coatings[0].uuid)
       } else {
-        // No coating choices for this size+stock -> products already resolve here
         setProductUuid(resolveProduct(data.products))
       }
     })
@@ -199,7 +232,6 @@ export function ProductConfiguratorClient({
         if (!active) return
         const combos: Combination[] = data.combinations || []
         setCombinations(combos)
-        // Default to the first valid combination
         if (combos.length > 0) {
           setColorspecUuid(combos[0].colorspec_uuid)
           setRunsizeUuid(combos[0].runsize_uuid)
@@ -219,10 +251,62 @@ export function ProductConfiguratorClient({
     }
   }, [productUuid, categorySlug])
 
+  // When product_uuid resolved -> load the product's full option groups and keep
+  // the "extra" ones (Orientation, Grommets, H-Stakes, Flute, ...) as button rows.
+  useEffect(() => {
+    if (!productUuid) {
+      setExtraGroups([])
+      setSelectedExtras({})
+      return
+    }
+    let active = true
+    fetch(`/api/4over/product-options?product_uuid=${productUuid}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!active) return
+        const groups: any[] = data.optionGroups || []
+        const extras: ExtraGroup[] = groups
+          .filter((g) => {
+            const name = String(g.product_option_group_name || "").toLowerCase().trim()
+            const opts = g.options || []
+            return !HANDLED_GROUP_NAMES.has(name) && opts.length > 0
+          })
+          .map((g) => {
+            // dedupe options by uuid
+            const seen = new Set<string>()
+            const options: OptionItem[] = []
+            for (const o of g.options || []) {
+              const uuid = o.option_uuid
+              if (!uuid || seen.has(uuid)) continue
+              seen.add(uuid)
+              options.push({ option_uuid: uuid, option_name: o.option_name || o.option_description || "" })
+            }
+            return {
+              group_uuid: g.product_option_group_uuid,
+              group_name: g.product_option_group_name,
+              options,
+            }
+          })
+          .filter((g) => g.options.length > 0)
+
+        setExtraGroups(extras)
+        // Default each extra to its first option
+        const defaults: Record<string, string> = {}
+        for (const g of extras) defaults[g.group_uuid] = g.options[0].option_uuid
+        setSelectedExtras(defaults)
+      })
+      .catch(() => {
+        if (active) {
+          setExtraGroups([])
+          setSelectedExtras({})
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [productUuid])
+
   // Derive dependent dropdown options from the valid-combination matrix.
-  // Colorspec (Sides) is the top-level choice; Quantity is filtered by colorspec;
-  // Turnaround is filtered by colorspec + runsize. This guarantees every
-  // selectable combination is valid, so the price lookup never 409s.
   const colorspecOptions = useMemo<OptionItem[]>(() => {
     const seen = new Set<string>()
     const out: OptionItem[] = []
@@ -245,7 +329,6 @@ export function ProductConfiguratorClient({
         out.push({ option_uuid: c.runsize_uuid, option_name: c.runsize })
       }
     }
-    // Sort by numeric quantity when possible
     return out.sort((a, b) => Number(a.option_name) - Number(b.option_name))
   }, [combinations, colorspecUuid])
 
@@ -278,26 +361,27 @@ export function ProductConfiguratorClient({
     }
   }, [turnaroundOptions, turnaroundUuid])
 
-  // Price comes directly from the matched combination in the matrix.
-  // Fall back to a live quote only if the matrix has no price (rare).
+  // Live price = quote with the selected colorspec/runsize/turnaround + all extra
+  // option_uuids (Grommets, H-Stakes, ...). Falls back to the matrix base price.
+  const extraUuids = useMemo(
+    () => Object.values(selectedExtras).filter(Boolean),
+    [selectedExtras],
+  )
+
   useEffect(() => {
     if (!productUuid || !colorspecUuid || !runsizeUuid || !turnaroundUuid) {
       setPrice(null)
       return
     }
-    const match = combinations.find(
+    const baseMatch = combinations.find(
       (c) =>
         c.colorspec_uuid === colorspecUuid &&
         c.runsize_uuid === runsizeUuid &&
         c.turnaround_uuid === turnaroundUuid,
     )
-    if (match && match.price > 0) {
-      setPrice(match.price)
-      setPriceNote(null)
-      return
-    }
+    // Immediate placeholder from the matrix while the live quote loads.
+    if (baseMatch && baseMatch.price > 0) setPrice(baseMatch.price)
 
-    // Fallback: live quote
     let active = true
     setLoadingPrice(true)
     setPriceNote(null)
@@ -308,19 +392,24 @@ export function ProductConfiguratorClient({
       turnaround_uuid: turnaroundUuid,
       category: categorySlug,
     })
+    for (const uuid of extraUuids) qs.append("options", uuid)
+
     fetch(`/api/4over/quote?${qs.toString()}`)
       .then((r) => r.json())
       .then((data) => {
         if (!active) return
         if (data.success && data.price != null) {
           setPrice(data.price)
+          setPriceNote(null)
+        } else if (baseMatch && baseMatch.price > 0) {
+          setPrice(baseMatch.price)
         } else {
           setPrice(null)
           setPriceNote("This combination is not available. Try different options.")
         }
       })
       .catch(() => {
-        if (active) {
+        if (active && !(baseMatch && baseMatch.price > 0)) {
           setPrice(null)
           setPriceNote("Unable to load pricing")
         }
@@ -331,8 +420,9 @@ export function ProductConfiguratorClient({
     return () => {
       active = false
     }
-  }, [productUuid, colorspecUuid, runsizeUuid, turnaroundUuid, combinations, categorySlug])
+  }, [productUuid, colorspecUuid, runsizeUuid, turnaroundUuid, extraUuids, combinations, categorySlug])
 
+  // ---- renderers ----
   const renderListRow = (
     label: string,
     items: ListItem[],
@@ -369,7 +459,8 @@ export function ProductConfiguratorClient({
     )
   }
 
-  const renderOptionRow = (
+  // Button-style chooser (matches the reference storefront for choice options).
+  const renderButtonRow = (
     label: string,
     items: OptionItem[],
     value: string,
@@ -387,20 +478,27 @@ export function ProductConfiguratorClient({
       )
     }
     return (
-      <div className="flex items-center justify-between py-3 border-b border-slate-100">
-        <label className="text-sm font-medium text-slate-700">{label}</label>
-        <Select value={value} onValueChange={onChange}>
-          <SelectTrigger className="border-slate-200 min-w-[220px]">
-            <SelectValue placeholder={`Select ${label}`} />
-          </SelectTrigger>
-          <SelectContent>
-            {items.map((opt) => (
-              <SelectItem key={opt.option_uuid} value={opt.option_uuid}>
+      <div className="flex items-start justify-between py-3 border-b border-slate-100 gap-4">
+        <label className="text-sm font-medium text-slate-700 pt-1">{label}</label>
+        <div className="flex flex-wrap gap-2 justify-end max-w-[300px]">
+          {items.map((opt) => {
+            const active = opt.option_uuid === value
+            return (
+              <button
+                key={opt.option_uuid}
+                type="button"
+                onClick={() => onChange(opt.option_uuid)}
+                className={`px-3 py-1.5 rounded border text-sm transition-colors ${
+                  active
+                    ? "border-[#e07b39] bg-[#e07b39] text-white"
+                    : "border-slate-300 text-slate-700 hover:border-[#e07b39]"
+                }`}
+              >
                 {opt.option_name || opt.option_description}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              </button>
+            )
+          })}
+        </div>
       </div>
     )
   }
@@ -439,13 +537,28 @@ export function ProductConfiguratorClient({
               )}
 
               {/* SIDES (colorspec) */}
-              {renderOptionRow("Sides", colorspecOptions, colorspecUuid, setColorspecUuid)}
+              {renderButtonRow("Sides", colorspecOptions, colorspecUuid, setColorspecUuid)}
+
+              {/* EXTRA OPTION GROUPS (Orientation, Grommets, H-Stakes, Flute, ...) */}
+              {extraGroups.map((g) =>
+                renderButtonRow(
+                  g.group_name,
+                  g.options,
+                  selectedExtras[g.group_uuid] || "",
+                  (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                ),
+              )}
 
               {/* QUANTITY (runsize) */}
-              {renderOptionRow("Quantity", runsizeOptions, runsizeUuid, setRunsizeUuid)}
+              {renderListRow(
+                "Quantity",
+                runsizeOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                runsizeUuid,
+                setRunsizeUuid,
+              )}
 
               {/* TURNAROUND TIME */}
-              {renderOptionRow("Turnaround Time", turnaroundOptions, turnaroundUuid, setTurnaroundUuid)}
+              {renderButtonRow("Turnaround Time", turnaroundOptions, turnaroundUuid, setTurnaroundUuid)}
 
               {/* PRICE */}
               <div className="pt-4 flex items-center justify-end">
@@ -459,6 +572,31 @@ export function ProductConfiguratorClient({
                 ) : (
                   <p className="text-sm text-slate-400">{priceNote || "Select options to see pricing"}</p>
                 )}
+              </div>
+
+              {/* ACTION BUTTONS */}
+              <div className="pt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  className="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 hover:border-[#e07b39] hover:text-[#e07b39] rounded px-4 py-2.5 text-sm font-medium transition-colors"
+                >
+                  <LayoutTemplate className="h-4 w-4" />
+                  Browse Design
+                </button>
+                <Link
+                  href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
+                  className="flex items-center justify-center gap-2 bg-[#e07b39] hover:bg-[#c9692a] text-white rounded px-4 py-2.5 text-sm font-medium transition-colors"
+                >
+                  <Palette className="h-4 w-4" />
+                  Custom Design
+                </Link>
+                <button
+                  type="button"
+                  className="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 hover:border-[#e07b39] hover:text-[#e07b39] rounded px-4 py-2.5 text-sm font-medium transition-colors"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload Design
+                </button>
               </div>
             </>
           )}
