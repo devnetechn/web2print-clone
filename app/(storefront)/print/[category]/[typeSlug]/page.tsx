@@ -192,8 +192,21 @@ export default async function ProductTypePage({
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[360px_1fr] gap-8 items-start">
-            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
-              <img src="/images/products/product-default.jpg" alt={productName} className="w-full h-full object-contain" />
+            <div>
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
+                <img src="/images/products/product-default.jpg" alt={productName} className="w-full h-full object-contain" />
+              </div>
+              {/* Description / Templates (left column, under image) */}
+              <div className="mt-6 max-w-[360px]">
+                <div className="border-b border-slate-200 flex gap-6">
+                  <span className="border-b-2 border-[#e07b39] text-[#e07b39] py-2 text-sm font-medium">Description</span>
+                  <span className="text-slate-500 py-2 text-sm">Templates</span>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed mt-3">
+                  {productName} — high quality professional printing with premium materials, durable and
+                  weather-resistant for both indoor and outdoor use.
+                </p>
+              </div>
             </div>
             <ProductConfiguratorClient
               categoryUuid={product.category_uuid || leaf?.uuid || ""}

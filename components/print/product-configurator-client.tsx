@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Share2, Palette, Upload, LayoutTemplate } from "lucide-react"
 import Link from "next/link"
 
@@ -576,30 +575,6 @@ export function ProductConfiguratorClient({
                 )}
               </div>
 
-              {/* ACTION BUTTONS */}
-              <div className="pt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  className="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 hover:border-[#e07b39] hover:text-[#e07b39] rounded px-4 py-2.5 text-sm font-medium transition-colors"
-                >
-                  <LayoutTemplate className="h-4 w-4" />
-                  Browse Design
-                </button>
-                <Link
-                  href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
-                  className="flex items-center justify-center gap-2 bg-[#e07b39] hover:bg-[#c9692a] text-white rounded px-4 py-2.5 text-sm font-medium transition-colors"
-                >
-                  <Palette className="h-4 w-4" />
-                  Custom Design
-                </Link>
-                <button
-                  type="button"
-                  className="flex items-center justify-center gap-2 border border-slate-300 text-slate-700 hover:border-[#e07b39] hover:text-[#e07b39] rounded px-4 py-2.5 text-sm font-medium transition-colors"
-                >
-                  <Upload className="h-4 w-4" />
-                  Upload Design
-                </button>
-              </div>
             </>
           )}
         </CardContent>
@@ -615,32 +590,47 @@ export function ProductConfiguratorClient({
         </CardContent>
       </Card>
 
-      {/* Description / Templates tabs */}
+      {/* What would you like to do? */}
       <div className="mt-6">
-        <Tabs defaultValue="description">
-          <TabsList className="w-full bg-transparent border-b border-slate-200 h-auto p-0 justify-start rounded-none">
-            <TabsTrigger
-              value="description"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] data-[state=active]:bg-transparent px-6 py-3"
-            >
-              Description
-            </TabsTrigger>
-            <TabsTrigger
-              value="templates"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] data-[state=active]:bg-transparent px-6 py-3"
-            >
-              Templates
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="description" className="pt-4">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {productName} — high quality professional printing with premium materials.
-            </p>
-          </TabsContent>
-          <TabsContent value="templates" className="pt-4">
-            <p className="text-sm text-slate-500">Download templates for this product.</p>
-          </TabsContent>
-        </Tabs>
+        <h3 className="text-base font-semibold text-slate-900 mb-3">What would you like to do?</h3>
+        <div className="space-y-3">
+          <Link
+            href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
+            className="flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
+              <Palette className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block font-medium text-slate-900">Custom Design</span>
+              <span className="block text-xs text-slate-500">Design online in our Design Studio</span>
+            </span>
+          </Link>
+          <button
+            type="button"
+            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
+              <LayoutTemplate className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block font-medium text-slate-900">Browse Design</span>
+              <span className="block text-xs text-slate-500">Choose from our template collection</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
+              <Upload className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block font-medium text-slate-900">Upload Design</span>
+              <span className="block text-xs text-slate-500">Upload your print-ready artwork</span>
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   )
