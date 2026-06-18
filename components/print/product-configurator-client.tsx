@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Share2, Palette, Upload, LayoutTemplate } from "lucide-react"
+import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 
 interface ListItem {
@@ -118,6 +118,8 @@ export function ProductConfiguratorClient({
   const [shipLoading, setShipLoading] = useState(false)
   const [shipOptions, setShipOptions] = useState<{ code: string; service: string; price: number; estimatedDays: number | null }[]>([])
   const [shipError, setShipError] = useState<string | null>(null)
+
+  const [added, setAdded] = useState(false)
 
   // Monotonic request id: only the response from the most recent cascade
   // request is allowed to update state. Prevents a stale (size+oldStock+oldCoating)
@@ -464,6 +466,54 @@ export function ProductConfiguratorClient({
     }
   }, [productUuid, colorspecUuid, runsizeUuid, turnaroundUuid, shipZip, selectedExtras])
 
+  // Add the current configuration to the print cart (localStorage "print_cart"),
+  // matching the shape the /cart page reads.
+  const addToCart = useCallback(() => {
+    if (!productUuid || price == null) return
+    const sizeName = sizeList.find((s) => s.uuid === sizeUuid)?.name
+    const colorspecName = colorspecOptions.find((o) => o.option_uuid === colorspecUuid)?.option_name
+    const runsizeName = runsizeOptions.find((o) => o.option_uuid === runsizeUuid)?.option_name
+    const turnaroundName = turnaroundOptions.find((o) => o.option_uuid === turnaroundUuid)?.option_name
+    const item = {
+      id: `${productUuid}-${Date.now()}`,
+      productType: categorySlug,
+      productName,
+      size: sizeName,
+      colorspec: colorspecName,
+      quantity: runsizeName ? parseInt(runsizeName) : undefined,
+      turnaround: turnaroundName,
+      price,
+      productUuid,
+      colorspecUuid,
+      runsizeUuid,
+      turnaroundUuid,
+      optionUuids: Object.values(selectedExtras).filter(Boolean),
+    }
+    try {
+      const existing = JSON.parse(localStorage.getItem("print_cart") || "[]")
+      existing.push(item)
+      localStorage.setItem("print_cart", JSON.stringify(existing))
+      setAdded(true)
+      setTimeout(() => setAdded(false), 3000)
+    } catch {
+      // ignore storage errors
+    }
+  }, [
+    productUuid,
+    price,
+    sizeUuid,
+    colorspecUuid,
+    runsizeUuid,
+    turnaroundUuid,
+    sizeList,
+    colorspecOptions,
+    runsizeOptions,
+    turnaroundOptions,
+    productName,
+    categorySlug,
+    selectedExtras,
+  ])
+
   // ---- renderers ----
   const renderListRow = (
     label: string,
@@ -628,6 +678,26 @@ export function ProductConfiguratorClient({
                 )}
               </div>
 
+              {/* ADD TO CART */}
+              <div className="pt-4">
+                <button
+                  type="button"
+                  onClick={addToCart}
+                  disabled={price == null}
+                  className="w-full flex items-center justify-center gap-2 bg-[#2c327a] hover:bg-[#1a1f4e] disabled:opacity-50 text-white rounded px-4 py-3 text-sm font-semibold transition-colors"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Add to Cart
+                </button>
+                {added && (
+                  <p className="text-center text-sm text-green-600 mt-2">
+                    Added to cart!{" "}
+                    <Link href="/cart" className="underline font-medium">
+                      View Cart
+                    </Link>
+                  </p>
+                )}
+              </div>
             </>
           )}
         </CardContent>
