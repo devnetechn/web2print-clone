@@ -112,6 +112,13 @@ export function ProductConfiguratorClient({
   const [priceNote, setPriceNote] = useState<string | null>(null)
   const [loadingPrice, setLoadingPrice] = useState(false)
 
+  // Shipping estimation
+  const [shipOpen, setShipOpen] = useState(false)
+  const [shipZip, setShipZip] = useState("")
+  const [shipLoading, setShipLoading] = useState(false)
+  const [shipOptions, setShipOptions] = useState<{ code: string; service: string; price: number; estimatedDays: number | null }[]>([])
+  const [shipError, setShipError] = useState<string | null>(null)
+
   // Monotonic request id: only the response from the most recent cascade
   // request is allowed to update state. Prevents a stale (size+oldStock+oldCoating)
   // request from overwriting the correct selection and triggering a 404.
@@ -421,6 +428,42 @@ export function ProductConfiguratorClient({
     }
   }, [productUuid, colorspecUuid, runsizeUuid, turnaroundUuid, extraUuids, combinations, categorySlug])
 
+  // Estimate shipping from 4over for the current selection + a destination ZIP.
+  const calculateShipping = useCallback(async () => {
+    if (!productUuid || !colorspecUuid || !runsizeUuid || !turnaroundUuid || !shipZip) return
+    setShipLoading(true)
+    setShipError(null)
+    setShipOptions([])
+    try {
+      const res = await fetch("/api/4over/shipping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_info: {
+            product_uuid: productUuid,
+            runsize_uuid: runsizeUuid,
+            turnaround_uuid: turnaroundUuid,
+            colorspec_uuid: colorspecUuid,
+            option_uuids: Object.values(selectedExtras).filter(Boolean),
+            sets: 1,
+          },
+          shipping_address: { address: "N/A", city: "N/A", state: "", country: "US", zipcode: shipZip },
+          bypass_address_validation: true,
+        }),
+      })
+      const data = await res.json()
+      if (data.success && data.options?.length) {
+        setShipOptions(data.options)
+      } else {
+        setShipError("No shipping options for this ZIP code.")
+      }
+    } catch {
+      setShipError("Unable to calculate shipping.")
+    } finally {
+      setShipLoading(false)
+    }
+  }, [productUuid, colorspecUuid, runsizeUuid, turnaroundUuid, shipZip, selectedExtras])
+
   // ---- renderers ----
   const renderListRow = (
     label: string,
@@ -592,12 +635,58 @@ export function ProductConfiguratorClient({
 
       {/* Shipping Cost Estimation */}
       <Card className="border-slate-200 mt-4">
-        <CardContent className="p-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setShipOpen((o) => !o)}
+          className="w-full p-4 flex items-center justify-between"
+        >
           <span className="text-sm font-medium text-slate-700">Shipping Cost Estimation</span>
-          <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className={`h-5 w-5 text-slate-400 transition-transform ${shipOpen ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        </CardContent>
+        </button>
+        {shipOpen && (
+          <CardContent className="px-4 pb-4 pt-0">
+            <div className="flex gap-2">
+              <input
+                value={shipZip}
+                onChange={(e) => setShipZip(e.target.value)}
+                placeholder="Enter ZIP code"
+                className="flex-1 h-9 rounded-md border border-slate-200 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+              />
+              <button
+                type="button"
+                onClick={calculateShipping}
+                disabled={shipLoading || !shipZip || !productUuid}
+                className="flex items-center justify-center bg-[#e07b39] hover:bg-[#c9692a] disabled:opacity-50 text-white rounded px-4 text-sm font-medium min-w-[90px]"
+              >
+                {shipLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Calculate"}
+              </button>
+            </div>
+            {shipError && <p className="text-xs text-red-500 mt-2">{shipError}</p>}
+            {shipOptions.length > 0 && (
+              <div className="mt-3 space-y-1.5">
+                {shipOptions.map((o) => (
+                  <div
+                    key={o.code}
+                    className="flex items-center justify-between text-sm border-b border-slate-100 pb-1.5 last:border-0"
+                  >
+                    <span className="text-slate-600">
+                      {o.service}
+                      {o.estimatedDays ? ` (${o.estimatedDays} day${o.estimatedDays > 1 ? "s" : ""})` : ""}
+                    </span>
+                    <span className="font-medium text-slate-900">${o.price.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
 
       {/* What would you like to do? */}
