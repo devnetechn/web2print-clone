@@ -193,7 +193,7 @@ export default async function ProductTypePage({
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8">
             <div className="aspect-square bg-slate-100 rounded flex items-center justify-center">
-              <img src={leaf?.image || "/images/products/product-default.jpg"} alt={productName} className="w-full h-full object-cover rounded" />
+              <img src="/images/products/product-default.jpg" alt={productName} className="w-full h-full object-cover rounded" />
             </div>
             <ProductConfiguratorClient
               categoryUuid={product.category_uuid || leaf?.uuid || ""}
@@ -319,7 +319,7 @@ export default async function ProductTypePage({
             {/* Left: product image */}
             <div className="aspect-square bg-slate-100 rounded overflow-hidden sticky top-8">
               <img
-                src={leaf?.image || "/images/products/product-default.jpg"}
+                src="/images/products/product-default.jpg"
                 alt={typeLabel}
                 className="w-full h-full object-cover"
               />
