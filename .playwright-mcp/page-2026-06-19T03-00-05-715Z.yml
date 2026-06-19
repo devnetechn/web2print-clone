@@ -1,0 +1,248 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e6]:
+        - link "Web2Print USA Solutions" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Web2Print USA Solutions" [ref=e8]
+        - generic [ref=e9]:
+          - textbox "Search our products here" [ref=e10]
+          - button [ref=e11]:
+            - img
+        - generic [ref=e12]:
+          - img [ref=e13]
+          - generic [ref=e15]:
+            - generic [ref=e16]: Phone
+            - link "888-843-6867" [ref=e17] [cursor=pointer]:
+              - /url: tel:888-843-6867
+        - link "UPS Order Tracking" [ref=e18] [cursor=pointer]:
+          - /url: /tracking
+          - img "UPS" [ref=e19]
+          - generic [ref=e20]: Order Tracking
+        - link [ref=e21] [cursor=pointer]:
+          - /url: /cart
+          - img [ref=e22]
+        - link "Login/Register" [ref=e26] [cursor=pointer]:
+          - /url: /auth/login
+      - navigation [ref=e27]:
+        - list [ref=e29]:
+          - listitem [ref=e30]:
+            - link "Custom Apparel" [ref=e31] [cursor=pointer]:
+              - /url: /merch
+          - listitem [ref=e32]:
+            - generic [ref=e33] [cursor=pointer]: Industries We Serve
+          - listitem [ref=e34]:
+            - link "Printing" [ref=e35] [cursor=pointer]:
+              - /url: /print
+          - listitem [ref=e36]:
+            - generic [ref=e37] [cursor=pointer]: Business Programs
+          - listitem [ref=e38]:
+            - generic [ref=e39] [cursor=pointer]: Business Services
+    - main [ref=e40]:
+      - generic [ref=e41]:
+        - paragraph [ref=e44]:
+          - link "Home" [ref=e45] [cursor=pointer]:
+            - /url: /
+          - text: ">"
+          - link "Signs & Banners" [ref=e46] [cursor=pointer]:
+            - /url: /print/signs-banners
+          - text: ">Rigid Signs"
+        - generic [ref=e47]:
+          - heading "Rigid Signs" [level=1] [ref=e48]
+          - separator [ref=e49]
+          - combobox [ref=e51]:
+            - option "Popularity" [selected]
+            - option "Newest"
+            - option "A to Z"
+            - option "Z to A"
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - link "10mm White Coroplast" [ref=e54] [cursor=pointer]:
+                - /url: /print/rigid-signs/10mm-white-coroplast?uuid=039a3b51-800b-4dc9-b005-cb9bb89c28a6
+                - img "10mm White Coroplast" [ref=e56]
+              - heading "10mm White Coroplast" [level=3] [ref=e57]
+              - link "View details ›" [ref=e58] [cursor=pointer]:
+                - /url: /print/rigid-signs/10mm-white-coroplast?uuid=039a3b51-800b-4dc9-b005-cb9bb89c28a6
+                - text: View details
+                - generic [ref=e59]: ›
+            - generic [ref=e60]:
+              - link "0.015in Styrene Signs" [ref=e61] [cursor=pointer]:
+                - /url: /print/rigid-signs/0-015in-styrene-signs?uuid=8d9a2fa1-ec38-45b3-8383-024d7d7e5b33
+                - img "0.015in Styrene Signs" [ref=e63]
+              - heading "0.015in Styrene Signs" [level=3] [ref=e64]
+              - link "View details ›" [ref=e65] [cursor=pointer]:
+                - /url: /print/rigid-signs/0-015in-styrene-signs?uuid=8d9a2fa1-ec38-45b3-8383-024d7d7e5b33
+                - text: View details
+                - generic [ref=e66]: ›
+            - generic [ref=e67]:
+              - link "3/16\" Foamcore (Foam Board)" [ref=e68] [cursor=pointer]:
+                - /url: /print/rigid-signs/3-16-foamcore-foam-board?uuid=5149b7a2-8326-41a3-befe-df44be883b03
+                - img "3/16\" Foamcore (Foam Board)" [ref=e70]
+              - heading "3/16\" Foamcore (Foam Board)" [level=3] [ref=e71]
+              - link "View details ›" [ref=e72] [cursor=pointer]:
+                - /url: /print/rigid-signs/3-16-foamcore-foam-board?uuid=5149b7a2-8326-41a3-befe-df44be883b03
+                - text: View details
+                - generic [ref=e73]: ›
+            - generic [ref=e74]:
+              - link "3/16\" Black Gator Board" [ref=e75] [cursor=pointer]:
+                - /url: /print/rigid-signs/3-16-black-gator-board?uuid=011c9010-a3e2-4a25-806d-7d8e4a7ff183
+                - img "3/16\" Black Gator Board" [ref=e77]
+              - heading "3/16\" Black Gator Board" [level=3] [ref=e78]
+              - link "View details ›" [ref=e79] [cursor=pointer]:
+                - /url: /print/rigid-signs/3-16-black-gator-board?uuid=011c9010-a3e2-4a25-806d-7d8e4a7ff183
+                - text: View details
+                - generic [ref=e80]: ›
+            - generic [ref=e81]:
+              - link "3/16\" White Gator Board" [ref=e82] [cursor=pointer]:
+                - /url: /print/rigid-signs/3-16-white-gator-board?uuid=41fb749c-1847-4bcb-a658-44e8a98a613d
+                - img "3/16\" White Gator Board" [ref=e84]
+              - heading "3/16\" White Gator Board" [level=3] [ref=e85]
+              - link "View details ›" [ref=e86] [cursor=pointer]:
+                - /url: /print/rigid-signs/3-16-white-gator-board?uuid=41fb749c-1847-4bcb-a658-44e8a98a613d
+                - text: View details
+                - generic [ref=e87]: ›
+            - generic [ref=e88]:
+              - link "3mm White PVC Signs" [ref=e89] [cursor=pointer]:
+                - /url: /print/rigid-signs/3mm-white-pvc-signs?uuid=50de3bea-5e66-42be-b141-1d6905c4f36d
+                - img "3mm White PVC Signs" [ref=e91]
+              - heading "3mm White PVC Signs" [level=3] [ref=e92]
+              - link "View details ›" [ref=e93] [cursor=pointer]:
+                - /url: /print/rigid-signs/3mm-white-pvc-signs?uuid=50de3bea-5e66-42be-b141-1d6905c4f36d
+                - text: View details
+                - generic [ref=e94]: ›
+            - generic [ref=e95]:
+              - link "3mm White PVC Counter Cards with Easel Backs" [ref=e96] [cursor=pointer]:
+                - /url: /print/rigid-signs/3mm-white-pvc-counter-cards-with-easel-backs?uuid=8ec2ad85-353e-43d9-a5f3-b105ab9d3c9c
+                - img "3mm White PVC Counter Cards with Easel Backs" [ref=e98]
+              - heading "3mm White PVC Counter Cards with Easel Backs" [level=3] [ref=e99]
+              - link "View details ›" [ref=e100] [cursor=pointer]:
+                - /url: /print/rigid-signs/3mm-white-pvc-counter-cards-with-easel-backs?uuid=8ec2ad85-353e-43d9-a5f3-b105ab9d3c9c
+                - text: View details
+                - generic [ref=e101]: ›
+            - generic [ref=e102]:
+              - link "4mm White Coroplast" [ref=e103] [cursor=pointer]:
+                - /url: /print/rigid-signs/4mm-white-coroplast?uuid=6ac3dcba-6c3a-46a3-b85f-fbb7cb87eb4e
+                - img "4mm White Coroplast" [ref=e105]
+              - heading "4mm White Coroplast" [level=3] [ref=e106]
+              - link "View details ›" [ref=e107] [cursor=pointer]:
+                - /url: /print/rigid-signs/4mm-white-coroplast?uuid=6ac3dcba-6c3a-46a3-b85f-fbb7cb87eb4e
+                - text: View details
+                - generic [ref=e108]: ›
+            - generic [ref=e109]:
+              - link "4mm White Coroplast Rider Signs" [ref=e110] [cursor=pointer]:
+                - /url: /print/rigid-signs/4mm-white-coroplast-rider-signs?uuid=00079f74-003f-4ccb-bbc9-e32e89a94d8e
+                - img "4mm White Coroplast Rider Signs" [ref=e112]
+              - heading "4mm White Coroplast Rider Signs" [level=3] [ref=e113]
+              - link "View details ›" [ref=e114] [cursor=pointer]:
+                - /url: /print/rigid-signs/4mm-white-coroplast-rider-signs?uuid=00079f74-003f-4ccb-bbc9-e32e89a94d8e
+                - text: View details
+                - generic [ref=e115]: ›
+    - contentinfo [ref=e116]:
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - heading "Get Inspired, Stay Informed!" [level=2] [ref=e121]
+          - paragraph [ref=e122]: Subscribe to our newsletter and let your creativity soar
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - textbox "Enter email ID" [ref=e125]
+            - button "SUBSCRIBE" [ref=e126]
+          - generic [ref=e127]:
+            - paragraph [ref=e128]: Subscribe to receive promotional offers.
+            - generic [ref=e129] [cursor=pointer]:
+              - checkbox "I agree to Terms & Conditions" [ref=e130]
+              - generic [ref=e131]: I agree to Terms & Conditions
+      - generic [ref=e133]:
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - heading "Product Category" [level=4] [ref=e136]
+            - list [ref=e137]:
+              - listitem [ref=e138]:
+                - link "Business Cards" [ref=e139] [cursor=pointer]:
+                  - /url: /products/business-cards
+              - listitem [ref=e140]:
+                - link "Marketing Materials" [ref=e141] [cursor=pointer]:
+                  - /url: /products/marketing
+              - listitem [ref=e142]:
+                - link "Signs & Banners" [ref=e143] [cursor=pointer]:
+                  - /url: /products/signs
+              - listitem [ref=e144]:
+                - link "Boxes & Packaging" [ref=e145] [cursor=pointer]:
+                  - /url: /products/boxes
+              - listitem [ref=e146]:
+                - link "Roll Labels & Stickers" [ref=e147] [cursor=pointer]:
+                  - /url: /products/labels
+              - listitem [ref=e148]:
+                - link "Promo Products" [ref=e149] [cursor=pointer]:
+                  - /url: /products/promo
+          - generic [ref=e150]:
+            - heading "Quick Links" [level=4] [ref=e151]
+            - list [ref=e152]:
+              - listitem [ref=e153]:
+                - link "Blog" [ref=e154] [cursor=pointer]:
+                  - /url: /blog
+              - listitem [ref=e155]:
+                - link "Request a Quote" [ref=e156] [cursor=pointer]:
+                  - /url: /quote
+              - listitem [ref=e157]:
+                - link "Artwork Guidelines" [ref=e158] [cursor=pointer]:
+                  - /url: /artwork
+              - listitem [ref=e159]:
+                - link "Download Templates" [ref=e160] [cursor=pointer]:
+                  - /url: /templates
+              - listitem [ref=e161]:
+                - link "Testimonials" [ref=e162] [cursor=pointer]:
+                  - /url: /testimonials
+          - generic [ref=e163]:
+            - heading "Support & Info" [level=4] [ref=e164]
+            - list [ref=e165]:
+              - listitem [ref=e166]:
+                - link "About Us" [ref=e167] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e168]:
+                - link "Contact Us" [ref=e169] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e170]:
+                - link "Terms & Conditions" [ref=e171] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e172]:
+                - link "Privacy Policy" [ref=e173] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=e174]:
+            - heading "Contact Us" [level=4] [ref=e175]
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e178]: 📍 Web2Print USA
+                - generic [ref=e179]: "7901 4th St. N #27125."
+                - generic [ref=e180]: St. Petersburg, FL 33702
+                - generic [ref=e181]: USA
+              - generic [ref=e182]:
+                - generic [ref=e183]: 📞 +1.888.843.6867
+                - generic [ref=e184]: ✉️ info@web2printusa.com
+              - generic [ref=e185]:
+                - img "Visa" [ref=e186]
+                - img "Mastercard" [ref=e187]
+                - img "Discover" [ref=e188]
+                - img "Amex" [ref=e189]
+        - generic [ref=e190]:
+          - generic [ref=e191]:
+            - link [ref=e192] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e193]
+            - link [ref=e195] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e196]
+            - link [ref=e198] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e199]
+            - link [ref=e201] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e202]
+            - link [ref=e204] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e205]
+          - paragraph [ref=e207]: Copyright ©2026 Web2Print USA Solution. All Rights Reserved.
+      - link [ref=e208] [cursor=pointer]:
+        - /url: https://wa.me/18888436867
+        - img [ref=e209]
+  - button "Open Next.js Dev Tools" [ref=e216] [cursor=pointer]:
+    - img [ref=e217]

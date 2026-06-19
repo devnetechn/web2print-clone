@@ -52,6 +52,11 @@ interface ProductConfiguratorClientProps {
   // Hidden groups still use their default option in the live price, so the
   // quote stays correct — this only trims what the customer sees/selects.
   hiddenGroups?: string[]
+  // optional: size-variant mode. When a product is one of several that differ
+  // only by size (e.g. "10mm White Coroplast" in 10x10, 24x36, ...), pass the
+  // variants here. The Size dropdown then selects a product directly (its value
+  // IS a product_uuid) and the Size/Stock/Coating category cascade is skipped.
+  sizeProducts?: { uuid: string; size: string }[]
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -88,7 +93,9 @@ export function ProductConfiguratorClient({
   productName,
   allowedProductUuids,
   hiddenGroups,
+  sizeProducts,
 }: ProductConfiguratorClientProps) {
+  const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
   // Lowercased set of option-group names to HIDE (null = show all).
   const hiddenSet = useMemo(
     () => (hiddenGroups ? new Set(hiddenGroups.map((g) => g.toLowerCase().trim())) : null),
@@ -159,6 +166,14 @@ export function ProductConfiguratorClient({
 
   // Initial load: get all sizes
   useEffect(() => {
+    // Size-variant mode: the Size dropdown picks a product directly.
+    if (sizeVariantMode) {
+      const sizes = (sizeProducts || []).map((p) => ({ name: p.size, uuid: p.uuid }))
+      setSizeList(sizes)
+      setSizeUuid((prev) => prev || sizes[0]?.uuid || "")
+      setLoadingList(false)
+      return
+    }
     if (!categoryUuid) {
       setLoadingList(false)
       return
@@ -178,7 +193,12 @@ export function ProductConfiguratorClient({
     return () => {
       active = false
     }
-  }, [fetchList, categoryUuid])
+  }, [fetchList, categoryUuid, sizeVariantMode, sizeProducts])
+
+  // In size-variant mode the selected "size" IS the product_uuid.
+  useEffect(() => {
+    if (sizeVariantMode && sizeUuid) setProductUuid(sizeUuid)
+  }, [sizeVariantMode, sizeUuid])
 
   const resolveProduct = useCallback(
     (products: ProductOption[] | undefined) => {
@@ -193,6 +213,7 @@ export function ProductConfiguratorClient({
 
   // When size changes -> reset downstream selections IMMEDIATELY, then load stocks.
   useEffect(() => {
+    if (sizeVariantMode) return // size-variant mode resolves the product directly
     if (!sizeUuid) return
     const myReq = ++reqIdRef.current
     setStockList([])
@@ -207,7 +228,7 @@ export function ProductConfiguratorClient({
       setStockList(stocks)
       setStockUuid(stocks[0]?.uuid || "")
     })
-  }, [sizeUuid, fetchList])
+  }, [sizeUuid, fetchList, sizeVariantMode])
 
   // When stock changes -> reset coating/product IMMEDIATELY, then load coatings.
   useEffect(() => {

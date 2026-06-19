@@ -125,6 +125,20 @@ const TYPE_LABELS: Record<string, string> = {
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
+// Leading dimension regex, e.g. '10" X 10" ', '2" x 3.5" ', '24 X 36'.
+const SIZE_PREFIX = /^\s*(\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?)\s*[-–—]?\s*/
+
+// Product name without the leading size (the "stock/type" name used to group).
+function stripSize(desc: string): string {
+  return (desc || "").replace(SIZE_PREFIX, "").trim()
+}
+
+// Just the leading size label, e.g. '10" X 10"'.
+function extractSize(desc: string): string {
+  const m = (desc || "").match(SIZE_PREFIX)
+  return m ? m[1].replace(/\s+/g, " ").trim() : "Standard"
+}
+
 export default async function ProductTypePage({
   params,
   searchParams,
@@ -180,11 +194,27 @@ export default async function ProductTypePage({
     }
 
     let productName = product.product_description || "Product"
-    // Signs & Banners: drop the leading size (e.g. '10" X 10" ') from the title —
-    // size is now chosen in the price calculator, so it's redundant in the header.
+    // Signs & Banners: drop the leading size from the title (size is chosen in
+    // the calculator), and group all same-stock size variants so the Size
+    // dropdown switches between them.
+    let sizeProducts: { uuid: string; size: string }[] | undefined
     if (leaf?.parentSlug === "signs-banners") {
-      const stripped = productName.replace(/^\s*\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?\s*/, "").trim()
-      if (stripped) productName = stripped
+      const baseName = stripSize(productName)
+      if (baseName) productName = baseName
+      const catUuid = product.category_uuid || leaf?.uuid
+      if (catUuid && baseName) {
+        const { data: siblings } = await supabase
+          .from("fourover_products")
+          .select("product_uuid, product_description")
+          .eq("category_uuid", catUuid)
+        const variants = (siblings || [])
+          .filter((p: any) => stripSize(p.product_description || "") === baseName)
+          .map((p: any) => ({ uuid: p.product_uuid as string, size: extractSize(p.product_description || "") }))
+        const bySize = new Map<string, { uuid: string; size: string }>()
+        for (const v of variants) if (!bySize.has(v.size)) bySize.set(v.size, v)
+        const list = [...bySize.values()].sort((a, b) => parseFloat(a.size) - parseFloat(b.size))
+        if (list.length > 1) sizeProducts = list
+      }
     }
     const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
 
@@ -226,6 +256,7 @@ export default async function ProductTypePage({
               productName={productName}
               allowedProductUuids={[product.product_uuid]}
               hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
+              sizeProducts={sizeProducts}
             />
           </div>
         </div>
