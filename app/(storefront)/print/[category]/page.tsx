@@ -362,7 +362,10 @@ export default async function PrintCategoryPage({
   // For Signs & Banners and Business Cards the products differ only by size, so
   // group them by the size-stripped name and show ONE card per stock/type —
   // size is chosen later in the price calculator.
-  const sizeGrouped = leaf.parentSlug === "signs-banners" || leaf.parentSlug === "business-cards"
+  const sizeGrouped =
+    leaf.parentSlug === "signs-banners" ||
+    leaf.parentSlug === "business-cards" ||
+    leaf.parentSlug === "marketing-materials"
   const displayList = sizeGrouped
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
