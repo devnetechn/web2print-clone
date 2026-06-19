@@ -198,7 +198,7 @@ export default async function ProductTypePage({
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
     let sizeProducts: { uuid: string; size: string }[] | undefined
-    if (leaf?.parentSlug === "signs-banners") {
+    if (leaf?.parentSlug === "signs-banners" || leaf?.parentSlug === "business-cards") {
       const baseName = stripSize(productName)
       if (baseName) productName = baseName
       const catUuid = product.category_uuid || leaf?.uuid

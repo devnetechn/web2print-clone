@@ -359,10 +359,11 @@ export default async function PrintCategoryPage({
   }
 
   // ---- No type rules — show individual products directly (level 3 = level 4) ----
-  // For Signs & Banners the products differ only by size, so group them by the
-  // size-stripped name and show ONE card per stock/type — size is chosen later
-  // in the price calculator.
-  const displayList = leaf.parentSlug === "signs-banners"
+  // For Signs & Banners and Business Cards the products differ only by size, so
+  // group them by the size-stripped name and show ONE card per stock/type —
+  // size is chosen later in the price calculator.
+  const sizeGrouped = leaf.parentSlug === "signs-banners" || leaf.parentSlug === "business-cards"
+  const displayList = sizeGrouped
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
         for (const p of productList) {
