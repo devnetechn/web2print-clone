@@ -125,18 +125,24 @@ const TYPE_LABELS: Record<string, string> = {
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
-// Leading dimension regex, e.g. '10" X 10" ', '2" x 3.5" ', '24 X 36'.
-const SIZE_PREFIX = /^\s*(\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?)\s*[-–—]?\s*/
+// Dimension like '10" X 10"', '2 x 3.5"', '15.75" X 32"' — anywhere in the name.
+const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
 
-// Product name without the leading size (the "stock/type" name used to group).
+// Product name with ALL size dimensions removed (the "stock/type" name used to
+// group). Handles size at the start ("36\" X 90\" Display") or in the middle
+// ("Banner Stand With 11\" X 17\" ...").
 function stripSize(desc: string): string {
-  return (desc || "").replace(SIZE_PREFIX, "").trim()
+  return (desc || "")
+    .replace(SIZE_DIM, " ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/^[\s\-–—]+/, "")
+    .trim()
 }
 
-// Just the leading size label, e.g. '10" X 10"'.
+// The first size label found anywhere, e.g. '11" X 17"'.
 function extractSize(desc: string): string {
-  const m = (desc || "").match(SIZE_PREFIX)
-  return m ? m[1].replace(/\s+/g, " ").trim() : "Standard"
+  const m = (desc || "").match(/\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/)
+  return m ? m[0].replace(/\s+/g, " ").trim() : "Standard"
 }
 
 export default async function ProductTypePage({

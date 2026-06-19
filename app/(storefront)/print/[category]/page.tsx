@@ -175,9 +175,16 @@ function classifyProduct(description: string, categorySlug: string): TypeRule | 
   return rules[rules.length - 1] // fallback to last (catch-all)
 }
 
-// Leading dimension regex, e.g. '10" X 10" ', '24 X 36' — used to group sign
-// products that differ only by size.
-const SIZE_PREFIX = /^\s*\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?\s*[-–—]?\s*/
+// Remove ALL size dimensions from a product name (start or middle) to get the
+// "stock/type" name used to group same-product-different-size variants.
+const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
+function stripSize(desc: string): string {
+  return (desc || "")
+    .replace(SIZE_DIM, " ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/^[\s\-–—]+/, "")
+    .trim()
+}
 
 export default async function PrintCategoryPage({
   params,
@@ -370,7 +377,7 @@ export default async function PrintCategoryPage({
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
         for (const p of productList) {
-          const name = (p.product_description || "").replace(SIZE_PREFIX, "").trim() || p.product_description
+          const name = stripSize(p.product_description || "") || p.product_description
           if (!groups.has(name)) groups.set(name, { product_uuid: p.product_uuid, product_description: name })
         }
         return [...groups.values()]
