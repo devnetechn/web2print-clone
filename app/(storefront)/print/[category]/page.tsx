@@ -198,6 +198,23 @@ function stripSize(desc: string): string {
     .trim()
 }
 
+// Filler words ignored when grouping so word-order/punctuation variants of the
+// same product merge (e.g. "Matte/Dull Finish Cards" == "Cards with MATTE/DULL
+// FINISH"). Meaningful words (front/back/both/uv/aq/14pt/...) are kept.
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in"])
+
+// Normalized grouping key: drop size, lowercase, strip punctuation, remove
+// filler words, sort the remaining tokens.
+function groupKey(desc: string): string {
+  return stripSize(desc)
+    .toLowerCase()
+    .replace(/[.,/()]+/g, " ")
+    .split(/\s+/)
+    .filter((w) => w && !FILLER_WORDS.has(w))
+    .sort()
+    .join(" ")
+}
+
 export default async function PrintCategoryPage({
   params,
 }: {
@@ -387,8 +404,8 @@ export default async function PrintCategoryPage({
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
         for (const p of productList) {
           const name = stripSize(p.product_description || "") || p.product_description
-          // Case-insensitive key so "With"/"with", "OVAL"/"Oval" don't split.
-          const key = name.toLowerCase().replace(/\s+/g, " ")
+          // Normalized token key so casing/word-order/punctuation variants merge.
+          const key = groupKey(p.product_description || "") || name.toLowerCase()
           if (!groups.has(key)) groups.set(key, { product_uuid: p.product_uuid, product_description: name })
         }
         return [...groups.values()]

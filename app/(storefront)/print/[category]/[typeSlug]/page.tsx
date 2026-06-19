@@ -157,6 +157,20 @@ function extractSize(desc: string): string {
   return m ? m[0].replace(/\s+/g, " ").trim() : "Standard"
 }
 
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in"])
+
+// Normalized grouping key: drop size, lowercase, strip punctuation, remove
+// filler words, sort tokens — so casing/word-order/punctuation variants merge.
+function groupKey(desc: string): string {
+  return stripSize(desc)
+    .toLowerCase()
+    .replace(/[.,/()]+/g, " ")
+    .split(/\s+/)
+    .filter((w) => w && !FILLER_WORDS.has(w))
+    .sort()
+    .join(" ")
+}
+
 export default async function ProductTypePage({
   params,
   searchParams,
@@ -225,9 +239,9 @@ export default async function ProductTypePage({
           .from("fourover_products")
           .select("product_uuid, product_description")
           .eq("category_uuid", catUuid)
-        const baseKey = baseName.toLowerCase().replace(/\s+/g, " ")
+        const baseKey = groupKey(product.product_description || "")
         const variants = (siblings || [])
-          .filter((p: any) => stripSize(p.product_description || "").toLowerCase().replace(/\s+/g, " ") === baseKey)
+          .filter((p: any) => groupKey(p.product_description || "") === baseKey)
           .map((p: any) => ({ uuid: p.product_uuid as string, size: extractSize(p.product_description || "") }))
         const bySize = new Map<string, { uuid: string; size: string }>()
         for (const v of variants) if (!bySize.has(v.size)) bySize.set(v.size, v)
