@@ -200,6 +200,24 @@ export function ProductConfiguratorClient({
     if (sizeVariantMode && sizeUuid) setProductUuid(sizeUuid)
   }, [sizeVariantMode, sizeUuid])
 
+  // Sizes whose resolved product returned no base prices — skip them so we never
+  // leave the customer on a dead "Select options to see pricing" default.
+  const triedSizesRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    triedSizesRef.current = new Set()
+  }, [categoryUuid])
+  // Latest size selection/list, read inside the baseprices effect WITHOUT making
+  // it a dependency (adding sizeUuid as a dep would re-run baseprices on every
+  // size change with a stale productUuid and burn through all sizes).
+  const sizeUuidRef = useRef("")
+  const sizeListRef = useRef<ListItem[]>([])
+  useEffect(() => {
+    sizeUuidRef.current = sizeUuid
+  }, [sizeUuid])
+  useEffect(() => {
+    sizeListRef.current = sizeList
+  }, [sizeList])
+
   const resolveProduct = useCallback(
     (products: ProductOption[] | undefined) => {
       const list = products || []
@@ -226,9 +244,17 @@ export function ProductConfiguratorClient({
       if (reqIdRef.current !== myReq || !data) return
       const stocks = dedupeList(data.stock_list || [])
       setStockList(stocks)
-      setStockUuid(stocks[0]?.uuid || "")
+      if (stocks.length > 0) {
+        setStockUuid(stocks[0].uuid)
+      } else {
+        // No stock dimension for this size — resolve the product directly so the
+        // cascade doesn't dead-end (e.g. some EDDM sizes return products at the
+        // size level with no stock/coating step).
+        setStockUuid("")
+        setProductUuid(resolveProduct(data.products))
+      }
     })
-  }, [sizeUuid, fetchList, sizeVariantMode])
+  }, [sizeUuid, fetchList, sizeVariantMode, resolveProduct])
 
   // When stock changes -> reset coating/product IMMEDIATELY, then load coatings.
   useEffect(() => {
@@ -279,6 +305,27 @@ export function ProductConfiguratorClient({
           setColorspecUuid("")
           setRunsizeUuid("")
           setTurnaroundUuid("")
+          // This product has no base prices (a 4over data quirk on some SKUs,
+          // e.g. EDDM's first couple of sizes). Advance to the next untried
+          // size so the customer lands on a working price instead of a dead
+          // "Select options to see pricing". Decided here — where combos are
+          // known for THIS product — to avoid skipping on stale state.
+          const curSize = sizeUuidRef.current
+          const sizes = sizeListRef.current
+          if (!sizeVariantMode && sizes.length > 1) {
+            triedSizesRef.current.add(curSize)
+            const next = sizes.find((s) => !triedSizesRef.current.has(s.uuid))
+            if (next && next.uuid !== curSize) {
+              // Clear downstream selections in the SAME update batch as the size
+              // change so the stock/coating effects' guards block them from
+              // firing with the previous size's stock/coating (which would win
+              // the reqId race and discard the new size's stock list).
+              setStockUuid("")
+              setCoatingUuid("")
+              setProductUuid("")
+              setSizeUuid(next.uuid)
+            }
+          }
         }
       })
       .catch(() => {})
@@ -288,7 +335,7 @@ export function ProductConfiguratorClient({
     return () => {
       active = false
     }
-  }, [productUuid, categorySlug])
+  }, [productUuid, categorySlug, sizeVariantMode])
 
   // When product_uuid resolved -> load the product's full option groups and keep
   // the "extra" ones (Orientation, Grommets, H-Stakes, Flute, ...) as button rows.
