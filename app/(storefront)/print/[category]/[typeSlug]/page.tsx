@@ -133,6 +133,7 @@ const SIZE_GROUPED_PARENTS = [
   "marketing-materials",
   "boxes-packaging",
   "roll-labels-stickers",
+  "promo-products",
 ]
 
 // Dimension like '10" X 10"', '2 x 3.5"', '15.75" X 32"' — anywhere in the name.

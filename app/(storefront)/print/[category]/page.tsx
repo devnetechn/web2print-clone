@@ -183,6 +183,7 @@ const SIZE_GROUPED_PARENTS = [
   "marketing-materials",
   "boxes-packaging",
   "roll-labels-stickers",
+  "promo-products",
 ]
 
 // Remove ALL size dimensions from a product name (start or middle) to get the
