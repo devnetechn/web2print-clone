@@ -176,7 +176,13 @@ export default async function ProductTypePage({
       }
     }
 
-    const productName = product.product_description || "Product"
+    let productName = product.product_description || "Product"
+    // Signs & Banners: drop the leading size (e.g. '10" X 10" ') from the title —
+    // size is now chosen in the price calculator, so it's redundant in the header.
+    if (leaf?.parentSlug === "signs-banners") {
+      const stripped = productName.replace(/^\s*\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?\s*/, "").trim()
+      if (stripped) productName = stripped
+    }
     const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
 
     return (
