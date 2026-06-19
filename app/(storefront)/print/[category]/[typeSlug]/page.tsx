@@ -138,7 +138,7 @@ const SIZE_GROUPED_PARENTS = [
 
 // Variant dimensions: NxN sizes AND booklet/catalog page counts ("8 Page").
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
-const PAGE_DIM = /\b\d+\s*pages?\b/gi
+const PAGE_DIM = /\b\d+\s*(?:inside\s+)?pages?\b/gi
 
 // Product name with the variant dimension removed (the "stock/type" name used
 // to group). Handles size at start/middle and page counts.
@@ -146,6 +146,9 @@ function stripSize(desc: string): string {
   return (desc || "")
     .replace(SIZE_DIM, " ")
     .replace(PAGE_DIM, " ")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\(\s*\)/g, "")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s\-–—]+/, "")
     .replace(/[\s\-–—]+$/, "")
@@ -156,7 +159,7 @@ function stripSize(desc: string): string {
 function extractSize(desc: string): string {
   const dim = (desc || "").match(/\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/)
   if (dim) return dim[0].replace(/\s+/g, " ").trim()
-  const pg = (desc || "").match(/\b\d+\s*pages?\b/i)
+  const pg = (desc || "").match(/\b\d+\s*(?:inside\s+)?pages?\b/i)
   if (pg) return pg[0].replace(/\s+/g, " ").trim()
   return "Standard"
 }

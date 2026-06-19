@@ -190,11 +190,14 @@ const SIZE_GROUPED_PARENTS = [
 // same-product-different-size variants. Covers NxN sizes AND booklet/catalog
 // page counts ("8 Page", "12 Pages").
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
-const PAGE_DIM = /\b\d+\s*pages?\b/gi
+const PAGE_DIM = /\b\d+\s*(?:inside\s+)?pages?\b/gi
 function stripSize(desc: string): string {
   return (desc || "")
     .replace(SIZE_DIM, " ")
     .replace(PAGE_DIM, " ")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\(\s*\)/g, "")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s\-–—]+/, "")
     .replace(/[\s\-–—]+$/, "")
