@@ -125,6 +125,16 @@ const TYPE_LABELS: Record<string, string> = {
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
+// Parent categories where products differ mainly by size and should be grouped
+// (one product, size chosen in the calculator).
+const SIZE_GROUPED_PARENTS = [
+  "signs-banners",
+  "business-cards",
+  "marketing-materials",
+  "boxes-packaging",
+  "roll-labels-stickers",
+]
+
 // Dimension like '10" X 10"', '2 x 3.5"', '15.75" X 32"' — anywhere in the name.
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
 
@@ -136,6 +146,7 @@ function stripSize(desc: string): string {
     .replace(SIZE_DIM, " ")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s\-–—]+/, "")
+    .replace(/[\s\-–—]+$/, "")
     .trim()
 }
 
@@ -204,11 +215,7 @@ export default async function ProductTypePage({
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
     let sizeProducts: { uuid: string; size: string }[] | undefined
-    if (
-      leaf?.parentSlug === "signs-banners" ||
-      leaf?.parentSlug === "business-cards" ||
-      leaf?.parentSlug === "marketing-materials"
-    ) {
+    if (leaf?.parentSlug && SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)) {
       const baseName = stripSize(productName)
       if (baseName) productName = baseName
       const catUuid = product.category_uuid || leaf?.uuid

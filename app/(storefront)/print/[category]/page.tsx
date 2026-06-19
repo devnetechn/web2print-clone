@@ -175,6 +175,16 @@ function classifyProduct(description: string, categorySlug: string): TypeRule | 
   return rules[rules.length - 1] // fallback to last (catch-all)
 }
 
+// Parent categories whose products differ mainly by size — group them so the
+// listing shows one card per stock/type and size is picked in the calculator.
+const SIZE_GROUPED_PARENTS = [
+  "signs-banners",
+  "business-cards",
+  "marketing-materials",
+  "boxes-packaging",
+  "roll-labels-stickers",
+]
+
 // Remove ALL size dimensions from a product name (start or middle) to get the
 // "stock/type" name used to group same-product-different-size variants.
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
@@ -183,6 +193,7 @@ function stripSize(desc: string): string {
     .replace(SIZE_DIM, " ")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s\-–—]+/, "")
+    .replace(/[\s\-–—]+$/, "")
     .trim()
 }
 
@@ -369,10 +380,7 @@ export default async function PrintCategoryPage({
   // For Signs & Banners and Business Cards the products differ only by size, so
   // group them by the size-stripped name and show ONE card per stock/type —
   // size is chosen later in the price calculator.
-  const sizeGrouped =
-    leaf.parentSlug === "signs-banners" ||
-    leaf.parentSlug === "business-cards" ||
-    leaf.parentSlug === "marketing-materials"
+  const sizeGrouped = SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)
   const displayList = sizeGrouped
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
