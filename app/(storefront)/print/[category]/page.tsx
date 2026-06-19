@@ -387,7 +387,9 @@ export default async function PrintCategoryPage({
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
         for (const p of productList) {
           const name = stripSize(p.product_description || "") || p.product_description
-          if (!groups.has(name)) groups.set(name, { product_uuid: p.product_uuid, product_description: name })
+          // Case-insensitive key so "With"/"with", "OVAL"/"Oval" don't split.
+          const key = name.toLowerCase().replace(/\s+/g, " ")
+          if (!groups.has(key)) groups.set(key, { product_uuid: p.product_uuid, product_description: name })
         }
         return [...groups.values()]
       })()
