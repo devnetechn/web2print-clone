@@ -186,12 +186,15 @@ const SIZE_GROUPED_PARENTS = [
   "promo-products",
 ]
 
-// Remove ALL size dimensions from a product name (start or middle) to get the
-// "stock/type" name used to group same-product-different-size variants.
+// Variant dimensions removed to get the "stock/type" name used to group
+// same-product-different-size variants. Covers NxN sizes AND booklet/catalog
+// page counts ("8 Page", "12 Pages").
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
+const PAGE_DIM = /\b\d+\s*pages?\b/gi
 function stripSize(desc: string): string {
   return (desc || "")
     .replace(SIZE_DIM, " ")
+    .replace(PAGE_DIM, " ")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s\-–—]+/, "")
     .replace(/[\s\-–—]+$/, "")
@@ -201,7 +204,7 @@ function stripSize(desc: string): string {
 // Filler words ignored when grouping so word-order/punctuation variants of the
 // same product merge (e.g. "Matte/Dull Finish Cards" == "Cards with MATTE/DULL
 // FINISH"). Meaningful words (front/back/both/uv/aq/14pt/...) are kept.
-const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in"])
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w"])
 
 // Normalized grouping key: drop size, lowercase, strip punctuation, remove
 // filler words, sort the remaining tokens.

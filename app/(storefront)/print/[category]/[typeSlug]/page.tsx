@@ -136,28 +136,32 @@ const SIZE_GROUPED_PARENTS = [
   "promo-products",
 ]
 
-// Dimension like '10" X 10"', '2 x 3.5"', '15.75" X 32"' — anywhere in the name.
+// Variant dimensions: NxN sizes AND booklet/catalog page counts ("8 Page").
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
+const PAGE_DIM = /\b\d+\s*pages?\b/gi
 
-// Product name with ALL size dimensions removed (the "stock/type" name used to
-// group). Handles size at the start ("36\" X 90\" Display") or in the middle
-// ("Banner Stand With 11\" X 17\" ...").
+// Product name with the variant dimension removed (the "stock/type" name used
+// to group). Handles size at start/middle and page counts.
 function stripSize(desc: string): string {
   return (desc || "")
     .replace(SIZE_DIM, " ")
+    .replace(PAGE_DIM, " ")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s\-–—]+/, "")
     .replace(/[\s\-–—]+$/, "")
     .trim()
 }
 
-// The first size label found anywhere, e.g. '11" X 17"'.
+// The first variant label found, e.g. '11" X 17"' or '8 Page'.
 function extractSize(desc: string): string {
-  const m = (desc || "").match(/\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/)
-  return m ? m[0].replace(/\s+/g, " ").trim() : "Standard"
+  const dim = (desc || "").match(/\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/)
+  if (dim) return dim[0].replace(/\s+/g, " ").trim()
+  const pg = (desc || "").match(/\b\d+\s*pages?\b/i)
+  if (pg) return pg[0].replace(/\s+/g, " ").trim()
+  return "Standard"
 }
 
-const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in"])
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w"])
 
 // Normalized grouping key: drop size, lowercase, strip punctuation, remove
 // filler words, sort tokens — so casing/word-order/punctuation variants merge.
