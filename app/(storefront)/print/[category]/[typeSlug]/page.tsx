@@ -119,8 +119,11 @@ const TYPE_LABELS: Record<string, string> = {
   "specialty-presentation-folder": "Specialty Presentation Folders",
 }
 
-// Signs & Banners price calculator should only expose these option groups.
-const SIGNS_ALLOWED_GROUPS = ["size", "shape", "stock", "sides", "grommets", "quantity", "turnaround time"]
+// Signs & Banners: hide these technical/redundant option groups from the price
+// calculator (Coating, Orientation, Flute, H-Stakes). Everything else relevant
+// to each product (Grommets, Shape, Pole Pockets, Hems, D-Rings, Rope, Velcro,
+// ...) still shows. Hidden groups keep their default in the live price.
+const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
 export default async function ProductTypePage({
   params,
@@ -222,7 +225,7 @@ export default async function ProductTypePage({
               categorySlug={category}
               productName={productName}
               allowedProductUuids={[product.product_uuid]}
-              allowedGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_ALLOWED_GROUPS : undefined}
+              hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
             />
           </div>
         </div>
@@ -355,7 +358,7 @@ export default async function ProductTypePage({
                 categorySlug={category}
                 productName={typeLabel}
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
-                allowedGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_ALLOWED_GROUPS : undefined}
+                hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
               />
             </div>
           </div>

@@ -48,10 +48,10 @@ interface ProductConfiguratorClientProps {
   productName: string
   // optional: restrict to a set of product_uuids that belong to this type
   allowedProductUuids?: string[]
-  // optional: only show these option-group names in the UI (lowercased match).
+  // optional: hide these option-group names from the UI (lowercased match).
   // Hidden groups still use their default option in the live price, so the
   // quote stays correct — this only trims what the customer sees/selects.
-  allowedGroups?: string[]
+  hiddenGroups?: string[]
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -87,12 +87,12 @@ export function ProductConfiguratorClient({
   categorySlug,
   productName,
   allowedProductUuids,
-  allowedGroups,
+  hiddenGroups,
 }: ProductConfiguratorClientProps) {
-  // Lowercased allow-list of option-group names to display (null = show all).
-  const allowedSet = useMemo(
-    () => (allowedGroups ? new Set(allowedGroups.map((g) => g.toLowerCase().trim())) : null),
-    [allowedGroups],
+  // Lowercased set of option-group names to HIDE (null = show all).
+  const hiddenSet = useMemo(
+    () => (hiddenGroups ? new Set(hiddenGroups.map((g) => g.toLowerCase().trim())) : null),
+    [hiddenGroups],
   )
   // Size / Stock / Coating lists from categoryproductslist
   const [sizeList, setSizeList] = useState<ListItem[]>([])
@@ -531,12 +531,12 @@ export function ProductConfiguratorClient({
     const seen = new Set<string>()
     return extraGroups.filter((g) => {
       const name = g.group_name.toLowerCase().trim()
-      if (allowedSet && !allowedSet.has(name)) return false
+      if (hiddenSet && hiddenSet.has(name)) return false
       if (seen.has(name)) return false
       seen.add(name)
       return true
     })
-  }, [extraGroups, allowedSet])
+  }, [extraGroups, hiddenSet])
 
   // ---- renderers ----
   const renderListRow = (
@@ -644,7 +644,7 @@ export function ProductConfiguratorClient({
               {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
 
               {/* COATING */}
-              {(!allowedSet || allowedSet.has("coating")) &&
+              {(!hiddenSet || !hiddenSet.has("coating")) &&
                 renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
 
               {loadingOptions && (
