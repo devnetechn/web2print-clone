@@ -191,10 +191,20 @@ const SIZE_GROUPED_PARENTS = [
 // page counts ("8 Page", "12 Pages").
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
 const PAGE_DIM = /\b\d+\s*(?:inside\s+)?pages?\b/gi
+// "Booklet On"/"Brochure On" etc. is Print Method — already its own calculator
+// dropdown (fourprintshop's product-type cards never show it in the title).
+const PRINT_METHOD_PREFIX = /^[\s\-–—]*(Brochure|Booklet|Flyer|Postcard)s?\s+(On|on)\s+/
+// Trailing "with Satin AQ" / "w/ No Coating" / "With UV on both sides" is
+// Coating/Finishing — already its own calculator dropdown. Only strip phrases
+// that actually mention a coating keyword, so unrelated "with ..." text
+// (e.g. "Banner Stand With Hardware") is left alone.
+const COATING_SUFFIX = /\s+(with\s+|w\/\s*)(no\s+)?(satin\s+)?(aq|coating|uv|lamination)\b.*$/i
 function stripSize(desc: string): string {
   return (desc || "")
     .replace(SIZE_DIM, " ")
     .replace(PAGE_DIM, " ")
+    .replace(PRINT_METHOD_PREFIX, "")
+    .replace(COATING_SUFFIX, "")
     .replace(/\(\s+/g, "(")
     .replace(/\s+\)/g, ")")
     .replace(/\(\s*\)/g, "")
