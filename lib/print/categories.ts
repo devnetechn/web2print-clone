@@ -74,6 +74,14 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       { name: "Trading Cards", uuid: "b45e4b55-a3cd-4897-9506-69ba456189e7", slug: "trading-cards", image: "/images/categories/postcards.jpg" },
       { name: "Postcards", uuid: "6f4148e7-3842-4d8b-99f8-6d31c2f71883", slug: "postcards", image: "/images/cat/postcards.jpg" },
       { name: "Presentation Folders", uuid: "d69c91dd-f208-4736-a47b-a0a628d88103", slug: "presentation-folders", image: "/images/cat/presentation-folders.jpg" },
+      // fourprintshop's literal /marketing-material/announcement-cards/products/
+      // page is a FLAT grid of 10 product-type cards (Standard, Round Corner,
+      // Akuafoil, Brown Kraft, Magnet, Natural, Painted Edge, Pearl, Silk,
+      // Suede), all under this ONE subcategory — not 8 separate subcategory
+      // entries (that was tried and reverted; see EXTRA_PRODUCT_SOURCES in
+      // print/[category]/page.tsx, which pulls the other 7 materials' own
+      // "brand stock" category UUIDs — the same ones used by their Business
+      // Cards counterparts — into THIS listing instead).
       { name: "Announcement Cards", uuid: "62bdcc8e-316d-4e8f-b59c-c0ac6ee81516", slug: "announcement-cards", image: "/images/cat/announcement-cards.jpg" },
       { name: "Booklets", uuid: "8b570b5b-3ea9-4ea7-b869-dab31bb644d8", slug: "booklets", image: "/images/cat/booklets.jpg" },
       { name: "Calendars", uuid: "2e6a67e3-dd44-46c4-a183-e873b9f691a6", slug: "calendars", image: "/images/cat/calendars.jpg" },

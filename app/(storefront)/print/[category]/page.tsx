@@ -12,15 +12,26 @@ import { resolveProductImage } from "@/lib/print/product-images"
 interface TypeRule { label: string; slug: string; keywords: string[] }
 
 const TYPE_RULES: Record<string, TypeRule[]> = {
+  // fourprintshop lists 8 types here; our sandbox data only has products
+  // for 4 of them (verified — EndurACE/Specialty Folds/Tri-Fold/Z-Fold are
+  // confirmed absent: checked all 402 raw entries in this category for
+  // "fold"/"tear"/"endurace"/"panel"/"brochure" wording, AND the dedicated
+  // EndurACE category (d3010094, also used by EndurACE Business Cards) for
+  // any Flyer/Brochure-shaped entries — zero matches anywhere; a genuine
+  // catalog gap, the same pattern as Circle/Magnet Business Cards). "Flat"
+  // is the TRUE catch-all (its old "flat flyer"/"flat brochure" keywords
+  // never matched anything — the data has no "flat" wording at all, just
+  // plain "Flyers"/"Flyer on..." with no fold pattern) so it must be LAST:
+  // classifyProduct() is order-dependent and a catch-all earlier in the
+  // array would swallow Half-Fold/Tearoff's products before they're checked.
   "flyers-and-brochures": [
     { label: "All Inclusive Flyers and Brochures", slug: "all-inclusive-flyers-and-brochures", keywords: ["all inclusive", "all-inclusive"] },
-    { label: "EndurACE Flyers and Brochures", slug: "endurace-flyers-and-brochures", keywords: ["endurace"] },
-    { label: "Flat Flyers and Brochures", slug: "flat-flyers-and-brochures", keywords: ["flat flyer", "flat brochure"] },
-    { label: "Half-Fold Brochures", slug: "half-fold-brochures", keywords: ["half-fold", "half fold"] },
-    { label: "Specialty Folds Brochures", slug: "specialty-folds-brochures", keywords: ["specialty fold", "specialty folds"] },
+    // "Folds to WxH" is how this sandbox's only 2 single-fold entries are
+    // worded (4over filed them as "4 Page Booklet", but a 4-page document
+    // folded once IS structurally a half-fold brochure).
+    { label: "Half-Fold Brochures", slug: "half-fold-brochures", keywords: ["half-fold", "half fold", "folds to"] },
     { label: "Tearoff Flyers", slug: "tearoff-flyers", keywords: ["tear", "tearoff", "tear-off"] },
-    { label: "Tri-Fold Brochures", slug: "tri-fold-brochures", keywords: ["tri-fold", "tri fold"] },
-    { label: "Z-Fold Brochures", slug: "z-fold-brochures", keywords: ["z-fold", "z fold"] },
+    { label: "Flat Flyers and Brochures", slug: "flat-flyers-and-brochures", keywords: [] }, // catch-all
   ],
   "postcards": [
     { label: "All Inclusive Postcards", slug: "all-inclusive-postcards", keywords: ["all inclusive", "all-inclusive"] },
@@ -60,6 +71,54 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: '5.25" x 10.5" Presentation Folder', slug: "5x10-presentation-folder", keywords: ["5.25", "5.25\"", "10.5"] },
     { label: '9" x 14.5" Presentation Folder', slug: "9x14-presentation-folder", keywords: ["9\" x 14.5\"", "9x14", "14.5"] },
   ],
+}
+
+// Some subcategories' product-type cards span MULTIPLE 4over categories, not
+// just their own leaf.uuid — fourprintshop's literal reference page for
+// Announcement Cards is a flat 10-card grid (Standard, Round Corner,
+// Akuafoil, Brown Kraft, Magnet, Natural, Painted Edge, Pearl, Silk, Suede),
+// but only Standard+Round Corner live in announcement-cards' own category
+// (62bdcc8e); the other 7 materials are nested inside the SAME shared
+// "brand stock" categories already used by their Business Cards counterparts
+// (verified live: Akuafoil 25 matches, Suede 20, Silk/Pearl/Natural 8 each,
+// Brown Kraft 5, Painted Edge 3, Magnet 4 in the dedicated Magnets category).
+// Extra sources are merged into productList BEFORE groupKey-grouping, so they
+// show up as ordinary product-type cards alongside the primary category's —
+// each retains its OWN real category_uuid (set when cached), so clicking
+// through still scopes Stock/Coating/sibling-matching correctly per material.
+const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | string[] }[]> = {
+  // "Tearoff Flyers" data lives in the dedicated Tear Off Cards category
+  // (f3b51933, also used by the tear-off-cards subcategory) — its own
+  // "Flyers with tear-off perforation..." entries, not flyers-and-brochures'
+  // own UUID (which has zero "tear" matches). This works for TYPE_RULES
+  // categories too: productList is built once, with extra sources merged in,
+  // BEFORE classifyProduct() buckets it into type cards.
+  "flyers-and-brochures": [
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
+  ],
+  "announcement-cards": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "announcement" }, // Akuafoil
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "announcement" }, // Brown Kraft
+    { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "announcement" }, // Magnet
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "announcement" }, // Natural
+    { uuid: "b2d0278e-02e6-4861-99ba-951b66f2f1ed", keyword: "announcement" }, // Painted Edge
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "announcement" }, // Pearl
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "announcement" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "announcement" }, // Suede
+  ],
+}
+
+// Per-TYPE-card images (real fourprintshop product photos) for TYPE_RULES
+// categories — without this every type card under one subcategory shares
+// the SAME generic leaf.image, since classifyProduct() only sorts by text
+// pattern, not by a distinct photo per type.
+const TYPE_IMAGES: Record<string, Record<string, string>> = {
+  "flyers-and-brochures": {
+    "all-inclusive-flyers-and-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
+    "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
+    "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
+    "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+  },
 }
 
 // Classify a product description into a type slug for a given category
@@ -343,45 +402,58 @@ export default async function PrintCategoryPage({
     )
   }
 
-  // Fetch ALL products in this category by UUID from DB first
+  // Fetch ALL products in a category by UUID — DB cache first, live 4over API
+  // (+ cache write-through) if nothing's cached yet.
   const supabase = await createClient()
-  let { data: products } = await supabase
-    .from("fourover_products")
-    .select("product_uuid, product_description, product_code")
-    .eq("category_uuid", leaf.uuid)
+  async function fetchCategoryProducts(categoryUuid: string, label: string) {
+    let { data: rows } = await supabase
+      .from("fourover_products")
+      .select("product_uuid, product_description, product_code")
+      .eq("category_uuid", categoryUuid)
 
-  // If no products in DB, fetch from 4over API and save to DB
-  if (!products || products.length === 0) {
-    console.log("[v0] No products in DB for", leaf.name, "- fetching from 4over API...")
-    const apiResult = await getAllProductsForCategory(leaf.uuid)
-    if (apiResult.success && apiResult.data?.entities?.length > 0) {
-      const apiProducts = apiResult.data.entities
-      console.log("[v0] Got", apiProducts.length, "products from 4over API for", leaf.name)
-      
-      // Save to DB for future use
-      const productsToInsert = apiProducts.map((p: any) => ({
-        product_uuid: p.product_uuid,
-        product_description: p.product_description,
-        product_code: p.product_code,
-        category_uuid: leaf.uuid,
-        product_name: p.product_description,
-        product_data: p,
-      }))
-      
-      await supabase.from("fourover_products").upsert(productsToInsert, { onConflict: "product_uuid" })
-      
-      // Use the API products for this request
-      products = apiProducts.map((p: any) => ({
-        product_uuid: p.product_uuid,
-        product_description: p.product_description,
-        product_code: p.product_code,
-      }))
+    if (!rows || rows.length === 0) {
+      console.log("[v0] No products in DB for", label, "- fetching from 4over API...")
+      const apiResult = await getAllProductsForCategory(categoryUuid)
+      if (apiResult.success && apiResult.data?.entities?.length > 0) {
+        const apiProducts = apiResult.data.entities
+        console.log("[v0] Got", apiProducts.length, "products from 4over API for", label)
+
+        const productsToInsert = apiProducts.map((p: any) => ({
+          product_uuid: p.product_uuid,
+          product_description: p.product_description,
+          product_code: p.product_code,
+          category_uuid: categoryUuid,
+          product_name: p.product_description,
+          product_data: p,
+        }))
+
+        await supabase.from("fourover_products").upsert(productsToInsert, { onConflict: "product_uuid" })
+
+        rows = apiProducts.map((p: any) => ({
+          product_uuid: p.product_uuid,
+          product_description: p.product_description,
+          product_code: p.product_code,
+        }))
+      }
     }
+    return rows || []
   }
 
-  const productList = leaf.keyword
-    ? (products || []).filter((p) => matchesAllKeywords(p.product_description, leaf.keyword!))
-    : products || []
+  const products = await fetchCategoryProducts(leaf.uuid, leaf.name)
+  let productList = leaf.keyword
+    ? products.filter((p) => matchesAllKeywords(p.product_description, leaf.keyword!))
+    : products
+
+  const extraSources = EXTRA_PRODUCT_SOURCES[category]
+  if (extraSources && extraSources.length > 0) {
+    const extraLists = await Promise.all(
+      extraSources.map(async (src) => {
+        const rows = await fetchCategoryProducts(src.uuid, `${leaf.name} (extra: ${src.uuid})`)
+        return rows.filter((p) => matchesAllKeywords(p.product_description, src.keyword))
+      }),
+    )
+    productList = [...productList, ...extraLists.flat()]
+  }
 
   // ---- If we have type grouping rules, show TYPE CARDS (level 3) ----
   const hasTypeRules = !!TYPE_RULES[category]
@@ -394,7 +466,7 @@ export default async function PrintCategoryPage({
       const rule = classifyProduct(product.product_description, category)
       if (!rule) continue
       if (!typeMap.has(rule.slug)) {
-        typeMap.set(rule.slug, { rule, products: [], image: leaf.image })
+        typeMap.set(rule.slug, { rule, products: [], image: TYPE_IMAGES[category]?.[rule.slug] || leaf.image })
       }
       typeMap.get(rule.slug)!.products.push(product)
     }
@@ -483,7 +555,14 @@ export default async function PrintCategoryPage({
   // entire identity IS that shape word (keyword-filtered to ONLY oval/fold-
   // over entries) — stripping it would leave their card titles reading just
   // "Business Cards" with no hint of which subcategory they're even on.
-  const isBusinessCards = leaf.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards"
+  // Despite the name, also covers Announcement Cards: fourprintshop's own
+  // Silk/Pearl/Natural Announcement Cards pages have the SAME Shape dropdown
+  // (Rectangle/Rounded 4 Corners) merging in Round Corner, confirmed live —
+  // it's the identical "Round Corner is a Shape variant, not its own
+  // product" pattern as Business Cards, just under a different parent.
+  const isBusinessCards =
+    (leaf.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
+    category === "announcement-cards" || category.endsWith("-announcement-cards")
   const displayList = sizeGrouped
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()

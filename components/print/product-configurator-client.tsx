@@ -64,6 +64,22 @@ interface ProductConfiguratorClientProps {
   // Anchoring to the clicked product's own size scopes Stock/Coating to just
   // that product line from the start, so they cascade correctly.
   initialSizeUuid?: string
+  // optional: anchor the Stock dropdown too, for the SAME reason as
+  // initialSizeUuid — TYPE_RULES categories (e.g. "All Inclusive Flyers and
+  // Brochures") restrict allowedProductUuids to a specific sub-type within a
+  // category that mixes many, but the cascade's default "first stock at this
+  // size" can be a stock that sub-type doesn't even use (e.g. plain "60LB"
+  // when All Inclusive only exists on "100GLB"/"100DB"/...). When that
+  // happens getAllowedProducts() silently falls back to ANY product at that
+  // stock — the page still shows a price, just for the WRONG product type.
+  // Only applied while sizeUuid still equals initialSizeUuid (if the
+  // customer manually changes Size afterward, this stock may not even exist
+  // there, so the normal stocks[0] default takes back over).
+  initialStockUuid?: string
+  // optional: anchor Coating too — same reasoning one level further down the
+  // cascade (a stock can have a coating this type doesn't use either). Only
+  // applied while stockUuid still equals initialStockUuid.
+  initialCoatingUuid?: string
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -112,6 +128,8 @@ export function ProductConfiguratorClient({
   hiddenGroups,
   sizeProducts,
   initialSizeUuid,
+  initialStockUuid,
+  initialCoatingUuid,
 }: ProductConfiguratorClientProps) {
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
   // Lowercased set of option-group names to HIDE (null = show all).
@@ -286,7 +304,9 @@ export function ProductConfiguratorClient({
       const stocks = dedupeList(data.stock_list || [])
       setStockList(stocks)
       if (stocks.length > 0) {
-        setStockUuid(stocks[0].uuid)
+        const anchored =
+          initialStockUuid && sizeUuid === initialSizeUuid && stocks.some((s) => s.uuid === initialStockUuid)
+        setStockUuid(anchored ? initialStockUuid! : stocks[0].uuid)
       } else {
         // No stock dimension for this size — resolve the product directly so the
         // cascade doesn't dead-end (e.g. some EDDM sizes return products at the
@@ -295,7 +315,7 @@ export function ProductConfiguratorClient({
         setProductUuid(resolveProduct(data.products))
       }
     })
-  }, [sizeUuid, fetchList, sizeVariantMode, resolveProduct])
+  }, [sizeUuid, fetchList, sizeVariantMode, resolveProduct, initialSizeUuid, initialStockUuid])
 
   // When stock changes -> reset coating/product IMMEDIATELY, then load coatings.
   // Reads sizeUuid via ref rather than as a dependency: sizeUuid is ALSO in
@@ -319,12 +339,17 @@ export function ProductConfiguratorClient({
       const coatings = dedupeList(data.coating_list || [])
       setCoatingList(coatings)
       if (coatings.length > 0) {
-        setCoatingUuid(coatings[0].uuid)
+        const anchored =
+          initialCoatingUuid &&
+          sUuid === initialSizeUuid &&
+          stockUuid === initialStockUuid &&
+          coatings.some((c) => c.uuid === initialCoatingUuid)
+        setCoatingUuid(anchored ? initialCoatingUuid! : coatings[0].uuid)
       } else {
         setProductUuid(resolveProduct(data.products))
       }
     })
-  }, [stockUuid, fetchList, resolveProduct])
+  }, [stockUuid, fetchList, resolveProduct, initialSizeUuid, initialStockUuid, initialCoatingUuid])
 
   // When coating changes -> resolve product_uuid for the full valid triple.
   // Reads size/stock via refs rather than as dependencies: stockUuid (and

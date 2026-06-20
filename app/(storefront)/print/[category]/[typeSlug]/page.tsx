@@ -2,20 +2,40 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { getProductFeed, getAllProductsForCategory, getCategoryProductsList } from "@/lib/4over/client"
 import { ProductConfiguratorClient } from "@/components/print/product-configurator-client"
-import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS } from "@/lib/print/categories"
+import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/lib/print/categories"
 import { resolveProductImage } from "@/lib/print/product-images"
+
+// Only includes TYPE_RULES (hasTypeRules) categories — the OTHER entries in
+// print/[category]/page.tsx's EXTRA_PRODUCT_SOURCES (e.g. announcement-cards)
+// are for SIZE_GROUPED leaf listings, handled entirely by that file; this
+// page's TYPE_KEYWORDS branch below never runs for them.
+const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | string[] }[]> = {
+  "flyers-and-brochures": [
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
+  ],
+}
+
+// Kept in sync with TYPE_IMAGES in print/[category]/page.tsx.
+const TYPE_IMAGES: Record<string, Record<string, string>> = {
+  "flyers-and-brochures": {
+    "all-inclusive-flyers-and-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
+    "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
+    "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
+    "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+  },
+}
 
 // Type rules — keywords that identify a product type within a category
 const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for why EndurACE/Specialty Folds/Tri-Fold/Z-Fold were
+  // removed (confirmed zero matches anywhere) and Flat moved to last (the
+  // true catch-all).
   "flyers-and-brochures": {
     "all-inclusive-flyers-and-brochures": ["all inclusive", "all-inclusive"],
-    "endurace-flyers-and-brochures": ["endurace"],
-    "flat-flyers-and-brochures": ["flat flyer", "flat brochure"],
-    "half-fold-brochures": ["half-fold", "half fold"],
-    "specialty-folds-brochures": ["specialty fold", "specialty folds"],
+    "half-fold-brochures": ["half-fold", "half fold", "folds to"],
     "tearoff-flyers": ["tear", "tearoff", "tear-off"],
-    "tri-fold-brochures": ["tri-fold", "tri fold"],
-    "z-fold-brochures": ["z-fold", "z fold"],
+    "flat-flyers-and-brochures": [], // catch-all
   },
   "postcards": {
     "all-inclusive-postcards": ["all inclusive", "all-inclusive"],
@@ -46,13 +66,9 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
 // Type slug -> display label
 const TYPE_LABELS: Record<string, string> = {
   "all-inclusive-flyers-and-brochures": "All Inclusive Flyers and Brochures",
-  "endurace-flyers-and-brochures": "EndurACE Flyers and Brochures",
   "flat-flyers-and-brochures": "Flat Flyers and Brochures",
   "half-fold-brochures": "Half-Fold Brochures",
-  "specialty-folds-brochures": "Specialty Folds Brochures",
   "tearoff-flyers": "Tearoff Flyers",
-  "tri-fold-brochures": "Tri-Fold Brochures",
-  "z-fold-brochures": "Z-Fold Brochures",
   "all-inclusive-postcards": "All Inclusive Postcards",
   "eddm-postcards": "EDDM Postcards",
   "raised-foil-postcards": "Raised Foil Postcards",
@@ -347,7 +363,11 @@ export default async function ProductTypePage({
     const isBoxesPackaging = leaf?.parentSlug === "boxes-packaging"
     // Excludes oval-cards/fold-over-cards — see the matching comment in
     // print/[category]/page.tsx for why.
-    const isBusinessCards = leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards"
+    // Despite the name, also covers Announcement Cards — see the matching
+    // comment in print/[category]/page.tsx.
+    const isBusinessCards =
+      (leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
+      category === "announcement-cards" || category.endsWith("-announcement-cards")
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
@@ -454,37 +474,54 @@ export default async function ProductTypePage({
     )
   }
 
-  let { data: allProducts } = await supabase
-    .from("fourover_products")
-    .select("product_uuid, product_description, product_code")
-    .eq("category_uuid", categoryUuid)
+  async function fetchCategoryProducts(uuid: string) {
+    let { data: rows } = await supabase
+      .from("fourover_products")
+      .select("product_uuid, product_description, product_code")
+      .eq("category_uuid", uuid)
 
-  // If no products in DB, fetch from 4over API
-  if (!allProducts || allProducts.length === 0) {
-    console.log("[v0] No products in DB for category", categoryUuid, "- fetching from 4over API...")
-    const apiResult = await getAllProductsForCategory(categoryUuid)
-    if (apiResult.success && apiResult.data?.entities?.length > 0) {
-      const apiProducts = apiResult.data.entities
-      console.log("[v0] Got", apiProducts.length, "products from 4over API")
-      
-      // Save to DB for future use
-      const productsToInsert = apiProducts.map((p: any) => ({
-        product_uuid: p.product_uuid,
-        product_description: p.product_description,
-        product_code: p.product_code,
-        category_uuid: categoryUuid,
-        product_name: p.product_description,
-        product_data: p,
-      }))
-      
-      await supabase.from("fourover_products").upsert(productsToInsert, { onConflict: "product_uuid" })
-      
-      allProducts = apiProducts.map((p: any) => ({
-        product_uuid: p.product_uuid,
-        product_description: p.product_description,
-        product_code: p.product_code,
-      }))
+    if (!rows || rows.length === 0) {
+      console.log("[v0] No products in DB for category", uuid, "- fetching from 4over API...")
+      const apiResult = await getAllProductsForCategory(uuid)
+      if (apiResult.success && apiResult.data?.entities?.length > 0) {
+        const apiProducts = apiResult.data.entities
+        console.log("[v0] Got", apiProducts.length, "products from 4over API")
+
+        const productsToInsert = apiProducts.map((p: any) => ({
+          product_uuid: p.product_uuid,
+          product_description: p.product_description,
+          product_code: p.product_code,
+          category_uuid: uuid,
+          product_name: p.product_description,
+          product_data: p,
+        }))
+
+        await supabase.from("fourover_products").upsert(productsToInsert, { onConflict: "product_uuid" })
+
+        rows = apiProducts.map((p: any) => ({
+          product_uuid: p.product_uuid,
+          product_description: p.product_description,
+          product_code: p.product_code,
+        }))
+      }
     }
+    return rows || []
+  }
+
+  let allProducts: { product_uuid: string; product_description: string; product_code: string }[] = await fetchCategoryProducts(categoryUuid)
+
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // see that file's comment for why ("Tearoff Flyers"' real data lives in
+  // the Tear Off Cards category, not flyers-and-brochures' own).
+  const extraSources = EXTRA_PRODUCT_SOURCES[category]
+  if (extraSources && extraSources.length > 0) {
+    const extraLists = await Promise.all(
+      extraSources.map(async (src) => {
+        const rows = await fetchCategoryProducts(src.uuid)
+        return rows.filter((p) => matchesAllKeywords(p.product_description, src.keyword))
+      }),
+    )
+    allProducts = [...allProducts, ...extraLists.flat()]
   }
 
   // Filter to this type using keyword matching. Classification is ORDER-
@@ -513,6 +550,76 @@ export default async function ProductTypePage({
   // Size selector will be derived from the list of matched products
   const firstProduct = matchedProducts[0]
   let optionGroups: any[] = []
+
+  // Anchor Size+Stock to a combo this TYPE's own products actually use —
+  // the live cascade's default ("first size, then first stock at that size")
+  // can land on a stock this type doesn't use at all (e.g. "All Inclusive
+  // Flyers and Brochures" only exists on "100GLB"/"100DB"/... stocks, but
+  // the category's first stock alphabetically is plain "60LB"). When that
+  // happens, ProductConfiguratorClient's allowedProductUuids filter silently
+  // falls back to ANY product at that stock — the page still shows a price,
+  // just for the wrong product type. See initialStockUuid's doc comment.
+  let initialSizeUuid: string | undefined
+  let initialStockUuid: string | undefined
+  let initialCoatingUuid: string | undefined
+  if (typeRules.length > 0 && firstProduct) {
+    // Bare SIZE_DIM match only — NOT extractSize(), whose RAISED_SIDE_SUFFIX
+    // suffix-appending (for Raised Foil's Size-dropdown disambiguation) would
+    // misfire here on an unrelated COATING phrase that happens to also end in
+    // "on both sides" (e.g. "...100LB GLOSS BOOK with AQ on both sides"),
+    // appending "(On Both Sides)" to the size and breaking the size_list
+    // lookup below for no reason — this anchor only needs the bare dimension.
+    const dimMatch = firstProduct.product_description.match(SIZE_DIM)
+    const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
+    const listResult = sizeText ? await getCategoryProductsList({ category_uuid: categoryUuid }) : null
+    if (listResult?.success) {
+      // startsWith, not exact equality: some size_list entries carry a
+      // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
+      // 22\"- 4 page" for Half-Fold Brochures' 4-page fold pattern).
+      const sizeMatch = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name).startsWith(sizeText))
+      if (sizeMatch) {
+        initialSizeUuid = sizeMatch.uuid
+        const stockListResult = await getCategoryProductsList({ category_uuid: categoryUuid, size_uuid: sizeMatch.uuid })
+        const stocks = stockListResult.success ? stockListResult.data?.stock_list || [] : []
+        const allowedUuids = new Set(matchedProducts.map((p) => p.product_uuid))
+        // Sequential over stocks (stop at the first hit), parallel over each
+        // stock's own coatings — a stock can ALSO have a coating this type
+        // doesn't use (e.g. "All Inclusive Postcards" exists on "14PT" stock,
+        // but not every coating "14PT" offers), so the stock-level products
+        // (no coating filter) aren't a reliable enough check on their own.
+        for (const stock of stocks) {
+          const stockResult = await getCategoryProductsList({ category_uuid: categoryUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })
+          if (!stockResult.success) continue
+          const coatings = stockResult.data?.coating_list || []
+          if (coatings.length === 0) {
+            if ((stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) {
+              initialStockUuid = stock.uuid
+              break
+            }
+            continue
+          }
+          const coatingProbes = await Promise.all(
+            coatings.map((coating) =>
+              getCategoryProductsList({
+                category_uuid: categoryUuid,
+                size_uuid: sizeMatch.uuid,
+                stock_uuid: stock.uuid,
+                coating_uuid: coating.uuid,
+              }),
+            ),
+          )
+          const coatingHit = coatingProbes.findIndex(
+            (probe) => probe.success && (probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
+          )
+          if (coatingHit >= 0) {
+            initialStockUuid = stock.uuid
+            initialCoatingUuid = coatings[coatingHit].uuid
+            break
+          }
+        }
+      }
+    }
+  }
 
   if (firstProduct) {
     const { data: dbOptionGroups } = await supabase
@@ -564,7 +671,7 @@ export default async function ProductTypePage({
             {/* Left: product image */}
             <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
               <img
-                src="/images/products/product-default.jpg"
+                src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
                 alt={typeLabel}
                 className="w-full h-full object-contain"
               />
@@ -578,6 +685,9 @@ export default async function ProductTypePage({
                 productName={typeLabel}
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
                 hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
+                initialSizeUuid={initialSizeUuid}
+                initialStockUuid={initialStockUuid}
+                initialCoatingUuid={initialCoatingUuid}
               />
             </div>
           </div>
