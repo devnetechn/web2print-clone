@@ -1,63 +1,9 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { getProductFeed, getProducts } from "@/lib/4over/client"
+import { getProductFeed, getAllProductsForCategory, getCategoryProductsList } from "@/lib/4over/client"
 import { ProductConfiguratorClient } from "@/components/print/product-configurator-client"
-
-// Same SLUG_TO_CATEGORY and TYPE_RULES as parent — imported via inline constants
-// (Next.js doesn't allow importing from sibling page files, so we duplicate the lookup data)
-
-const SLUG_TO_CATEGORY: Record<string, { uuid: string; name: string; parentSlug: string; parentLabel: string; image: string }> = {
-  "business-cards-standard": { uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", name: "Business Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "raised-foil": { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", name: "Raised Foil", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "silk-cards": { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", name: "Silk Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "suede-cards": { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", name: "Suede Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "pearl-cards": { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", name: "Pearl Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "natural-cards": { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", name: "Natural Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "painted-edge-cards": { uuid: "b2d0278e-02e6-4861-99ba-951b66f2f1ed", name: "Painted Edge Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "brown-kraft-cards": { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", name: "Brown Kraft Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "akuafoil": { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", name: "Akuafoil", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "linen-uncoated": { uuid: "fd917dc0-a11f-4da5-98f4-e1e3de53e71c", name: "Linen Uncoated", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "plastic-cards": { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", name: "Plastic Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "dual-raised": { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", name: "Dual Raised", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "raised-spot-uv": { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", name: "Raised Spot UV", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "trading-cards": { uuid: "b45e4b55-a3cd-4897-9506-69ba456189e7", name: "Trading Cards", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/postcards.jpg" },
-  "foil-worx": { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", name: "Foil Worx", parentSlug: "business-cards", parentLabel: "Business Cards", image: "/images/categories/business-cards.jpg" },
-  "flyers-and-brochures": { uuid: "4edd37b2-c6d5-4938-b6c7-35e09cd7bf76", name: "Flyers and Brochures", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/flyers.jpg" },
-  "postcards": { uuid: "6f4148e7-3842-4d8b-99f8-6d31c2f71883", name: "Postcards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/postcards.jpg" },
-  "presentation-folders": { uuid: "d69c91dd-f208-4736-a47b-a0a628d88103", name: "Presentation Folders", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/flyers.jpg" },
-  "announcement-cards": { uuid: "62bdcc8e-316d-4e8f-b59c-c0ac6ee81516", name: "Announcement Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/greeting-cards.jpg" },
-  "booklets": { uuid: "8b570b5b-3ea9-4ea7-b869-dab31bb644d8", name: "Booklets", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/booklets.jpg" },
-  "calendars": { uuid: "2e6a67e3-dd44-46c4-a183-e873b9f691a6", name: "Calendars", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/calendars.jpg" },
-  "catalogs": { uuid: "8977fb0b-5ebc-47e3-bd74-132204c203ea", name: "Catalogs", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/booklets.jpg" },
-  "counter-cards": { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", name: "Counter Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/postcards.jpg" },
-  "door-hangers": { uuid: "5cacc269-e6a8-472d-91d6-792c4584cae8", name: "Door Hangers", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/door-hangers.jpg" },
-  "envelopes": { uuid: "c908d53e-fb6d-427d-8d0b-61bba94b63d5", name: "Envelopes", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/envelopes.jpg" },
-  "event-tickets": { uuid: "395c3c6f-a90b-4c0d-beb5-887313108d05", name: "Event Tickets", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/event-tickets.jpg" },
-  "greeting-cards": { uuid: "85ded4d7-98f4-4ee4-9d83-79ad7b722ea8", name: "Greeting Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/greeting-cards.jpg" },
-  "hang-tags": { uuid: "56c6dd85-d838-4ca0-9f9d-e3a63e594f98", name: "Hang Tags", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/door-hangers.jpg" },
-  "letterheads": { uuid: "5502b7a1-cffc-4069-bc2e-7171c86ebdb6", name: "Letterheads", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/notepads.jpg" },
-  "magnets": { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", name: "Magnets", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/magnets.jpg" },
-  "menus": { uuid: "059ea2cb-f0c5-4853-9724-a8815a2f6b48", name: "Menus", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/menus.jpg" },
-  "ncr-forms": { uuid: "7509c656-ba8a-43d7-9e8f-afb30455ff11", name: "NCR Forms", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/notepads.jpg" },
-  "notepads": { uuid: "9c3a2f3e-3ce0-4eb0-ae70-cd2a453f1e37", name: "Notepads", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/notepads.jpg" },
-  "posters": { uuid: "e9db3435-dde9-442b-9957-2221fa4611c5", name: "Posters", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/posters.jpg" },
-  "rack-cards": { uuid: "fafbcc3a-6196-479f-b589-c510f07372ef", name: "Rack Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/rack-cards.jpg" },
-  "sell-sheets": { uuid: "950d2eb7-d1ac-4a3c-b1b0-8c407ce635ed", name: "Sell Sheets", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/sell-sheets.jpg" },
-  "table-tent-cards": { uuid: "e2aa8867-357b-424c-b11d-11125e597cb2", name: "Table Tent Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/table-tent.jpg" },
-  "tear-off-cards": { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", name: "Tear Off Cards", parentSlug: "marketing-materials", parentLabel: "Marketing Materials", image: "/images/categories/postcards.jpg" },
-  "table-covers": { uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", name: "Table Covers", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "rigid-signs": { uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", name: "Rigid Signs", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "wall-arts": { uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", name: "Wall Arts", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "outdoor-banners": { uuid: "d9181764-0579-402f-bfc8-4ff65408886e", name: "Outdoor Banners", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "indoor-banners": { uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", name: "Indoor Banners", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "flags": { uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", name: "Flags", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "window-graphics": { uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", name: "Window Graphics", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "wall-decals": { uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", name: "Wall Decals", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "vehicle-magnets": { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", name: "Vehicle Magnets", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/magnets.jpg" },
-  "banner-stands": { uuid: "a98dc51f-d371-479a-8ebb-c65749065971", name: "Banner Stands", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "displays": { uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", name: "Displays", parentSlug: "signs-banners", parentLabel: "Signs & Banners", image: "/images/categories/posters.jpg" },
-  "packaging": { uuid: "c11d8936-67ad-4b59-a48d-1683f42f055c", name: "Packaging", parentSlug: "boxes-packaging", parentLabel: "Boxes & Packaging", image: "/images/categories/notepads.jpg" },
-}
+import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS } from "@/lib/print/categories"
+import { resolveProductImage } from "@/lib/print/product-images"
 
 // Type rules — keywords that identify a product type within a category
 const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
@@ -125,49 +71,133 @@ const TYPE_LABELS: Record<string, string> = {
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
-// Parent categories where products differ mainly by size and should be grouped
-// (one product, size chosen in the calculator).
-const SIZE_GROUPED_PARENTS = [
-  "signs-banners",
-  "business-cards",
-  "marketing-materials",
-  "boxes-packaging",
-  "roll-labels-stickers",
-  "promo-products",
-]
-
-// Variant dimensions: NxN sizes AND booklet/catalog page counts ("8 Page").
-const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/g
+// Variant dimensions: NxN and NxNxN (boxes) sizes AND page counts ("8 Page").
+const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?(?:\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?)?/g
 const PAGE_DIM = /\b\d+\s*(?:inside\s+)?pages?\b/gi
+// Linear (single-axis) dimensions using ft/in units instead of a bare NxN
+// pattern (e.g. "Feather Flag - 10ft -", "Pole Flag - 3ft x 2ft -", "Table
+// Runner - 24\" Width") — SIZE_DIM only matches bare-number NxN.
+const LINEAR_DIM = /\d+(?:\.\d+)?\s*(?:ft|in|inch(?:es)?)\.?(?:\s*[xX×]\s*\d+(?:\.\d+)?\s*(?:ft|in|inch(?:es)?)\.?)?\b|\d+(?:\.\d+)?\s*["”']\s*(?:width|wide|height|tall)\b/gi
 // "Booklet On"/"Brochure On" etc. is Print Method — already its own calculator
 // dropdown (fourprintshop's product-type cards never show it in the title).
 const PRINT_METHOD_PREFIX = /^[\s\-–—]*(Brochure|Booklet|Flyer|Postcard)s?\s+(On|on)\s+/
-// Trailing "with Satin AQ" / "w/ No Coating" / "With UV on both sides" is
-// Coating/Finishing — already its own calculator dropdown. Only strip phrases
-// that actually mention a coating keyword, so unrelated "with ..." text
-// (e.g. "Banner Stand With Hardware") is left alone.
-const COATING_SUFFIX = /\s+(with\s+|w\/\s*)(no\s+)?(satin\s+)?(aq|coating|uv|lamination)\b.*$/i
+// Coating/Finishing phrase anchored on an explicit "with"/"w/" (Akuafoil/Spot/
+// Full connector words allowed in between) — already its own calculator
+// dropdown. Anchoring on "with" keeps unrelated "with ..." text intact (e.g.
+// "Dual Raised ... with Raised Spot UV and Raised Foil on Front only", a
+// product-defining name, not a removable finish).
+const COATING_WITH = /[\s,]+(?:with|wih|w\/)\s*(no\s+)?(satin\s+)?(akuafoil\s+(?:with\s+|w\/\s*)?)?(spot\s+|full\s+)?(\d+\s*mil\s+)?(gloss\s+|matte\s+)?(uncoated|coated\b|aq\b|coating|uv|lamination)\b.*$/i
+// Boxes print "Uncoated"/"Coated" as a standalone trailing word with no
+// "with" at all (e.g. "14PT Cube Box Uncoated").
+const COATING_TRAILING = /[\s,]+(uncoated|coated)\s*$/i
+// "Matte/Dull Finish" middle modifier, "UV on N-color side(s)"/"on the front
+// only" trailing phrase with no preceding "with", and Binding/Finishing
+// add-ons (Scoring, Variable Numbering) already exposed elsewhere on the
+// product — same Coating-dropdown concept as above, different sentence
+// patterns seen on marketing-materials categories (Announcement Cards, Sell
+// Sheets, Greeting Cards, Event Tickets, ...).
+const MATTE_DULL_MIDDLE = /\s*matte\s*\/\s*dull\s+finish\s*/gi
+// "with (Satin) AQ" as a MIDDLE modifier before the product name continues
+// (e.g. "14PT with AQ Fold Over Business Card Scoring Included") — must be
+// stripped in place, not via COATING_WITH's trailing ".*$". "wih" tolerates
+// a 4over typo.
+// Negative lookahead excludes "AQ on both/front/back ..." — see the sibling
+// comment in print/[category]/page.tsx for the full explanation.
+const AQ_MIDDLE = /\s*(?:with|wih)\s+(satin\s+)?aq(?!\s*on\s+(the\s+)?(both|front|back)\b)\s*/gi
+// Negative lookbehind protects "Raised Spot UV" (a Majestic product-line
+// name) from being mistaken for this removable-finish phrase — see the
+// sibling comment in print/[category]/page.tsx for the full explanation.
+const UV_SIDES_SUFFIX = /[\s,]+(full\s+|spot\s+)?(?<!raised\s(?:spot\s)?)uv\s+on\s+(the\s+)?(front\s+only|\d*-?color\s+side\s*\(?s\)?)\b.*$/i
+const SCORING_SUFFIX = /,?\s*(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
+const VARIABLE_SUFFIX = /\s+with\s+variable\s+numbering\s*$/i
+// Envelope industry size codes ("#9", "#10", "#6 3/4", "A2", "A6", "A7", "A9")
+// are a redundant synonym for the physical dimension already in the name.
+const ENVELOPE_CODE = /\(?#\d+(?:\s+\d+\/\d+)?\)?\s*|\bA\d{1,2}\b\s*/g
+// Safety net: a dangling trailing "with" left over when a middle modifier
+// (e.g. MATTE_DULL_MIDDLE) was removed but its preceding "with" wasn't.
+const TRAILING_WITH = /[\s,]+with\s*$/i
+// Boxes & Packaging only: leading "14PT "/"18PT " thickness prefix — see the
+// matching comment in print/[category]/page.tsx.
+const BOX_THICKNESS_PREFIX = /^\d+\s*pt\s+/i
 
-// Product name with the variant dimension removed (the "stock/type" name used
-// to group). Handles size at start/middle and page counts.
-function stripSize(desc: string): string {
+// Normalizes a physical-dimension string for matching against
+// categoryproductslist's size_list "name" field (e.g. "2.75\" X 2.75\" X
+// 2.75\"" vs "2.75\" x 2.75\"").
+function normalizeSizeText(s: string): string {
+  return s.toLowerCase().replace(/[”'']/g, '"').replace(/\s+/g, " ").trim()
+}
+
+// Strips an outer "(...)" left unbalanced after an inner code (e.g. the
+// envelope size code above) was removed from inside it.
+function balanceParens(s: string): string {
+  let str = s
+  const opens = (str.match(/\(/g) || []).length
+  const closes = (str.match(/\)/g) || []).length
+  if (closes > opens) {
+    let diff = closes - opens
+    while (diff > 0 && str.endsWith(")")) {
+      str = str.slice(0, -1).trim()
+      diff--
+    }
+  } else if (opens > closes) {
+    let diff = opens - closes
+    while (diff > 0 && str.startsWith("(")) {
+      str = str.slice(1).trim()
+      diff--
+    }
+  }
+  return str
+}
+
+// Strip ONLY the size/page dimension — used for the size-SIBLING match key
+// (same printed product, different dimension only). Keeping Print Method and
+// Coating intact here is deliberate: stripping them would make e.g. "18PT
+// Cube Box with Akuafoil" and "18PT Cube Box Uncoated" look like the same
+// "sibling" at the same size, hiding one of them and breaking the live
+// Stock/Coating cascade (sizeVariantMode skips it once siblings are found).
+function stripDimsOnly(desc: string): string {
   return (desc || "")
     .replace(SIZE_DIM, " ")
+    .replace(LINEAR_DIM, " ")
     .replace(PAGE_DIM, " ")
-    .replace(PRINT_METHOD_PREFIX, "")
-    .replace(COATING_SUFFIX, "")
-    .replace(/\(\s+/g, "(")
-    .replace(/\s+\)/g, ")")
-    .replace(/\(\s*\)/g, "")
     .replace(/\s{2,}/g, " ")
+    .replace(/\s*-\s*-\s*/g, " - ")
     .replace(/^[\s\-–—]+/, "")
     .replace(/[\s\-–—]+$/, "")
     .trim()
 }
 
-// The first variant label found, e.g. '11" X 17"' or '8 Page'.
+// Product name with the variant dimension AND Print Method/Coating wording
+// removed (those are calculator dropdowns) — used for the DISPLAY title only.
+function stripSize(desc: string): string {
+  const s = (desc || "")
+    .replace(MATTE_DULL_MIDDLE, " ")
+    .replace(AQ_MIDDLE, " ")
+    .replace(SIZE_DIM, " ")
+    .replace(LINEAR_DIM, " ")
+    .replace(ENVELOPE_CODE, " ")
+    .replace(PAGE_DIM, " ")
+    .replace(PRINT_METHOD_PREFIX, "")
+    .replace(SCORING_SUFFIX, "")
+    .replace(VARIABLE_SUFFIX, "")
+    .replace(COATING_WITH, "")
+    .replace(COATING_TRAILING, "")
+    .replace(UV_SIDES_SUFFIX, "")
+    .replace(TRAILING_WITH, "")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\(\s*\)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s*-\s*-\s*/g, " - ")
+    .replace(/^[\s\-–—]+/, "")
+    .replace(/[\s\-–—]+$/, "")
+    .trim()
+  return balanceParens(s)
+}
+
+// The first variant label found, e.g. '11" X 17" X 5"' or '8 Page'.
 function extractSize(desc: string): string {
-  const dim = (desc || "").match(/\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?/)
+  const dim = (desc || "").match(SIZE_DIM)
   if (dim) return dim[0].replace(/\s+/g, " ").trim()
   const pg = (desc || "").match(/\b\d+\s*(?:inside\s+)?pages?\b/i)
   if (pg) return pg[0].replace(/\s+/g, " ").trim()
@@ -176,10 +206,13 @@ function extractSize(desc: string): string {
 
 const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w"])
 
-// Normalized grouping key: drop size, lowercase, strip punctuation, remove
-// filler words, sort tokens — so casing/word-order/punctuation variants merge.
+// Normalized SIBLING key: same printed product (Print Method + Coating kept),
+// different size/page only. Used to find the size variants of ONE specific
+// product — NOT for display (see stripSize) and NOT for the level-3 card
+// dedup in print/[category]/page.tsx (see that file's own groupKey, which
+// deliberately strips Print Method/Coating to collapse those into one card).
 function groupKey(desc: string): string {
-  return stripSize(desc)
+  return stripDimsOnly(desc)
     .toLowerCase()
     .replace(/[.,/()]+/g, " ")
     .split(/\s+/)
@@ -243,15 +276,32 @@ export default async function ProductTypePage({
     }
 
     let productName = product.product_description || "Product"
+    const isBoxesPackaging = leaf?.parentSlug === "boxes-packaging"
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
     let sizeProducts: { uuid: string; size: string }[] | undefined
+    let initialSizeUuid: string | undefined
     if (leaf?.parentSlug && SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)) {
       const baseName = stripSize(productName)
       if (baseName) productName = baseName
+      if (isBoxesPackaging) {
+        productName = productName.replace(BOX_THICKNESS_PREFIX, "").trim() || productName
+      }
       const catUuid = product.category_uuid || leaf?.uuid
-      if (catUuid && baseName) {
+      if (catUuid && isBoxesPackaging) {
+        // Anchor the configurator's initial Size to THIS product's own
+        // dimension (not categoryproductslist's size_list[0], which could
+        // belong to a completely different box style sharing this category
+        // UUID) so the normal Stock/Coating cascade scopes correctly from
+        // the start — see the prop's doc comment for the full rationale.
+        const sizeText = normalizeSizeText(extractSize(product.product_description || ""))
+        const listResult = await getCategoryProductsList({ category_uuid: catUuid })
+        if (listResult.success) {
+          const match = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name) === sizeText)
+          initialSizeUuid = match?.uuid
+        }
+      } else if (catUuid && baseName) {
         const { data: siblings } = await supabase
           .from("fourover_products")
           .select("product_uuid, product_description")
@@ -286,7 +336,11 @@ export default async function ProductTypePage({
           <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             <div>
               <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
-                <img src="/images/products/product-default.jpg" alt={productName} className="w-full h-full object-contain" />
+                <img
+                  src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
+                  alt={productName}
+                  className="w-full h-full object-contain"
+                />
               </div>
               {/* Description / Templates (left column, under image) */}
               <div className="mt-6 max-w-[360px]">
@@ -307,6 +361,7 @@ export default async function ProductTypePage({
               allowedProductUuids={[product.product_uuid]}
               hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
               sizeProducts={sizeProducts}
+              initialSizeUuid={initialSizeUuid}
             />
           </div>
         </div>
@@ -336,7 +391,7 @@ export default async function ProductTypePage({
   // If no products in DB, fetch from 4over API
   if (!allProducts || allProducts.length === 0) {
     console.log("[v0] No products in DB for category", categoryUuid, "- fetching from 4over API...")
-    const apiResult = await getProducts(categoryUuid, 200)
+    const apiResult = await getAllProductsForCategory(categoryUuid)
     if (apiResult.success && apiResult.data?.entities?.length > 0) {
       const apiProducts = apiResult.data.entities
       console.log("[v0] Got", apiProducts.length, "products from 4over API")

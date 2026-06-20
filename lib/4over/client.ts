@@ -231,6 +231,31 @@ export async function getProducts(categoryId: string, max: number = 100, offset:
   }
 }
 
+// Get ALL products for one category (loops pages) — some categories (e.g.
+// Custom Boxes: 792 products) exceed a single max=200 page, silently hiding
+// everything past the cutoff (entire coating variants missing) if callers use
+// a single getProducts() call instead.
+export async function getAllProductsForCategory(categoryId: string): Promise<FourOverResponse<{ entities: any[] }>> {
+  try {
+    const all: any[] = []
+    let offset = 0
+    const max = 200
+    while (true) {
+      const result = await getProducts(categoryId, max, offset)
+      if (!result.success) return { success: false, error: result.error }
+      const entities = result.data?.entities || result.data || []
+      if (entities.length === 0) break
+      all.push(...entities)
+      if (entities.length < max) break
+      offset += max
+      if (offset > 5000) break // safety limit
+    }
+    return { success: true, data: { entities: all } }
+  } catch (error) {
+    return { success: false, error: String(error) }
+  }
+}
+
 // Get ALL products by fetching from ALL categories (the correct way per 4over docs)
 // The /printproducts/products endpoint has broken pagination, so we fetch by category instead
 export async function getAllProductsByCategory(): Promise<FourOverResponse<any>> {
@@ -956,6 +981,7 @@ export const fourOverClient = {
   getAllProductsPaginated,
   getAllProductsByCategory,
   getProducts,
+  getAllProductsForCategory,
   getProductOptionGroups,
   getProductBasePrices,
   getProductColorspecs,

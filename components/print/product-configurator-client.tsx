@@ -57,6 +57,13 @@ interface ProductConfiguratorClientProps {
   // variants here. The Size dropdown then selects a product directly (its value
   // IS a product_uuid) and the Size/Stock/Coating category cascade is skipped.
   sizeProducts?: { uuid: string; size: string }[]
+  // optional: when the category mixes several distinct product lines under
+  // ONE category_uuid (e.g. Boxes & Packaging: Cube Box, Wine Box, ... all
+  // share one UUID, distinguished only by size), the normal cascade's default
+  // "first size in the whole category" can land on the WRONG product line.
+  // Anchoring to the clicked product's own size scopes Stock/Coating to just
+  // that product line from the start, so they cascade correctly.
+  initialSizeUuid?: string
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -94,6 +101,7 @@ export function ProductConfiguratorClient({
   allowedProductUuids,
   hiddenGroups,
   sizeProducts,
+  initialSizeUuid,
 }: ProductConfiguratorClientProps) {
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
   // Lowercased set of option-group names to HIDE (null = show all).
@@ -187,13 +195,16 @@ export function ProductConfiguratorClient({
       }
       const sizes = dedupeList(data.size_list || [])
       setSizeList(sizes)
-      if (sizes.length > 0) setSizeUuid(sizes[0].uuid)
+      if (sizes.length > 0) {
+        const anchored = initialSizeUuid && sizes.some((s) => s.uuid === initialSizeUuid)
+        setSizeUuid(anchored ? initialSizeUuid! : sizes[0].uuid)
+      }
       setLoadingList(false)
     })
     return () => {
       active = false
     }
-  }, [fetchList, categoryUuid, sizeVariantMode, sizeProducts])
+  }, [fetchList, categoryUuid, sizeVariantMode, sizeProducts, initialSizeUuid])
 
   // In size-variant mode the selected "size" IS the product_uuid.
   useEffect(() => {
@@ -217,6 +228,12 @@ export function ProductConfiguratorClient({
   useEffect(() => {
     sizeListRef.current = sizeList
   }, [sizeList])
+  // Latest stock selection, read inside the coating-resolve effect WITHOUT
+  // making it a dependency — see that effect for why.
+  const stockUuidRef = useRef("")
+  useEffect(() => {
+    stockUuidRef.current = stockUuid
+  }, [stockUuid])
 
   const resolveProduct = useCallback(
     (products: ProductOption[] | undefined) => {
@@ -276,15 +293,24 @@ export function ProductConfiguratorClient({
     })
   }, [sizeUuid, stockUuid, fetchList, resolveProduct])
 
-  // When coating changes -> resolve product_uuid for the full valid triple
+  // When coating changes -> resolve product_uuid for the full valid triple.
+  // Reads size/stock via refs rather than as dependencies: stockUuid (and
+  // sizeUuid) are ALSO in the upstream "stock changed"/"size changed"
+  // effects' dep arrays, so a stock/size change re-runs THIS effect too, in
+  // the same flush, before coatingUuid has actually been reset — using the
+  // still-stale coatingUuid from the previous stock/coating and resolving
+  // the wrong product. Triggering only on a genuine coatingUuid change (its
+  // reset to "" is filtered out by the guard below) avoids that race.
   useEffect(() => {
-    if (!sizeUuid || !stockUuid || !coatingUuid) return
+    const sUuid = sizeUuidRef.current
+    const stUuid = stockUuidRef.current
+    if (!sUuid || !stUuid || !coatingUuid) return
     const myReq = ++reqIdRef.current
-    fetchList({ size_uuid: sizeUuid, stock_uuid: stockUuid, coating_uuid: coatingUuid }).then((data) => {
+    fetchList({ size_uuid: sUuid, stock_uuid: stUuid, coating_uuid: coatingUuid }).then((data) => {
       if (reqIdRef.current !== myReq || !data) return
       setProductUuid(resolveProduct(data.products))
     })
-  }, [sizeUuid, stockUuid, coatingUuid, fetchList, resolveProduct])
+  }, [coatingUuid, fetchList, resolveProduct])
 
   // When product_uuid resolved -> load valid combination matrix from baseprices
   useEffect(() => {
