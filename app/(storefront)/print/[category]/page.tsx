@@ -62,14 +62,17 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // Presentation Folders — confirmed NOT present anywhere in this sandbox's
   // single "Presentation Folders" 4over category (28 products, checked all),
   // a genuine catalog gap rather than a miscategorization.
+  // The 4 plain sizes (9x12/6x9/5.25x10.5/9x14.5) are all the SAME "Standard"
+  // folder, just a different size — like Flat Flyers and Brochures, they
+  // collapse into ONE catch-all card with Size as the calculator dropdown,
+  // not 4 separate cards. Must stay LAST: classifyProduct() is order-
+  // dependent and a catch-all earlier would swallow Natural/Pearl/Glue-less'
+  // products before their keywords are even checked.
   "presentation-folders": [
     { label: "Natural Presentation Folder", slug: "natural-presentation-folder", keywords: ["natural"] },
     { label: "Pearl Presentation Folder", slug: "pearl-presentation-folder", keywords: ["pearl"] },
     { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
-    { label: '9" x 12" Presentation Folder', slug: "9x12-presentation-folder", keywords: ["9\" x 12\"", "9x12", "9\" x12\"", "9\"x12"] },
-    { label: '6" x 9" Presentation Folder', slug: "6x9-presentation-folder", keywords: ["6\" x 9\"", "6x9", "6\" x9\""] },
-    { label: '5.25" x 10.5" Presentation Folder', slug: "5x10-presentation-folder", keywords: ["5.25", "5.25\"", "10.5"] },
-    { label: '9" x 14.5" Presentation Folder', slug: "9x14-presentation-folder", keywords: ["9\" x 14.5\"", "9x14", "14.5"] },
+    { label: "Standard Presentation Folder", slug: "standard-presentation-folder", keywords: [] }, // catch-all
   ],
 }
 

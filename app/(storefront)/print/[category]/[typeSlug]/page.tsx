@@ -49,17 +49,14 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   "business-cards-standard": {
     "standard-business-cards": [], // catch-all (now the only rule)
   },
-  // Order matters — see the matching comment in print/[category]/page.tsx
-  // (Natural/Pearl/Glue-less must be checked before the size keywords, since
-  // every product's description also contains its own size).
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for why the 4 plain sizes collapse into one Standard
+  // catch-all (Size becomes the calculator dropdown) instead of 4 cards.
   "presentation-folders": {
     "natural-presentation-folder": ["natural"],
     "pearl-presentation-folder": ["pearl"],
     "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
-    "9x12-presentation-folder": ["9\" x 12\"", "9x12"],
-    "6x9-presentation-folder": ["6\" x 9\"", "6x9"],
-    "5x10-presentation-folder": ["5.25", "10.5"],
-    "9x14-presentation-folder": ["9\" x 14.5\"", "14.5"],
+    "standard-presentation-folder": [], // catch-all
   },
 }
 
@@ -77,10 +74,7 @@ const TYPE_LABELS: Record<string, string> = {
   "natural-presentation-folder": "Natural Presentation Folder",
   "pearl-presentation-folder": "Pearl Presentation Folder",
   "glueless-presentation-folder": "Glue-less Presentation Folder",
-  "9x12-presentation-folder": '9" x 12" Presentation Folder',
-  "6x9-presentation-folder": '6" x 9" Presentation Folder',
-  "5x10-presentation-folder": '5.25" x 10.5" Presentation Folder',
-  "9x14-presentation-folder": '9" x 14.5" Presentation Folder',
+  "standard-presentation-folder": "Standard Presentation Folder",
 }
 
 // Signs & Banners: hide these technical/redundant option groups from the price
