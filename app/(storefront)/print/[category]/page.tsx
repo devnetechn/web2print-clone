@@ -1,10 +1,6 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { getProducts } from "@/lib/4over/client"
-import { ProductConfiguratorClient } from "@/components/print/product-configurator-client"
-
-// Signs & Banners: hide technical/redundant option groups in the calculator.
-const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
 // =====================================================================
 // COMPLETE category_uuid mapping — all UUIDs from 4over API
@@ -408,10 +404,20 @@ export default async function PrintCategoryPage({
   // For Signs & Banners and Business Cards the products differ only by size, so
   // group them by the size-stripped name and show ONE card per stock/type —
   // size is chosen later in the price calculator.
-  // ---- No type rules: the subcategory IS one configurable product. The title is
-  // the short subcategory name; size/stock/coating/finish/page-count/etc. are all
-  // chosen in the price calculator (per the client's spec). ----
-  void productList // products are loaded lazily by the configurator itself
+  const sizeGrouped = SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)
+  const displayList = sizeGrouped
+    ? (() => {
+        const groups = new Map<string, { product_uuid: string; product_description: string }>()
+        for (const p of productList) {
+          const name = stripSize(p.product_description || "") || p.product_description
+          // Normalized token key so casing/word-order/punctuation variants merge.
+          const key = groupKey(p.product_description || "") || name.toLowerCase()
+          if (!groups.has(key)) groups.set(key, { product_uuid: p.product_uuid, product_description: name })
+        }
+        return [...groups.values()]
+      })()
+    : productList
+
   return (
     <div className="min-h-screen bg-white">
       <div className="border-b border-slate-200 py-2 px-4">
@@ -426,31 +432,56 @@ export default async function PrintCategoryPage({
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">{leaf.name}</h1>
-        <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
-          <div>
-            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
-              <img src={leaf.image} alt={leaf.name} className="w-full h-full object-cover" />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">{leaf.name}</h1>
+        <hr className="border-slate-200 mb-6" />
+
+        {displayList.length > 0 ? (
+          <>
+            <div className="flex justify-end mb-6">
+              <select className="border border-slate-300 rounded px-3 py-1.5 text-sm text-slate-700 bg-white">
+                <option>Popularity</option>
+                <option>Newest</option>
+                <option>A to Z</option>
+                <option>Z to A</option>
+              </select>
             </div>
-            <div className="mt-6 max-w-[360px]">
-              <div className="border-b border-slate-200 flex gap-6">
-                <span className="border-b-2 border-[#e07b39] text-[#e07b39] py-2 text-sm font-medium">Description</span>
-                <span className="text-slate-500 py-2 text-sm">Templates</span>
-              </div>
-              <p className="text-sm text-slate-600 leading-relaxed mt-3">
-                {leaf.name} — choose your options in the price calculator. High quality
-                professional printing with premium materials.
-              </p>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+              {displayList.map((product) => {
+                const slug = product.product_description
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/-+/g, "-")
+                  .replace(/^-|-$/g, "")
+                  .substring(0, 60)
+                return (
+                  <div key={product.product_uuid} className="group text-center">
+                    <Link href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}>
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
+                        <img src={leaf.image} alt={product.product_description} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    </Link>
+                    <h3 className="text-sm font-semibold text-slate-900 mb-3 text-balance">{product.product_description}</h3>
+                    <Link
+                      href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}
+                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+                    >
+                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    </Link>
+                  </div>
+                )
+              })}
             </div>
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-slate-500 mb-4">No products found in this category.</p>
+            <Link href={`/print/${leaf.parentSlug}`} className="text-[#e42a27] hover:underline">
+              Back to {leaf.parentLabel}
+            </Link>
           </div>
-          <ProductConfiguratorClient
-            categoryUuid={leaf.uuid}
-            categorySlug={category}
-            productName={leaf.name}
-            hiddenGroups={leaf.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
-          />
-        </div>
+        )}
       </div>
     </div>
   )
