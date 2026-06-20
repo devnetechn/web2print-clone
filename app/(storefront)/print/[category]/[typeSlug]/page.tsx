@@ -23,19 +23,23 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "raised-foil-postcards": ["raised foil", "dual raised", "raised spot"],
     "standard-postcards": [], // catch-all
   },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for why Round Corner/Oval/Fold Over no longer get their
+  // own type (they're Shape/Size variants of one product now).
   "business-cards-standard": {
-    "round-corner-business-cards": ["round corner"],
-    "folded-business-cards": ["folded"],
-    "square-business-cards": ["square"],
-    "standard-business-cards": [], // catch-all
+    "standard-business-cards": [], // catch-all (now the only rule)
   },
+  // Order matters — see the matching comment in print/[category]/page.tsx
+  // (Natural/Pearl/Glue-less must be checked before the size keywords, since
+  // every product's description also contains its own size).
   "presentation-folders": {
+    "natural-presentation-folder": ["natural"],
+    "pearl-presentation-folder": ["pearl"],
+    "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
     "9x12-presentation-folder": ["9\" x 12\"", "9x12"],
     "6x9-presentation-folder": ["6\" x 9\"", "6x9"],
     "5x10-presentation-folder": ["5.25", "10.5"],
     "9x14-presentation-folder": ["9\" x 14.5\"", "14.5"],
-    "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
-    "specialty-presentation-folder": [], // catch-all
   },
 }
 
@@ -53,16 +57,14 @@ const TYPE_LABELS: Record<string, string> = {
   "eddm-postcards": "EDDM Postcards",
   "raised-foil-postcards": "Raised Foil Postcards",
   "standard-postcards": "Standard Postcards",
-  "round-corner-business-cards": "Round Corner Business Cards",
-  "folded-business-cards": "Folded Business Cards",
-  "square-business-cards": "Square Business Cards",
   "standard-business-cards": "Standard Business Cards",
+  "natural-presentation-folder": "Natural Presentation Folder",
+  "pearl-presentation-folder": "Pearl Presentation Folder",
+  "glueless-presentation-folder": "Glue-less Presentation Folder",
   "9x12-presentation-folder": '9" x 12" Presentation Folder',
   "6x9-presentation-folder": '6" x 9" Presentation Folder',
   "5x10-presentation-folder": '5.25" x 10.5" Presentation Folder',
   "9x14-presentation-folder": '9" x 14.5" Presentation Folder',
-  "glueless-presentation-folder": "Glue-less Presentation Folder",
-  "specialty-presentation-folder": "Specialty Presentation Folders",
 }
 
 // Signs & Banners: hide these technical/redundant option groups from the price
@@ -81,12 +83,17 @@ const LINEAR_DIM = /\d+(?:\.\d+)?\s*(?:ft|in|inch(?:es)?)\.?(?:\s*[xX×]\s*\d+(?
 // "Booklet On"/"Brochure On" etc. is Print Method — already its own calculator
 // dropdown (fourprintshop's product-type cards never show it in the title).
 const PRINT_METHOD_PREFIX = /^[\s\-–—]*(Brochure|Booklet|Flyer|Postcard)s?\s+(On|on)\s+/
-// Coating/Finishing phrase anchored on an explicit "with"/"w/" (Akuafoil/Spot/
-// Full connector words allowed in between) — already its own calculator
-// dropdown. Anchoring on "with" keeps unrelated "with ..." text intact (e.g.
-// "Dual Raised ... with Raised Spot UV and Raised Foil on Front only", a
-// product-defining name, not a removable finish).
-const COATING_WITH = /[\s,]+(?:with|wih|w\/)\s*(no\s+)?(satin\s+)?(akuafoil\s+(?:with\s+|w\/\s*)?)?(spot\s+|full\s+)?(\d+\s*mil\s+)?(gloss\s+|matte\s+)?(uncoated|coated\b|aq\b|coating|uv|lamination)\b.*$/i
+// Coating/Finishing phrase anchored on an explicit "with"/"w/" (Spot/Full
+// connector words allowed in between) — already its own calculator dropdown.
+// Anchoring on "with" keeps unrelated "with ..." text intact (e.g. "Dual
+// Raised ... with Raised Spot UV and Raised Foil on Front only", a product-
+// defining name, not a removable finish). Deliberately has NO "akuafoil"
+// group — kept in sync with the same constant in print/[category]/page.tsx;
+// see that file's comment for why ("Akuafoil" must stay product identity,
+// not get inconsistently eaten as part of the removable coating phrase).
+const COATING_WITH = /[\s,]+(?:with|wih|w\/)\s*(no\s+)?(satin\s+)?(spot\s+|full\s+)?(\d+\s*mil\s+)?(gloss\s+|matte\s+)?(uncoated|coated\b|aq\b|coating|uv|lamination)\b.*$/i
+// "Without Coating" — kept in sync with print/[category]/page.tsx.
+const WITHOUT_COATING_SUFFIX = /\s+without\s+coating\s*$/i
 // Boxes print "Uncoated"/"Coated" as a standalone trailing word with no
 // "with" at all (e.g. "14PT Cube Box Uncoated").
 const COATING_TRAILING = /[\s,]+(uncoated|coated)\s*$/i
@@ -108,6 +115,12 @@ const AQ_MIDDLE = /\s*(?:with|wih)\s+(satin\s+)?aq(?!\s*on\s+(the\s+)?(both|fron
 // name) from being mistaken for this removable-finish phrase — see the
 // sibling comment in print/[category]/page.tsx for the full explanation.
 const UV_SIDES_SUFFIX = /[\s,]+(full\s+|spot\s+)?(?<!raised\s(?:spot\s)?)uv\s+on\s+(the\s+)?(front\s+only|\d*-?color\s+side\s*\(?s\)?)\b.*$/i
+// The "front only" vs "both sides" placement suffix for Raised Foil/Raised
+// Spot UV (the cases UV_SIDES_SUFFIX's lookbehind deliberately skips, since
+// "Raised Spot UV" itself is product-identity text, not a removable finish).
+// This is a calculator-level placement choice too — see stripDimsOnly's
+// comment for why merging these specific siblings is safe.
+const RAISED_SIDE_SUFFIX = /\s+on\s+(both\s+sides|front\s+only|the\s+front|the\s+back)\s*$/i
 const SCORING_SUFFIX = /,?\s*(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
 const VARIABLE_SUFFIX = /\s+with\s+variable\s+numbering\s*$/i
 // Envelope industry size codes ("#9", "#10", "#6 3/4", "A2", "A6", "A7", "A9")
@@ -149,17 +162,39 @@ function balanceParens(s: string): string {
   return str
 }
 
+// Business Cards only: Round Corner/Oval/Fold Over are Shape/Size variants of
+// one product now — kept in sync with the same constant in
+// print/[category]/page.tsx (see that file's comment for the full rationale).
+const SHAPE_WORDS = /\b(round\s*corners?|ovals?|fold\s*overs?)\b\s*/gi
+
 // Strip ONLY the size/page dimension — used for the size-SIBLING match key
 // (same printed product, different dimension only). Keeping Print Method and
 // Coating intact here is deliberate: stripping them would make e.g. "18PT
 // Cube Box with Akuafoil" and "18PT Cube Box Uncoated" look like the same
 // "sibling" at the same size, hiding one of them and breaking the live
 // Stock/Coating cascade (sizeVariantMode skips it once siblings are found).
-function stripDimsOnly(desc: string): string {
-  return (desc || "")
+// RAISED_SIDE_SUFFIX/SHAPE_WORDS (Business Cards only) are the deliberate
+// exceptions: Majestic business-card lines (Raised Foil/Raised Spot UV) sell
+// the "front only" vs "both sides" placement, and Standard/Silk/Suede/...
+// sell Round Corner/Oval/Fold Over, as fully separate product_uuids with
+// IDENTICAL Stock+Coating (verified — see
+// [[duplicate-variants-belong-in-calculator]]), so treating them as sibling
+// "sizes" is safe and lets the Size dropdown switch between them.
+function stripDimsOnly(desc: string, isBusinessCards = false): string {
+  let s = (desc || "")
     .replace(SIZE_DIM, " ")
     .replace(LINEAR_DIM, " ")
     .replace(PAGE_DIM, " ")
+    .replace(RAISED_SIDE_SUFFIX, "")
+  if (isBusinessCards) {
+    s = s
+      .replace(SHAPE_WORDS, " ")
+      .replace(/\bBC\b/g, "Business Cards")
+      .replace(/\bCard\b/g, "Cards")
+      .replace(/\bbusiness\s+cards\s+with\s+(\w+)\s+lamination\b/gi, (_m, mat) => `${mat.charAt(0).toUpperCase()}${mat.slice(1)} Laminated Business Cards`)
+      .replace(/\blamination\b/gi, "Laminated")
+  }
+  return s
     .replace(/\s{2,}/g, " ")
     .replace(/\s*-\s*-\s*/g, " - ")
     .replace(/^[\s\-–—]+/, "")
@@ -169,8 +204,8 @@ function stripDimsOnly(desc: string): string {
 
 // Product name with the variant dimension AND Print Method/Coating wording
 // removed (those are calculator dropdowns) — used for the DISPLAY title only.
-function stripSize(desc: string): string {
-  const s = (desc || "")
+function stripSize(desc: string, isBusinessCards = false): string {
+  let s = (desc || "")
     .replace(MATTE_DULL_MIDDLE, " ")
     .replace(AQ_MIDDLE, " ")
     .replace(SIZE_DIM, " ")
@@ -178,12 +213,28 @@ function stripSize(desc: string): string {
     .replace(ENVELOPE_CODE, " ")
     .replace(PAGE_DIM, " ")
     .replace(PRINT_METHOD_PREFIX, "")
-    .replace(SCORING_SUFFIX, "")
-    .replace(VARIABLE_SUFFIX, "")
+    .replace(WITHOUT_COATING_SUFFIX, "")
     .replace(COATING_WITH, "")
     .replace(COATING_TRAILING, "")
     .replace(UV_SIDES_SUFFIX, "")
+    .replace(RAISED_SIDE_SUFFIX, "")
+    // Scoring/Variable-numbering must strip AFTER the coating phrases above —
+    // see the matching comment in print/[category]/page.tsx.
+    .replace(SCORING_SUFFIX, "")
+    .replace(VARIABLE_SUFFIX, "")
     .replace(TRAILING_WITH, "")
+  if (isBusinessCards) {
+    s = s
+      .replace(SHAPE_WORDS, " ")
+      .replace(/\bBC\b/g, "Business Cards")
+      .replace(/\bCard\b/g, "Cards")
+      .replace(/\bbusiness\s+cards\s+with\s+(\w+)\s+lamination\b/gi, (_m, mat) => `${mat.charAt(0).toUpperCase()}${mat.slice(1)} Laminated Business Cards`)
+      .replace(/\blamination\b/gi, "Laminated")
+      // SHAPE_WORDS may have left a dangling "with" — see the matching
+      // comment in print/[category]/page.tsx.
+      .replace(TRAILING_WITH, "")
+  }
+  s = s
     .replace(/\(\s+/g, "(")
     .replace(/\s+\)/g, ")")
     .replace(/\(\s*\)/g, "")
@@ -195,28 +246,45 @@ function stripSize(desc: string): string {
   return balanceParens(s)
 }
 
-// The first variant label found, e.g. '11" X 17" X 5"' or '8 Page'.
-function extractSize(desc: string): string {
+// The first variant label found, e.g. '11" X 17" X 5"' or '8 Page'. Also
+// appends the Raised Foil/Spot UV placement phrase (see RAISED_SIDE_SUFFIX)
+// or Shape word (Business Cards only) when present — those siblings share
+// the SAME physical size (e.g. both '2" X 3.5"'), so the bare SIZE_DIM match
+// alone would tie and collide in the caller's bySize Map, silently dropping
+// one variant entirely.
+function extractSize(desc: string, isBusinessCards = false): string {
+  const side = (desc || "").match(RAISED_SIDE_SUFFIX)
+  const shape = isBusinessCards ? (desc || "").match(SHAPE_WORDS) : null
+  const suffix = side?.[0] || shape?.[0]
+  const suffixLabel = suffix ? " (" + suffix.trim().replace(/\b\w/g, (c) => c.toUpperCase()) + ")" : ""
   const dim = (desc || "").match(SIZE_DIM)
-  if (dim) return dim[0].replace(/\s+/g, " ").trim()
+  if (dim) return dim[0].replace(/\s+/g, " ").trim() + suffixLabel
   const pg = (desc || "").match(/\b\d+\s*(?:inside\s+)?pages?\b/i)
-  if (pg) return pg[0].replace(/\s+/g, " ").trim()
+  if (pg) return pg[0].replace(/\s+/g, " ").trim() + suffixLabel
+  if (suffix) return suffixLabel.slice(2, -1)
   return "Standard"
 }
 
-const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w"])
+// "calendar"/"saddle"/"stitch" included to stay in sync with the same set in
+// print/[category]/page.tsx — see that file's comment for why.
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w", "calendar", "saddle", "stitch"])
+// Business Cards only — kept in sync with print/[category]/page.tsx's
+// FILLER_WORDS_BC (see that file's comment for why lamination wording needs
+// to be ignored here too).
+const FILLER_WORDS_BC = new Set([...FILLER_WORDS, "lamination", "laminated", "velvet", "soft", "scoring", "included"])
 
 // Normalized SIBLING key: same printed product (Print Method + Coating kept),
 // different size/page only. Used to find the size variants of ONE specific
 // product — NOT for display (see stripSize) and NOT for the level-3 card
 // dedup in print/[category]/page.tsx (see that file's own groupKey, which
 // deliberately strips Print Method/Coating to collapse those into one card).
-function groupKey(desc: string): string {
-  return stripDimsOnly(desc)
+function groupKey(desc: string, isBusinessCards = false): string {
+  const fillers = isBusinessCards ? FILLER_WORDS_BC : FILLER_WORDS
+  return stripDimsOnly(desc, isBusinessCards)
     .toLowerCase()
     .replace(/[.,/()]+/g, " ")
     .split(/\s+/)
-    .filter((w) => w && !FILLER_WORDS.has(w))
+    .filter((w) => w && !fillers.has(w))
     .sort()
     .join(" ")
 }
@@ -277,13 +345,16 @@ export default async function ProductTypePage({
 
     let productName = product.product_description || "Product"
     const isBoxesPackaging = leaf?.parentSlug === "boxes-packaging"
+    // Excludes oval-cards/fold-over-cards — see the matching comment in
+    // print/[category]/page.tsx for why.
+    const isBusinessCards = leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards"
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
     let sizeProducts: { uuid: string; size: string }[] | undefined
     let initialSizeUuid: string | undefined
     if (leaf?.parentSlug && SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)) {
-      const baseName = stripSize(productName)
+      const baseName = stripSize(productName, isBusinessCards)
       if (baseName) productName = baseName
       if (isBoxesPackaging) {
         productName = productName.replace(BOX_THICKNESS_PREFIX, "").trim() || productName
@@ -306,10 +377,10 @@ export default async function ProductTypePage({
           .from("fourover_products")
           .select("product_uuid, product_description")
           .eq("category_uuid", catUuid)
-        const baseKey = groupKey(product.product_description || "")
+        const baseKey = groupKey(product.product_description || "", isBusinessCards)
         const variants = (siblings || [])
-          .filter((p: any) => groupKey(p.product_description || "") === baseKey)
-          .map((p: any) => ({ uuid: p.product_uuid as string, size: extractSize(p.product_description || "") }))
+          .filter((p: any) => groupKey(p.product_description || "", isBusinessCards) === baseKey)
+          .map((p: any) => ({ uuid: p.product_uuid as string, size: extractSize(p.product_description || "", isBusinessCards) }))
         const bySize = new Map<string, { uuid: string; size: string }>()
         for (const v of variants) if (!bySize.has(v.size)) bySize.set(v.size, v)
         const list = [...bySize.values()].sort((a, b) => parseFloat(a.size) - parseFloat(b.size))
@@ -416,15 +487,27 @@ export default async function ProductTypePage({
     }
   }
 
-  // Filter to this type using keyword matching
-  const keywords = TYPE_KEYWORDS[category]?.[typeSlug] || []
+  // Filter to this type using keyword matching. Classification is ORDER-
+  // DEPENDENT (first matching rule in TYPE_KEYWORDS[category] wins) so this
+  // stays consistent with classifyProduct() in print/[category]/page.tsx —
+  // otherwise a later/broader rule (e.g. a size keyword that's also present
+  // in an earlier rule's products, like "5.25\" x 10.5\" ... Natural ...")
+  // would double-match products that actually belong to an earlier type.
+  const typeRules = Object.entries(TYPE_KEYWORDS[category] || {})
   const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
 
-  const matchedProducts = (allProducts || []).filter(p => {
-    const lower = p.product_description.toLowerCase()
-    if (keywords.length === 0) return true // catch-all
-    return keywords.some(k => lower.includes(k))
-  }).sort((a, b) => a.product_description.localeCompare(b.product_description))
+  function classifyType(description: string): string | null {
+    const lower = description.toLowerCase()
+    for (const [slug, kws] of typeRules) {
+      if (kws.length === 0) return slug // catch-all
+      if (kws.some((k) => lower.includes(k))) return slug
+    }
+    return null // no rule matched and no catch-all — matches old behavior (excluded from every type)
+  }
+
+  const matchedProducts = (allProducts || [])
+    .filter((p) => (typeRules.length === 0 ? true : classifyType(p.product_description) === typeSlug))
+    .sort((a, b) => a.product_description.localeCompare(b.product_description))
 
   // Get option groups for the FIRST product (they share the same option structure)
   // Size selector will be derived from the list of matched products

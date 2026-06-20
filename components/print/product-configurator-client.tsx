@@ -75,6 +75,16 @@ function dedupeList(items: ListItem[]): ListItem[] {
   })
 }
 
+// Business Cards (and similar) sell Round Corner/Oval as separate
+// product_uuids at the same Size+Stock+Coating, distinguished only by this
+// wording in the description — used to label the Shape dropdown options.
+function extractShape(desc: string): string {
+  if (/round\s*corner/i.test(desc)) return "Round Corner"
+  if (/\boval\b/i.test(desc)) return "Oval"
+  if (/fold\s*over/i.test(desc)) return "Fold Over"
+  return "Rectangle"
+}
+
 // Option groups handled by the dedicated size/colorspec/runsize/turnaround
 // pricing axes (or that are display-only/internal) — excluded from the generic
 // "extra options" rendering so we don't show them twice.
@@ -120,6 +130,15 @@ export function ProductConfiguratorClient({
 
   const [productUuid, setProductUuid] = useState("")
   const [loadingList, setLoadingList] = useState(true)
+
+  // Shape variants (Rectangle/Round Corner/Oval/...): when the resolved
+  // Size+Stock+Coating triple still matches MULTIPLE allowedProductUuids
+  // (e.g. Business Cards mixes Standard/Round Corner/Oval as separate
+  // product_uuids at the same size/stock/coating), expose them as a
+  // switchable "Shape" dropdown instead of silently picking the first and
+  // hiding the rest. See the "coating changed" effect below.
+  const [shapeList, setShapeList] = useState<{ uuid: string; shape: string }[]>([])
+  const [shapeUuid, setShapeUuid] = useState("")
 
   // Valid combinations (colorspec/runsize/turnaround + price) from baseprices
   const [combinations, setCombinations] = useState<Combination[]>([])
@@ -235,15 +254,20 @@ export function ProductConfiguratorClient({
     stockUuidRef.current = stockUuid
   }, [stockUuid])
 
-  const resolveProduct = useCallback(
+  const getAllowedProducts = useCallback(
     (products: ProductOption[] | undefined) => {
       const list = products || []
       const allowed = list.filter(
         (p) => !allowedProductUuids || allowedProductUuids.includes(p.product_uuid),
       )
-      return allowed[0]?.product_uuid || list[0]?.product_uuid || ""
+      return allowed.length > 0 ? allowed : list
     },
     [allowedProductUuids],
+  )
+
+  const resolveProduct = useCallback(
+    (products: ProductOption[] | undefined) => getAllowedProducts(products)[0]?.product_uuid || "",
+    [getAllowedProducts],
   )
 
   // When size changes -> reset downstream selections IMMEDIATELY, then load stocks.
@@ -274,14 +298,23 @@ export function ProductConfiguratorClient({
   }, [sizeUuid, fetchList, sizeVariantMode, resolveProduct])
 
   // When stock changes -> reset coating/product IMMEDIATELY, then load coatings.
+  // Reads sizeUuid via ref rather than as a dependency: sizeUuid is ALSO in
+  // the upstream "size changed" effect's dep array, so a size change re-runs
+  // THIS effect too, in the same flush, before stockUuid has actually been
+  // reset to "" — using the still-stale stockUuid from the previous size
+  // (whenever that stale uuid happens to also be valid for the new size,
+  // e.g. the same "14PT" stock name resolving to the same uuid at multiple
+  // sizes) and resolving coatings/product for the WRONG size. Same race
+  // pattern as the size/stock refs above one level down the cascade.
   useEffect(() => {
-    if (!sizeUuid || !stockUuid) return
+    const sUuid = sizeUuidRef.current
+    if (!sUuid || !stockUuid) return
     const myReq = ++reqIdRef.current
     setCoatingList([])
     setCoatingUuid("")
     setProductUuid("")
 
-    fetchList({ size_uuid: sizeUuid, stock_uuid: stockUuid }).then((data) => {
+    fetchList({ size_uuid: sUuid, stock_uuid: stockUuid }).then((data) => {
       if (reqIdRef.current !== myReq || !data) return
       const coatings = dedupeList(data.coating_list || [])
       setCoatingList(coatings)
@@ -291,7 +324,7 @@ export function ProductConfiguratorClient({
         setProductUuid(resolveProduct(data.products))
       }
     })
-  }, [sizeUuid, stockUuid, fetchList, resolveProduct])
+  }, [stockUuid, fetchList, resolveProduct])
 
   // When coating changes -> resolve product_uuid for the full valid triple.
   // Reads size/stock via refs rather than as dependencies: stockUuid (and
@@ -308,9 +341,19 @@ export function ProductConfiguratorClient({
     const myReq = ++reqIdRef.current
     fetchList({ size_uuid: sUuid, stock_uuid: stUuid, coating_uuid: coatingUuid }).then((data) => {
       if (reqIdRef.current !== myReq || !data) return
-      setProductUuid(resolveProduct(data.products))
+      const allowed = getAllowedProducts(data.products)
+      if (allowed.length > 1) {
+        const shapes = allowed.map((p) => ({ uuid: p.product_uuid, shape: extractShape(p.product_description) }))
+        setShapeList(shapes)
+        setShapeUuid(shapes[0].uuid)
+        setProductUuid(shapes[0].uuid)
+      } else {
+        setShapeList([])
+        setShapeUuid("")
+        setProductUuid(allowed[0]?.product_uuid || "")
+      }
     })
-  }, [coatingUuid, fetchList, resolveProduct])
+  }, [coatingUuid, fetchList, getAllowedProducts])
 
   // When product_uuid resolved -> load valid combination matrix from baseprices
   useEffect(() => {
@@ -626,11 +669,14 @@ export function ProductConfiguratorClient({
     return extraGroups.filter((g) => {
       const name = g.group_name.toLowerCase().trim()
       if (hiddenSet && hiddenSet.has(name)) return false
+      // The dedicated Shape dropdown below replaces this group's normally-
+      // fixed single value once there's more than one shape to pick from.
+      if (name === "shape" && shapeList.length > 1) return false
       if (seen.has(name)) return false
       seen.add(name)
       return true
     })
-  }, [extraGroups, hiddenSet])
+  }, [extraGroups, hiddenSet, shapeList])
 
   // ---- renderers ----
   const renderListRow = (
@@ -740,6 +786,21 @@ export function ProductConfiguratorClient({
               {/* COATING */}
               {(!hiddenSet || !hiddenSet.has("coating")) &&
                 renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+
+              {/* SHAPE (Rectangle/Round Corner/Oval/...) — only shown when the
+                  resolved Size+Stock+Coating still matches more than one
+                  product_uuid; selecting a value sets productUuid directly,
+                  bypassing baseprices/quote re-resolution since these are
+                  already known sibling uuids. */}
+              {renderListRow(
+                "Shape",
+                shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
+                shapeUuid,
+                (uuid) => {
+                  setShapeUuid(uuid)
+                  setProductUuid(uuid)
+                },
+              )}
 
               {loadingOptions && (
                 <div className="flex items-center justify-center py-4">

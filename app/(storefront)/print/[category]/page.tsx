@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getAllProductsForCategory } from "@/lib/4over/client"
 import { GROUPS, SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/lib/print/categories"
@@ -27,19 +28,37 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Raised Foil Postcards", slug: "raised-foil-postcards", keywords: ["raised foil", "dual raised", "raised spot"] },
     { label: "Standard Postcards", slug: "standard-postcards", keywords: [] }, // catch-all
   ],
+  // Round Corner/Oval/Fold Over used to be separate types here, but per
+  // fourprintshop's literal reference (the Standard Business Cards page's own
+  // Shape dropdown includes Rectangle/Rounded 2/Rounded 4/Oval, and its Size
+  // dropdown includes the Fold Over-only "2\" x 7\"") they're all variants of
+  // ONE product, not separate ones — see ProductConfiguratorClient's
+  // shapeList/shapeUuid for how Shape becomes switchable once everything
+  // shares one allowedProductUuids pool. ("Folded"/"Square" keywords matched
+  // zero real products — confirmed via the live category data — so they were
+  // dead rules to begin with, not a second merge worth preserving.)
   "business-cards-standard": [
-    { label: "Round Corner Business Cards", slug: "round-corner-business-cards", keywords: ["round corner"] },
-    { label: "Folded Business Cards", slug: "folded-business-cards", keywords: ["folded"] },
-    { label: "Square Business Cards", slug: "square-business-cards", keywords: ["square"] },
-    { label: "Standard Business Cards", slug: "standard-business-cards", keywords: [] }, // catch-all
+    { label: "Standard Business Cards", slug: "standard-business-cards", keywords: [] }, // catch-all (now the only rule)
   ],
+  // Stock-name rules (Natural/Pearl/Glue-less) MUST come before the size
+  // rules below: classifyProduct() takes the FIRST matching rule, and every
+  // product's description also contains its own size (e.g. "5.25\" x 10.5\"
+  // 14pt Natural Uncoated Presentation Folder") — checking size first would
+  // swallow every Natural/Pearl/Glue-less product into a size bucket before
+  // ever reaching its real type, leaving those cards empty (and hidden).
+  // fourprintshop's reference (4over-stable.fourprintshop.com/marketing-
+  // material/presentation-folders/products/) also lists Silk/Suede/Akuafoil
+  // Presentation Folders — confirmed NOT present anywhere in this sandbox's
+  // single "Presentation Folders" 4over category (28 products, checked all),
+  // a genuine catalog gap rather than a miscategorization.
   "presentation-folders": [
+    { label: "Natural Presentation Folder", slug: "natural-presentation-folder", keywords: ["natural"] },
+    { label: "Pearl Presentation Folder", slug: "pearl-presentation-folder", keywords: ["pearl"] },
+    { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
     { label: '9" x 12" Presentation Folder', slug: "9x12-presentation-folder", keywords: ["9\" x 12\"", "9x12", "9\" x12\"", "9\"x12"] },
     { label: '6" x 9" Presentation Folder', slug: "6x9-presentation-folder", keywords: ["6\" x 9\"", "6x9", "6\" x9\""] },
     { label: '5.25" x 10.5" Presentation Folder', slug: "5x10-presentation-folder", keywords: ["5.25", "5.25\"", "10.5"] },
     { label: '9" x 14.5" Presentation Folder', slug: "9x14-presentation-folder", keywords: ["9\" x 14.5\"", "9x14", "14.5"] },
-    { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
-    { label: "Specialty Presentation Folders", slug: "specialty-presentation-folder", keywords: [] }, // catch-all for Silk, Natural, Pearl, Suede, Akuafoil
   ],
 }
 
@@ -69,13 +88,28 @@ const LINEAR_DIM = /\d+(?:\.\d+)?\s*(?:ft|in|inch(?:es)?)\.?(?:\s*[xX×]\s*\d+(?
 // "Booklet On"/"Brochure On" etc. is Print Method — already its own calculator
 // dropdown (fourprintshop's product-type cards never show it in the title).
 const PRINT_METHOD_PREFIX = /^[\s\-–—]*(Brochure|Booklet|Flyer|Postcard)s?\s+(On|on)\s+/
-// Coating/Finishing phrase anchored on an explicit "with"/"w/" (Akuafoil/Spot/
-// Full connector words allowed in between, e.g. "with Akuafoil with Full UV on
-// front only") — already its own calculator dropdown. Anchoring on "with" (not
-// matching mid-phrase) keeps unrelated "with ..." text intact, e.g. "Banner
-// Stand With Hardware" or "Dual Raised ... with Raised Spot UV and Raised
-// Foil on Front only" (a product-defining name, not a removable finish).
-const COATING_WITH = /[\s,]+(?:with|wih|w\/)\s*(no\s+)?(satin\s+)?(akuafoil\s+(?:with\s+|w\/\s*)?)?(spot\s+|full\s+)?(\d+\s*mil\s+)?(gloss\s+|matte\s+)?(uncoated|coated\b|aq\b|coating|uv|lamination)\b.*$/i
+// Coating/Finishing phrase anchored on an explicit "with"/"w/" (Spot/Full
+// connector words allowed in between) — already its own calculator dropdown.
+// Anchoring on "with" (not matching mid-phrase) keeps unrelated "with ..."
+// text intact, e.g. "Banner Stand With Hardware" or "Dual Raised ... with
+// Raised Spot UV and Raised Foil on Front only" (a product-defining name,
+// not a removable finish). Deliberately has NO "akuafoil" group: "Akuafoil"
+// is product identity (distinguishes it from the plain, non-Akuafoil card),
+// not a removable finish — an earlier version let this regex's own greedy
+// match start AT "with Akuafoil" and swallow it together with whatever
+// coating phrase followed, which inconsistently dropped "Akuafoil" from the
+// merged title depending on the exact trailing wording (e.g. kept it for
+// "...with Akuafoil With No UV" but ate it for "...with Akuafoil With UV
+// Coating", since only the latter's "With" + trigger word happened to match
+// starting from the EARLIER "with"). Without the group, this regex can only
+// match starting at the LATER "with/w/ <coating-trigger>" that comes AFTER
+// "Akuafoil", so "Akuafoil" is preserved every time.
+const COATING_WITH = /[\s,]+(?:with|wih|w\/)\s*(no\s+)?(satin\s+)?(spot\s+|full\s+)?(\d+\s*mil\s+)?(gloss\s+|matte\s+)?(uncoated|coated\b|aq\b|coating|uv|lamination)\b.*$/i
+// "Without Coating" (used by a handful of Akuafoil sizes instead of the more
+// common "With No UV") — COATING_WITH can't catch this: "with" is glued to
+// "out" as one word ("Without"), and "Coating" only follows after "out", not
+// immediately after an optional-modifier sequence the way "With No UV" does.
+const WITHOUT_COATING_SUFFIX = /\s+without\s+coating\s*$/i
 // Boxes print "Uncoated"/"Coated" as a standalone trailing word with no
 // "with" at all (e.g. "14PT Cube Box Uncoated") — safe to strip since it's
 // always the literal last word.
@@ -104,6 +138,10 @@ const AQ_MIDDLE = /\s*(?:with|wih)\s+(satin\s+)?aq(?!\s*on\s+(the\s+)?(both|fron
 // plain whitespace (unlike COATING_WITH's mandatory "with"), so without the
 // lookbehind it could start matching right after "Raised", skipping "with".
 const UV_SIDES_SUFFIX = /[\s,]+(full\s+|spot\s+)?(?<!raised\s(?:spot\s)?)uv\s+on\s+(the\s+)?(front\s+only|\d*-?color\s+side\s*\(?s\)?)\b.*$/i
+// The "front only" vs "both sides" placement suffix for Raised Foil/Raised
+// Spot UV (the cases UV_SIDES_SUFFIX's lookbehind deliberately skips) — kept
+// in sync with the same constant in [typeSlug]/page.tsx.
+const RAISED_SIDE_SUFFIX = /\s+on\s+(both\s+sides|front\s+only|the\s+front|the\s+back)\s*$/i
 // Binding/Finishing add-ons already exposed as calculator dropdowns/checkboxes
 // elsewhere on the product (Scoring, Variable Numbering).
 const SCORING_SUFFIX = /,?\s*(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
@@ -142,8 +180,18 @@ function balanceParens(s: string): string {
   return str
 }
 
-function stripSize(desc: string): string {
-  const s = (desc || "")
+// Business Cards: Round Corner/Oval/Fold Over are Shape/Size variants of one
+// product now (see the matching comment on the business-cards-standard
+// TYPE_RULES entry below and ProductConfiguratorClient's shapeList) — strip
+// them from the card title/groupKey so e.g. Silk's 4 cards collapse to 1,
+// alongside the EXISTING per-product Shape dropdown that lets the user pick
+// Round Corner there. Scoped to isBusinessCards (see displayList below) so
+// other categories that also use this word ("Round Corner Hang Tags") are
+// untouched — that's a separate, not-yet-reviewed structural question.
+const SHAPE_WORDS = /\b(round\s*corners?|ovals?|fold\s*overs?)\b\s*/gi
+
+function stripSize(desc: string, isBusinessCards = false): string {
+  let s = (desc || "")
     .replace(MATTE_DULL_MIDDLE, " ")
     .replace(AQ_MIDDLE, " ")
     .replace(SIZE_DIM, " ")
@@ -151,12 +199,36 @@ function stripSize(desc: string): string {
     .replace(ENVELOPE_CODE, " ")
     .replace(PAGE_DIM, " ")
     .replace(PRINT_METHOD_PREFIX, "")
-    .replace(SCORING_SUFFIX, "")
-    .replace(VARIABLE_SUFFIX, "")
+    .replace(WITHOUT_COATING_SUFFIX, "")
     .replace(COATING_WITH, "")
     .replace(COATING_TRAILING, "")
     .replace(UV_SIDES_SUFFIX, "")
+    .replace(RAISED_SIDE_SUFFIX, "")
+    // Scoring/Variable-numbering must strip AFTER the coating phrases above —
+    // "Scoring Included w/ Spot UV on both sides" only has "Scoring Included"
+    // at the END (where this regex anchors) once COATING_WITH has already
+    // removed the trailing "w/ Spot UV..." part.
+    .replace(SCORING_SUFFIX, "")
+    .replace(VARIABLE_SUFFIX, "")
     .replace(TRAILING_WITH, "")
+  if (isBusinessCards) {
+    s = s
+      .replace(SHAPE_WORDS, " ")
+      .replace(/\bBC\b/g, "Business Cards")
+      .replace(/\bCard\b/g, "Cards")
+      // "Oval Business Cards with silk lamination" word-orders the material
+      // AFTER "Business Cards" (every other entry puts it before, e.g. "Silk
+      // Laminated Business Cards") — reorder so the merged card's title
+      // (picked by length, see "prefer longer name" below) doesn't read
+      // backwards on the rare entry that happens to win.
+      .replace(/\bbusiness\s+cards\s+with\s+(\w+)\s+lamination\b/gi, (_m, mat) => `${mat.charAt(0).toUpperCase()}${mat.slice(1)} Laminated Business Cards`)
+      .replace(/\blamination\b/gi, "Laminated")
+      // SHAPE_WORDS just removed "Round Corners"/"Oval"/"Fold Over" — if that
+      // was the LAST thing in the string (e.g. "... Business cards with
+      // Round Corners"), "with" is now dangling and TRAILING_WITH already ran.
+      .replace(TRAILING_WITH, "")
+  }
+  s = s
     .replace(/\(\s+/g, "(")
     .replace(/\s+\)/g, ")")
     .replace(/\(\s*\)/g, "")
@@ -171,16 +243,38 @@ function stripSize(desc: string): string {
 // Filler words ignored when grouping so word-order/punctuation variants of the
 // same product merge (e.g. "Matte/Dull Finish Cards" == "Cards with MATTE/DULL
 // FINISH"). Meaningful words (front/back/both/uv/aq/14pt/...) are kept.
-const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w"])
+// "calendar"/"saddle"/"stitch" are here because 4over's own Calendars data is
+// inconsistent about including them (e.g. one stock's entries are "Saddle
+// Stitch Calendar On 100LB GLOSS BOOK", but the same stock at one size is
+// missing "Saddle Stitch", and a "(4:4 plus cover 4:4)" stock is missing
+// "Calendar" on some sizes) — without ignoring them, those typo'd entries
+// show up as extra near-duplicate cards instead of merging with their real
+// siblings. Confirmed safe elsewhere: Catalogs also has "Saddle Stitch" but
+// always alongside a genuinely different binding ("Perfect Bound") that's
+// distinguished by ITS OWN tokens, not by saddle/stitch's presence.
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w", "calendar", "saddle", "stitch"])
+// Business Cards only: "Soft Velvet Lamination"/"Silk Lamination" wording is
+// sometimes dropped entirely on a handful of sizes (the same kind of 4over
+// data inconsistency as Calendars' "Saddle Stitch") — ignoring these tokens
+// when isBusinessCards lets that stock's other (fully-worded) siblings absorb
+// it instead of leaving it as an extra near-duplicate card.
+// "scoring"/"included": Fold Over is inherently scored, so "Scoring Included"
+// carries no distinguishing information once Round Corner/Oval/Fold Over are
+// all one product — without ignoring it, Fold Over's stripDimsOnly-based
+// sibling key (which deliberately doesn't strip Coating/Scoring suffixes —
+// see that function's comment) gets 2 extra tokens that the Rectangle/Round
+// Corner/Oval siblings don't have, so it fails to match them.
+const FILLER_WORDS_BC = new Set([...FILLER_WORDS, "lamination", "laminated", "velvet", "soft", "scoring", "included"])
 
 // Normalized grouping key: drop size, lowercase, strip punctuation, remove
 // filler words, sort the remaining tokens.
-function groupKey(desc: string): string {
-  return stripSize(desc)
+function groupKey(desc: string, isBusinessCards = false): string {
+  const fillers = isBusinessCards ? FILLER_WORDS_BC : FILLER_WORDS
+  return stripSize(desc, isBusinessCards)
     .toLowerCase()
     .replace(/[.,/()]+/g, " ")
     .split(/\s+/)
-    .filter((w) => w && !FILLER_WORDS.has(w))
+    .filter((w) => w && !fillers.has(w))
     .sort()
     .join(" ")
 }
@@ -311,6 +405,13 @@ export default async function PrintCategoryPage({
       .map(r => typeMap.get(r.slug))
       .filter(Boolean) as { rule: TypeRule; products: typeof productList; image: string }[]
 
+    // Only one type with products (e.g. business-cards-standard now that
+    // Round Corner/Oval/Fold Over no longer fork off their own type) — skip
+    // straight to it, same rationale as the single-product redirect below.
+    if (sortedTypes.length === 1) {
+      redirect(`/print/${category}/${sortedTypes[0].rule.slug}`)
+    }
+
     return (
       <div className="min-h-screen bg-white">
         <div className="border-b border-slate-200 py-2 px-4">
@@ -378,21 +479,47 @@ export default async function PrintCategoryPage({
   // categories (Business Cards, Hang Tags, ...) where we've kept thickness as
   // a card distinguisher. Scoped here so those other categories are untouched.
   const isBoxesPackaging = leaf.parentSlug === "boxes-packaging"
+  // Excludes oval-cards/fold-over-cards themselves: those subcategories'
+  // entire identity IS that shape word (keyword-filtered to ONLY oval/fold-
+  // over entries) — stripping it would leave their card titles reading just
+  // "Business Cards" with no hint of which subcategory they're even on.
+  const isBusinessCards = leaf.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards"
   const displayList = sizeGrouped
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
         for (const p of productList) {
-          let name = stripSize(p.product_description || "") || p.product_description
-          let key = groupKey(p.product_description || "") || name.toLowerCase()
+          let name = stripSize(p.product_description || "", isBusinessCards) || p.product_description
+          let key = groupKey(p.product_description || "", isBusinessCards) || name.toLowerCase()
           if (isBoxesPackaging) {
             name = name.replace(BOX_THICKNESS_PREFIX, "").trim() || name
             key = key.replace(/\b\d+pt\b/g, "").replace(/\s{2,}/g, " ").trim()
           }
-          if (!groups.has(key)) groups.set(key, { product_uuid: p.product_uuid, product_description: name })
+          // Prefer the longer/more complete name (and its own uuid, so the
+          // configurator page that loads from THIS uuid shows a matching H1)
+          // as the merged card's representative — 4over's data inconsistencies
+          // (see the FILLER_WORDS comment above) mean the first-encountered
+          // sibling isn't always the best-worded one.
+          const existing = groups.get(key)
+          if (!existing || name.length > existing.product_description.length) {
+            groups.set(key, { product_uuid: p.product_uuid, product_description: name })
+          }
         }
         return [...groups.values()]
       })()
     : productList
+
+  // A subcategory with only ONE product/stock has nothing worth browsing —
+  // skip straight to its price calculator instead of a one-card gallery.
+  if (sizeGrouped && displayList.length === 1) {
+    const only = displayList[0]
+    const slug = only.product_description
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .substring(0, 60)
+    redirect(`/print/${category}/${slug}?uuid=${only.product_uuid}`)
+  }
 
   return (
     <div className="min-h-screen bg-white">
