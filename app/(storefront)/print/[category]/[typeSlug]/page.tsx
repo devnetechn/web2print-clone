@@ -13,6 +13,42 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   "flyers-and-brochures": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
   ],
+  "door-hangers": [
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "door hanger" },
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "door hanger" },
+  ],
+  envelopes: [{ uuid: "f5e2f7e8-0ba8-47a6-964d-3ec6dddef2cb", keyword: "envelope" }],
+  "hang-tags": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "hang tag" },
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "hang tag" },
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "hang tag" },
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "hang tag" },
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "hang tag" },
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "hang tag" },
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "hang tag" },
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "hang tag" },
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "hang tag" },
+  ],
+  posters: [
+    { uuid: "8294ed4d-4d8c-4bea-966e-d3ad56913e74", keyword: "poster" },
+    { uuid: "393c5a2d-8be0-4134-9161-aa35fdc60685", keyword: "poster" },
+  ],
+  "rack-cards": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: ["akuafoil", '3.5" x 8.5"'] },
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: ["akuafoil", '4" x 9"'] },
+  ],
+  "sell-sheets": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: ["akuafoil", "sell sheet"] },
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: ["brown kraft", "sell sheet"] },
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["endurace", "sell sheet"] },
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "sell sheet"] },
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: ["silk", "sell sheet"] },
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: ["suede", "sell sheet"] },
+  ],
+  "table-tent-cards": [
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
+  ],
 }
 
 // Kept in sync with TYPE_IMAGES in print/[category]/page.tsx.
@@ -22,6 +58,65 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+  },
+  envelopes: {
+    "blank-envelopes": "/images/cat/envelopes/blank.jpg",
+    "digital-envelopes": "/images/cat/envelopes/digital.jpg",
+    "variable-addressing-envelopes": "/images/cat/envelopes/variable-addressing.jpg",
+    "linen-uncoated-envelopes": "/images/cat/envelopes/linen-uncoated.jpg",
+    "natural-envelopes": "/images/cat/envelopes/natural.jpg",
+    "offset-envelopes": "/images/cat/envelopes/offset.jpg",
+  },
+  "hang-tags": {
+    "akuafoil-hang-tags": "/images/cat/hang-tags/akuafoil.jpg",
+    "foil-worx-hang-tags": "/images/cat/hang-tags/foil-worx.jpg",
+    "bottleneck-hang-tags": "/images/cat/hang-tags/bottleneck.jpg",
+    "brown-kraft-hang-tags": "/images/cat/hang-tags/brown-kraft.jpg",
+    "natural-hang-tags": "/images/cat/hang-tags/natural.jpg",
+    "pearl-hang-tags": "/images/cat/hang-tags/pearl.jpg",
+    "plastic-hang-tags": "/images/cat/hang-tags/plastic.jpg",
+    "raised-spot-uv-hang-tags": "/images/cat/hang-tags/raised-spot-uv.jpg",
+    "silk-hang-tags": "/images/cat/hang-tags/silk.jpg",
+    "suede-hang-tags": "/images/cat/hang-tags/suede.jpg",
+    "regular-hang-tags": "/images/cat/hang-tags/regular.jpg",
+  },
+  posters: {
+    "backlit-posters": "/images/cat/posters/backlit.jpg",
+    "blockout-posters": "/images/cat/posters/blockout.jpg",
+    "photo-gloss-posters": "/images/cat/posters/photo-gloss.jpg",
+    "matte-finish-posters": "/images/cat/posters/matte-finish.jpg",
+    "gloss-cover-posters": "/images/cat/posters/gloss-cover.jpg",
+    "gloss-book-posters": "/images/cat/posters/gloss-book.jpg",
+  },
+  "rack-cards": {
+    "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
+    "3-5-x-8-5-standard-rack-cards": "/images/cat/rack-cards/standard-3.5x8.5.jpg",
+    "4-x-9-standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
+  },
+  "sell-sheets": {
+    "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
+    "brown-kraft-sell-sheets": "/images/cat/sell-sheets/brown-kraft.jpg",
+    "endurace-sell-sheets": "/images/cat/sell-sheets/endurace.jpg",
+    "pearl-sell-sheets": "/images/cat/sell-sheets/pearl.jpg",
+    "silk-sell-sheets": "/images/cat/sell-sheets/silk.jpg",
+    "suede-sell-sheets": "/images/cat/sell-sheets/suede.jpg",
+    "standard-sell-sheets": "/images/cat/sell-sheets.jpg",
+  },
+  "table-tent-cards": {
+    "natural-table-tents": "/images/cat/table-tent-cards/natural.jpg",
+    "pearl-table-tents": "/images/cat/table-tent-cards/pearl.jpg",
+    "4x6-table-tent": "/images/cat/table-tent-cards/4x6.jpg",
+    "5x5-5-table-tent": "/images/cat/table-tent-cards/5x5.5.jpg",
+  },
+  "tear-off-cards": {
+    "door-hangers-tear-off": "/images/cat/door-hangers.jpg",
+    "flyers-tear-off": "/images/cat/flyers-and-brochures/tearoff.jpg",
+    "postcards-tear-off": "/images/cat/postcards.jpg",
+  },
+  eddm: {
+    "eddm-postcards": "/images/cat/postcards.jpg",
+    "eddm-sell-sheets": "/images/cat/sell-sheets.jpg",
+    "eddm-flyers": "/images/cat/flyers-and-brochures.jpg",
   },
 }
 
@@ -58,6 +153,79 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
     "standard-presentation-folder": [], // catch-all
   },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for why "Die Cut" isn't a 4th type here.
+  "door-hangers": {
+    "endurace-door-hangers": ["endurace"],
+    "tearoff-door-hangers": ["tear"],
+    "standard-door-hangers": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for why this is PRINT-METHOD-classified, not stock.
+  envelopes: {
+    "blank-envelopes": ["blank"],
+    "digital-envelopes": ["digital"],
+    "variable-addressing-envelopes": ["variable"],
+    "linen-uncoated-envelopes": ["linen"],
+    "natural-envelopes": ["natural"],
+    "offset-envelopes": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for why Akuafoil/Foiled are checked before Bottleneck/
+  // Silk.
+  "hang-tags": {
+    "akuafoil-hang-tags": ["akuafoil"],
+    "foil-worx-hang-tags": ["foiled"],
+    "bottleneck-hang-tags": ["bottle neck", "bottleneck"],
+    "brown-kraft-hang-tags": ["brown kraft"],
+    "natural-hang-tags": ["natural"],
+    "pearl-hang-tags": ["pearl"],
+    "plastic-hang-tags": ["plastic"],
+    "raised-spot-uv-hang-tags": ["raised spot"],
+    "silk-hang-tags": ["silk"],
+    "suede-hang-tags": ["suede"],
+    "regular-hang-tags": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
+  // file's comment for the full rationale.
+  posters: {
+    "backlit-posters": ["backlit"],
+    "blockout-posters": ["blockout"],
+    "photo-gloss-posters": ["8mil"],
+    "matte-finish-posters": ["dull"],
+    "gloss-cover-posters": ["gloss cover"],
+    "gloss-book-posters": [], // catch-all
+  },
+  "rack-cards": {
+    "akuafoil-rack-cards": ["akuafoil"],
+    "3-5-x-8-5-standard-rack-cards": ['3.5" x 8.5"'],
+    "4-x-9-standard-rack-cards": [], // catch-all
+  },
+  "sell-sheets": {
+    "akuafoil-sell-sheets": ["akuafoil"],
+    "brown-kraft-sell-sheets": ["brown kraft"],
+    "endurace-sell-sheets": ["endurace"],
+    "pearl-sell-sheets": ["pearl"],
+    "silk-sell-sheets": ["silk"],
+    "suede-sell-sheets": ["suede"],
+    "standard-sell-sheets": [], // catch-all
+  },
+  "table-tent-cards": {
+    "natural-table-tents": ["natural"],
+    "pearl-table-tents": ["pearl"],
+    "4x6-table-tent": ['4" x 6"'],
+    "5x5-5-table-tent": [], // catch-all
+  },
+  "tear-off-cards": {
+    "door-hangers-tear-off": ["door hangers"],
+    "flyers-tear-off": ["flyers"],
+    "postcards-tear-off": [], // catch-all
+  },
+  eddm: {
+    "eddm-postcards": ["postcards"],
+    "eddm-sell-sheets": ["sell sheets"],
+    "eddm-flyers": [], // catch-all
+  },
 }
 
 // Type slug -> display label
@@ -75,6 +243,52 @@ const TYPE_LABELS: Record<string, string> = {
   "pearl-presentation-folder": "Pearl Presentation Folder",
   "glueless-presentation-folder": "Glue-less Presentation Folder",
   "standard-presentation-folder": "Standard Presentation Folder",
+  "endurace-door-hangers": "EndurACE Door Hangers",
+  "tearoff-door-hangers": "Tearoff Door Hangers",
+  "standard-door-hangers": "Standard Door Hangers",
+  "blank-envelopes": "Blank Envelopes",
+  "digital-envelopes": "Digital Envelopes",
+  "variable-addressing-envelopes": "Variable Addressing Envelopes",
+  "linen-uncoated-envelopes": "Linen Uncoated Envelopes",
+  "natural-envelopes": "Natural Envelopes",
+  "offset-envelopes": "Offset Envelopes",
+  "akuafoil-hang-tags": "Akuafoil Hang Tags",
+  "foil-worx-hang-tags": "Foil Worx Hang Tags",
+  "bottleneck-hang-tags": "Bottleneck Hang Tags",
+  "brown-kraft-hang-tags": "Brown Kraft Hang Tags",
+  "natural-hang-tags": "Natural Hang Tags",
+  "pearl-hang-tags": "Pearl Hang Tags",
+  "plastic-hang-tags": "Plastic Hang Tags",
+  "raised-spot-uv-hang-tags": "Raised Spot UV Hang Tags",
+  "silk-hang-tags": "Silk Hang Tags",
+  "suede-hang-tags": "Suede Hang Tags",
+  "regular-hang-tags": "Regular Hang Tags",
+  "backlit-posters": "Backlit Posters",
+  "blockout-posters": "Blockout Posters",
+  "photo-gloss-posters": "Photo Gloss Posters",
+  "matte-finish-posters": "Matte-Finish Posters",
+  "gloss-cover-posters": "Gloss Cover Posters",
+  "gloss-book-posters": "Gloss Book Posters",
+  "akuafoil-rack-cards": "Akuafoil Rack Cards",
+  "3-5-x-8-5-standard-rack-cards": "3.5 x 8.5 Standard Rack Cards",
+  "4-x-9-standard-rack-cards": "4 x 9 Standard Rack Cards",
+  "akuafoil-sell-sheets": "Akuafoil Sell Sheets",
+  "brown-kraft-sell-sheets": "Brown Kraft Sell Sheets",
+  "endurace-sell-sheets": "EndurACE Sell Sheets",
+  "pearl-sell-sheets": "Pearl Sell Sheets",
+  "silk-sell-sheets": "Silk Sell Sheets",
+  "suede-sell-sheets": "Suede Sell Sheets",
+  "standard-sell-sheets": "Standard Sell Sheets",
+  "natural-table-tents": "Natural Table Tents",
+  "pearl-table-tents": "Pearl Table Tents",
+  "4x6-table-tent": "4x6 Table Tent",
+  "5x5-5-table-tent": "5x5.5 Table Tent",
+  "door-hangers-tear-off": "Door Hangers with Tear-Off Perforation",
+  "flyers-tear-off": "Flyers with Tear-Off Perforation",
+  "postcards-tear-off": "Postcards with Tear-Off Perforation",
+  "eddm-postcards": "EDDM Postcards",
+  "eddm-sell-sheets": "EDDM Sell Sheets",
+  "eddm-flyers": "EDDM Flyers",
 }
 
 // Signs & Banners: hide these technical/redundant option groups from the price
@@ -83,6 +297,31 @@ const TYPE_LABELS: Record<string, string> = {
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
 
+// Kept in sync with print/[category]/page.tsx's FLAT_SIZE_PAREN.
+const FLAT_SIZE_PAREN = /\(\s*flat\s+size\s*:?[^)]*\)\s*/gi
+// Kept in sync with print/[category]/page.tsx's CODE_LIKE_DESCRIPTION /
+// reconstructCodeLikeDescriptions — see that file's comment for why.
+const CODE_LIKE_DESCRIPTION = /^([A-Z0-9.]+(?:-[A-Z0-9.]+)*)-([\d.]+)X([\d.]+)$/i
+function reconstructCodeLikeDescriptions<T extends { product_description: string; product_code?: string }>(
+  products: T[],
+): T[] {
+  const templates = new Map<string, string>()
+  for (const p of products) {
+    if (CODE_LIKE_DESCRIPTION.test(p.product_description)) continue
+    const m = p.product_code?.match(CODE_LIKE_DESCRIPTION)
+    if (m && !templates.has(m[1])) templates.set(m[1], p.product_description)
+  }
+  return products.map((p) => {
+    const m = p.product_description.match(CODE_LIKE_DESCRIPTION)
+    if (!m) return p
+    const template = templates.get(m[1])
+    if (!template) return p
+    const newSize = `${m[2]}" x ${m[3]}"`
+    const templateSize = template.match(SIZE_DIM)
+    const newDesc = templateSize ? template.replace(templateSize[0], newSize) : `${newSize} ${template}`
+    return { ...p, product_description: newDesc }
+  })
+}
 // Variant dimensions: NxN and NxNxN (boxes) sizes AND page counts ("8 Page").
 const SIZE_DIM = /\d+(?:\.\d+)?\s*["”']?\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?(?:\s*[xX×]\s*\d+(?:\.\d+)?\s*["”']?)?/g
 const PAGE_DIM = /\b\d+\s*(?:inside\s+)?pages?\b/gi
@@ -131,7 +370,9 @@ const UV_SIDES_SUFFIX = /[\s,]+(full\s+|spot\s+)?(?<!raised\s(?:spot\s)?)uv\s+on
 // This is a calculator-level placement choice too — see stripDimsOnly's
 // comment for why merging these specific siblings is safe.
 const RAISED_SIDE_SUFFIX = /\s+on\s+(both\s+sides|front\s+only|the\s+front|the\s+back)\s*$/i
-const SCORING_SUFFIX = /,?\s*(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
+// Kept in sync with print/[category]/page.tsx's SCORING_SUFFIX — see that
+// file's comment for why "Die Cut and " needs to be consumed here too.
+const SCORING_SUFFIX = /,?\s*(die\s+cut\s+and\s+)?(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
 const VARIABLE_SUFFIX = /\s+with\s+variable\s+numbering\s*$/i
 // Envelope industry size codes ("#9", "#10", "#6 3/4", "A2", "A6", "A7", "A9")
 // are a redundant synonym for the physical dimension already in the name.
@@ -216,6 +457,7 @@ function stripDimsOnly(desc: string, isBusinessCards = false): string {
 // removed (those are calculator dropdowns) — used for the DISPLAY title only.
 function stripSize(desc: string, isBusinessCards = false): string {
   let s = (desc || "")
+    .replace(FLAT_SIZE_PAREN, " ")
     .replace(MATTE_DULL_MIDDLE, " ")
     .replace(AQ_MIDDLE, " ")
     .replace(SIZE_DIM, " ")
@@ -233,6 +475,12 @@ function stripSize(desc: string, isBusinessCards = false): string {
     .replace(SCORING_SUFFIX, "")
     .replace(VARIABLE_SUFFIX, "")
     .replace(TRAILING_WITH, "")
+    // Kept in sync with print/[category]/page.tsx's stripSize — see that
+    // file's comment for why (4over's inconsistent Tag/Tent/Sheet pluralization).
+    .replace(/\bTag\b/g, "Tags")
+    .replace(/\bTent\b/g, "Tents")
+    .replace(/\bSheet\b/g, "Sheets")
+    .replace(/\bSell\s+Sheets\s+[Oo]n\s+(.+)$/, "$1 Sell Sheets")
   if (isBusinessCards) {
     s = s
       .replace(SHAPE_WORDS, " ")
@@ -275,9 +523,46 @@ function extractSize(desc: string, isBusinessCards = false): string {
   return "Standard"
 }
 
-// "calendar"/"saddle"/"stitch" included to stay in sync with the same set in
-// print/[category]/page.tsx — see that file's comment for why.
-const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w", "calendar", "saddle", "stitch"])
+// Kept in sync with print/[category]/page.tsx's CATEGORY_WORD_OVERRIDES —
+// see that file's comment for why.
+const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
+  "counter-cards": [[/\bsigns\b/gi, "Counter Cards with Easel Backs"]],
+  "calendars": [[/\(\s*\d+\s*inside\s+pages?\s+\d+:\d+\s+plus\s+\d+\s+page\s+cover\s+\d+:\d+\s*\)/gi, "On 100LB GLOSS BOOK"]],
+  "trading-cards": [
+    [/\b\d+pt\s+(?:uncoated\s+|silk\s+laminated\s+)?(?=foiled\s+trading\s+cards)/gi, ""],
+    [/\bfoiled\s+trading\s+cards\b/gi, "Foil Worx Trading Cards"],
+    [/\buncoated\s+(?=trading\s+cards)/gi, ""],
+  ],
+  "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  "booklets": [[/\b(?:60lb|70lb|80lb|100lb)\s+(?=(?:gloss\s*book|gloss\s*cover|matte\s*book)\b)/gi, ""]],
+  "greeting-cards": [
+    [/\buncoated\s+(?=greeting\s+cards)/gi, ""],
+    [/\bGreeting\s+Cards\s+[Oo]n\s+(\d+\s*pt)\b/gi, "$1 Greeting Cards"],
+    [/\b\d+\s*pt\s*(?:c1s)?\s+(?=(?:matte\s*\/\s*dull\s+finish\s+)?greeting\s+cards)/gi, ""],
+  ],
+  letterheads: [
+    [/\bLETTERHEAD\s+on\s+60LB\s+Opaque\s+Text\b/gi, "Blank Letterheads"],
+    [/\bLETTERHEAD\s+on\s+70lb\s+LINEN\b/gi, "Linen Uncoated Letterheads"],
+    [/\bLETTERHEAD\s+on\s+70lb\s+Premium\s+Uncoated\s+Text\b/gi, "Premium Opaque Letterheads"],
+  ],
+  "ncr-forms": [
+    [/\b2\s*Part\s+NCR\s+Forms\s+with\s+Wraparound\s+Cover\s*-?\s*Qty\s*50\s*per\s*book\b/gi, "2-part NCR Form Pads w Wraparound Cover"],
+    [/\b3\s*Part\s+NCR\s+Forms\s+with\s+Wraparound\s+Cover\s*-?\s*Qty\s*35\s*per\s*book\b/gi, "3-part NCR Form Pads w Wraparound Cover"],
+    [/\b2\s*Part\s+NCR\s+Forms\b/gi, "2-part NCR Forms w Variable Numbering"],
+    [/\b3\s*Part\s+NCR\s+Forms\b/gi, "3-part NCR Forms w Variable Numbering"],
+  ],
+  notepads: [
+    [/\b\d+\s*Sheet\s+(?=Notepad)/gi, ""],
+    [/\bNotepad\s+on\s+60LB\s+Opaque\s+Text\s+with\s+Chipboard\s+Backer\b/gi, "Premium Opaque Notepads"],
+    [/\bNotepad\s+on\s+70LB\s+Premium\s+Uncoated\s+Text\s+with\s+Chipboard\s+Backer\b/gi, "Premium Opaque Notepads"],
+    [/\bNotepad\s+on\s+70LB\s+LINEN\s+Uncoated\s+Text\s+with\s+Chipboard\s+Backer\b/gi, "Linen Notepads"],
+  ],
+}
+const CATEGORY_ENSURE_SUFFIX: Record<string, { test: RegExp; suffix: string }> = {}
+
+// "calendar"/"saddle"/"stitch"/"eddm" included to stay in sync with the same
+// set in print/[category]/page.tsx — see that file's comment for why.
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w", "calendar", "saddle", "stitch", "eddm"])
 // Business Cards only — kept in sync with print/[category]/page.tsx's
 // FILLER_WORDS_BC (see that file's comment for why lamination wording needs
 // to be ignored here too).
@@ -321,6 +606,26 @@ export default async function ProductTypePage({
       .single()
 
     const product = productData
+    // A handful of SKUs have no real product_description — 4over's data
+    // falls back to literally the product_code (see print/[category]/
+    // page.tsx's reconstructCodeLikeDescriptions for the full story). Only
+    // queried when this ONE product needs it (rare), unlike that file which
+    // reconstructs the whole list at once.
+    if (product && CODE_LIKE_DESCRIPTION.test(product.product_description)) {
+      const m = product.product_code?.match(CODE_LIKE_DESCRIPTION)
+      if (m) {
+        const { data: siblings } = await supabase
+          .from("fourover_products")
+          .select("product_description, product_code")
+          .eq("category_uuid", product.category_uuid)
+          .like("product_code", `${m[1]}-%`)
+        const [reconstructed] = reconstructCodeLikeDescriptions([
+          { product_description: product.product_description, product_code: product.product_code },
+          ...(siblings || []),
+        ])
+        product.product_description = reconstructed.product_description
+      }
+    }
     if (!product) {
       return (
         <div className="min-h-screen bg-white flex items-center justify-center">
@@ -357,21 +662,56 @@ export default async function ProductTypePage({
     const isBoxesPackaging = leaf?.parentSlug === "boxes-packaging"
     // Excludes oval-cards/fold-over-cards — see the matching comment in
     // print/[category]/page.tsx for why.
-    // Despite the name, also covers Announcement Cards — see the matching
-    // comment in print/[category]/page.tsx.
+    // Despite the name, also covers Announcement Cards' EXTRA-sourced
+    // materials only (product.category_uuid differs from this category's
+    // own leaf.uuid) — see print/[category]/page.tsx's _extraSourced
+    // comment for why the PRIMARY uuid's Standard/Round Corner must stay
+    // un-merged (2 genuinely separate cards, confirmed live).
     const isBusinessCards =
       (leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
-      category === "announcement-cards" || category.endsWith("-announcement-cards")
+      ((category === "announcement-cards" || category.endsWith("-announcement-cards")) &&
+        product.category_uuid !== leaf?.uuid)
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
     let sizeProducts: { uuid: string; size: string }[] | undefined
     let initialSizeUuid: string | undefined
+    let initialStockUuid: string | undefined
+    let initialCoatingUuid: string | undefined
+    let allowedProductUuidsOverride: string[] | undefined
     if (leaf?.parentSlug && SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)) {
+      // Applied BEFORE stripSize, not after: some overrides (e.g. Calendars'
+      // missing-stock-name parenthetical) target a pattern that an EARLIER
+      // stripSize regex (PAGE_DIM, which also matches bare "N page"/"N
+      // pages" substrings) would partially eat into first, leaving a
+      // mangled remnant the override's own regex no longer matches.
+      for (const [pattern, replacement] of CATEGORY_WORD_OVERRIDES[category] || []) {
+        productName = productName.replace(pattern, replacement)
+      }
       const baseName = stripSize(productName, isBusinessCards)
       if (baseName) productName = baseName
       if (isBoxesPackaging) {
         productName = productName.replace(BOX_THICKNESS_PREFIX, "").trim() || productName
+      }
+      // Kept in sync with print/[category]/page.tsx's "Standard
+      // Announcement Cards" merge — see that file's comment for why.
+      if (
+        category === "announcement-cards" &&
+        product.category_uuid === leaf?.uuid &&
+        !/round\s*corner/i.test(product.product_description || "")
+      ) {
+        productName = productName.replace(BOX_THICKNESS_PREFIX, "Standard ").trim() || productName
+      }
+      // Kept in sync with print/[category]/page.tsx's Greeting Cards merge
+      // — the PT prefix is already stripped entirely by CATEGORY_WORD_
+      // OVERRIDES above (not just reduced to a leading "Npt " BOX_THICKNESS_
+      // PREFIX match), so this renames the bare result directly.
+      if (category === "greeting-cards" && productName === "Greeting Cards") {
+        productName = "Standard Greeting Cards"
+      }
+      const ensureSuffix = CATEGORY_ENSURE_SUFFIX[category]
+      if (ensureSuffix && !ensureSuffix.test.test(productName)) {
+        productName = productName + ensureSuffix.suffix
       }
       const catUuid = product.category_uuid || leaf?.uuid
       if (catUuid && isBoxesPackaging) {
@@ -387,18 +727,136 @@ export default async function ProductTypePage({
           initialSizeUuid = match?.uuid
         }
       } else if (catUuid && baseName) {
-        const { data: siblings } = await supabase
+        const { data: siblingsRaw } = await supabase
           .from("fourover_products")
-          .select("product_uuid, product_description")
+          .select("product_uuid, product_description, product_code")
           .eq("category_uuid", catUuid)
-        const baseKey = groupKey(product.product_description || "", isBusinessCards)
-        const variants = (siblings || [])
-          .filter((p: any) => groupKey(p.product_description || "", isBusinessCards) === baseKey)
+        // Applied to RAW descriptions before computing groupKey, same as
+        // print/[category]/page.tsx's productList loop — otherwise whichever
+        // sibling happens to win as the clicked representative determines
+        // baseKey, and an UN-overridden mislabeled sibling (e.g. Counter
+        // Cards' one "...Signs" outlier, or Calendars' missing-stock-name
+        // entries) silently drops out of this Size dropdown depending on
+        // which uuid the customer happened to land on — not a real fix, just
+        // a coincidence of which sibling won the level-3 merge.
+        const overrides = CATEGORY_WORD_OVERRIDES[category] || []
+        const applyOverrides = (desc: string) => overrides.reduce((d, [pattern, replacement]) => d.replace(pattern, replacement), desc)
+        const siblings = reconstructCodeLikeDescriptions(siblingsRaw || []).map((p: any) => ({
+          ...p,
+          product_description: applyOverrides(p.product_description || ""),
+        }))
+        // "Standard Announcement Cards" merges 14PT+16PT — kept in sync with
+        // print/[category]/page.tsx's matching block. Siblings here are
+        // already scoped to catUuid === product.category_uuid, so when the
+        // clicked product is a primary-uuid "Standard" entry, this can never
+        // pull in an extra-sourced material's own stock differences.
+        const stripStandardPt =
+          category === "announcement-cards" &&
+          product.category_uuid === leaf?.uuid &&
+          !/round\s*corner/i.test(product.product_description || "")
+        // Booklets' weight merge (CATEGORY_WORD_OVERRIDES strips 60/70/80/
+        // 100LB before "Gloss Book"/"Gloss Cover"/"Matte Book") is ALSO
+        // genuinely multi-dimensional (size × page count × weight) for the
+        // same reason — Dull Book/Premium Opaque aren't merged (each is one
+        // weight only, confirmed live), so this only flags the merged ones.
+        const isMergedBookletWeight = category === "booklets" && /gloss\s*book|gloss\s*cover|matte\s*book/i.test(product.product_description || "")
+        // Greeting Cards' "14PT"/"16PT"/"18PT C1S"/"Greeting Cards on 100LB
+        // Gloss Cover" cards each already merge SEVERAL coatings (AQ/UV/
+        // Matte/No Coating/Uncoated) at every size — genuinely multi-
+        // dimensional (size × coating) for the same reason as the others
+        // above, so it needs the live cascade too, not just the ones this
+        // session's "Uncoated" middle-modifier fix newly merged in.
+        const isGreetingCards = category === "greeting-cards"
+        // Notepads' merge spans Stock (Premium Opaque: 60LB+70LB) AND Sheet
+        // Count (25/50, resolved via extractShape()'s shapeList mechanism,
+        // which only ever populates within the live cascade) — sizeProducts
+        // mode would bypass the live cascade entirely and the Sheet Count
+        // picker would never appear.
+        const isNotepads = category === "notepads"
+        const useLiveCascadeAnchor = stripStandardPt || isMergedBookletWeight || isGreetingCards || isNotepads
+        const computeKey = (desc: string) => {
+          const k = groupKey(desc, isBusinessCards)
+          return stripStandardPt ? k.replace(/\b\d+pt\b/g, "").replace(/\s{2,}/g, " ").trim() : k
+        }
+        const baseKey = computeKey(applyOverrides(product.product_description || ""))
+        const variants = siblings
+          .filter((p: any) => computeKey(p.product_description || "") === baseKey)
           .map((p: any) => ({ uuid: p.product_uuid as string, size: extractSize(p.product_description || "", isBusinessCards) }))
+        // Keyed lowercase: 4over's own casing for the same dimension isn't
+        // consistent ("2.5\" X 3.5\"" vs "2.5\" x 3.5\"" on different
+        // stocks of the same product) — without normalizing, those show up
+        // as TWO identical-looking "Size" dropdown entries instead of
+        // deduping to one.
         const bySize = new Map<string, { uuid: string; size: string }>()
-        for (const v of variants) if (!bySize.has(v.size)) bySize.set(v.size, v)
+        for (const v of variants) if (!bySize.has(v.size.toLowerCase())) bySize.set(v.size.toLowerCase(), v)
         const list = [...bySize.values()].sort((a, b) => parseFloat(a.size) - parseFloat(b.size))
-        if (list.length > 1) sizeProducts = list
+        if (!useLiveCascadeAnchor && list.length > 1) {
+          // The real distinguishing factor between variants here IS Size
+          // (e.g. Hang Tags' plain sizes) — sizeProducts mode (direct
+          // uuid-per-size switching) is the right fit, skipping the live
+          // cascade entirely.
+          sizeProducts = list
+        } else {
+          // Either genuinely multi-dimensional (e.g. "Standard Announcement
+          // Cards" is 5 sizes × 2 stocks, confirmed live on fourprintshop —
+          // sizeProducts mode models Size as the ONLY switchable dimension,
+          // so deduping by size would silently drop whichever stock/weight
+          // didn't win the dedup at each size), OR this clicked product is
+          // the ONLY size in its merged group (e.g. "2-part NCR Form Pads w
+          // Wraparound Cover" only exists at 8.5x11 — its "Plain" sibling
+          // at 5.5x8.5 has a genuinely different groupKey and correctly
+          // never reached `variants`). Either way, without anchoring, the
+          // live cascade's default size_list[0]/stock_list[0] (first
+          // alphabetically across the WHOLE category_uuid) can land on a
+          // totally different product line sharing this category_uuid —
+          // confirmed on NCR Forms: it silently resolved to "2 Part" when
+          // the customer clicked "3 Part with Wraparound Cover", same bug
+          // class as Boxes & Packaging, just not caught there originally.
+          // Use the SAME live-cascade + allowedProductUuids + 3-level
+          // anchor approach as TYPE_RULES categories (e.g. All Inclusive
+          // Flyers), which natively supports independent Size AND Stock
+          // dropdowns — allowedProductUuidsOverride is the full merged
+          // group when one exists, or just this one clicked product when
+          // it's the sole representative of its group.
+          allowedProductUuidsOverride = useLiveCascadeAnchor ? variants.map((v) => v.uuid) : [product.product_uuid]
+          const dimMatch = (product.product_description || "").match(SIZE_DIM)
+          const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
+          const listResult = sizeText ? await getCategoryProductsList({ category_uuid: catUuid }) : null
+          if (listResult?.success) {
+            const sizeMatch = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name).startsWith(sizeText))
+            if (sizeMatch) {
+              initialSizeUuid = sizeMatch.uuid
+              const stockListResult = await getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid })
+              const stocks = stockListResult.success ? stockListResult.data?.stock_list || [] : []
+              const allowedUuids = new Set(allowedProductUuidsOverride)
+              for (const stock of stocks) {
+                const stockResult = await getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })
+                if (!stockResult.success) continue
+                const coatings = stockResult.data?.coating_list || []
+                if (coatings.length === 0) {
+                  if ((stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) {
+                    initialStockUuid = stock.uuid
+                    break
+                  }
+                  continue
+                }
+                const coatingProbes = await Promise.all(
+                  coatings.map((coating) =>
+                    getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid, coating_uuid: coating.uuid }),
+                  ),
+                )
+                const coatingHit = coatingProbes.findIndex(
+                  (probe) => probe.success && (probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
+                )
+                if (coatingHit >= 0) {
+                  initialStockUuid = stock.uuid
+                  initialCoatingUuid = coatings[coatingHit].uuid
+                  break
+                }
+              }
+            }
+          }
+        }
       }
     }
     const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
@@ -411,7 +869,7 @@ export default async function ProductTypePage({
               <Link href="/" className="hover:text-[#e42a27]">Home</Link>
               <span className="mx-2">&gt;</span>
               {leaf && <><Link href={`/print/${leaf.parentSlug}`} className="hover:text-[#e42a27]">{leaf.parentLabel}</Link><span className="mx-2">&gt;</span></>}
-              {leaf && <><Link href={`/print/${category}`} className="hover:text-[#e42a27]">{leaf.name}</Link><span className="mx-2">&gt;</span></>}
+              {leaf && leaf.name !== productName && <><Link href={`/print/${category}`} className="hover:text-[#e42a27]">{leaf.name}</Link><span className="mx-2">&gt;</span></>}
               <span className="text-[#e07b39]">{productName}</span>
             </p>
           </div>
@@ -443,10 +901,12 @@ export default async function ProductTypePage({
               categoryUuid={product.category_uuid || leaf?.uuid || ""}
               categorySlug={category}
               productName={productName}
-              allowedProductUuids={[product.product_uuid]}
+              allowedProductUuids={allowedProductUuidsOverride || [product.product_uuid]}
               hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
               sizeProducts={sizeProducts}
               initialSizeUuid={initialSizeUuid}
+              initialStockUuid={initialStockUuid}
+              initialCoatingUuid={initialCoatingUuid}
             />
           </div>
         </div>
@@ -499,10 +959,20 @@ export default async function ProductTypePage({
         }))
       }
     }
-    return rows || []
+    // Tag every row with the uuid it was actually queried from — a type
+    // sourced entirely from an EXTRA_PRODUCT_SOURCES entry (e.g. "EndurACE
+    // Door Hangers") lives in a DIFFERENT real category_uuid than this page's
+    // own `categoryUuid` (leaf.uuid). Without this, the configurator's live
+    // Size/Stock/Coating cascade queries the WRONG category — its
+    // allowedProductUuids filter then silently falls back to ANY product
+    // reachable there, the same "looks fine, prices the wrong item" bug
+    // fixed earlier for All Inclusive Flyers/Postcards, just one layer up
+    // (wrong UUID entirely, not just the wrong stock within the right one).
+    return (rows || []).map((r) => ({ ...r, category_uuid: uuid }))
   }
 
-  let allProducts: { product_uuid: string; product_description: string; product_code: string }[] = await fetchCategoryProducts(categoryUuid)
+  let allProducts: { product_uuid: string; product_description: string; product_code: string; category_uuid: string }[] =
+    await fetchCategoryProducts(categoryUuid)
 
   // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
   // see that file's comment for why ("Tearoff Flyers"' real data lives in
@@ -517,6 +987,16 @@ export default async function ProductTypePage({
     )
     allProducts = [...allProducts, ...extraLists.flat()]
   }
+  // Posters' "Backlit"/"Gloss Book" sources both contain a handful of pure-
+  // product_code descriptions (see reconstructCodeLikeDescriptions' own
+  // comment) — without this, classifyProduct() still buckets them
+  // correctly (the raw code happens to contain no OTHER type's keyword
+  // either), but the 3-level anchor below extracts a SIZE_DIM with no
+  // quote marks ("11.5X17.5") that never matches the live size_list's
+  // quoted names ("11.5\" x 17.5\""), silently failing to anchor at all —
+  // confirmed: that left "Gloss Book Posters" resolving to a "100LB Dull
+  // Book" product on the unanchored default.
+  allProducts = reconstructCodeLikeDescriptions(allProducts)
 
   // Filter to this type using keyword matching. Classification is ORDER-
   // DEPENDENT (first matching rule in TYPE_KEYWORDS[category] wins) so this
@@ -545,6 +1025,14 @@ export default async function ProductTypePage({
   const firstProduct = matchedProducts[0]
   let optionGroups: any[] = []
 
+  // A type sourced entirely from an EXTRA_PRODUCT_SOURCES entry (e.g.
+  // "EndurACE Door Hangers") has its REAL data in a different category_uuid
+  // than this page's own `categoryUuid` (leaf.uuid) — every fetched row
+  // carries its actual source uuid (tagged in fetchCategoryProducts above),
+  // so use THAT for the live cascade instead of always leaf.uuid. See
+  // fetchCategoryProducts' comment for the bug this avoids.
+  const effectiveCategoryUuid = firstProduct?.category_uuid || categoryUuid
+
   // Anchor Size+Stock to a combo this TYPE's own products actually use —
   // the live cascade's default ("first size, then first stock at that size")
   // can land on a stock this type doesn't use at all (e.g. "All Inclusive
@@ -565,7 +1053,7 @@ export default async function ProductTypePage({
     // lookup below for no reason — this anchor only needs the bare dimension.
     const dimMatch = firstProduct.product_description.match(SIZE_DIM)
     const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
-    const listResult = sizeText ? await getCategoryProductsList({ category_uuid: categoryUuid }) : null
+    const listResult = sizeText ? await getCategoryProductsList({ category_uuid: effectiveCategoryUuid }) : null
     if (listResult?.success) {
       // startsWith, not exact equality: some size_list entries carry a
       // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
@@ -573,7 +1061,7 @@ export default async function ProductTypePage({
       const sizeMatch = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name).startsWith(sizeText))
       if (sizeMatch) {
         initialSizeUuid = sizeMatch.uuid
-        const stockListResult = await getCategoryProductsList({ category_uuid: categoryUuid, size_uuid: sizeMatch.uuid })
+        const stockListResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: sizeMatch.uuid })
         const stocks = stockListResult.success ? stockListResult.data?.stock_list || [] : []
         const allowedUuids = new Set(matchedProducts.map((p) => p.product_uuid))
         // Sequential over stocks (stop at the first hit), parallel over each
@@ -582,7 +1070,7 @@ export default async function ProductTypePage({
         // but not every coating "14PT" offers), so the stock-level products
         // (no coating filter) aren't a reliable enough check on their own.
         for (const stock of stocks) {
-          const stockResult = await getCategoryProductsList({ category_uuid: categoryUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })
+          const stockResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })
           if (!stockResult.success) continue
           const coatings = stockResult.data?.coating_list || []
           if (coatings.length === 0) {
@@ -595,7 +1083,7 @@ export default async function ProductTypePage({
           const coatingProbes = await Promise.all(
             coatings.map((coating) =>
               getCategoryProductsList({
-                category_uuid: categoryUuid,
+                category_uuid: effectiveCategoryUuid,
                 size_uuid: sizeMatch.uuid,
                 stock_uuid: stock.uuid,
                 coating_uuid: coating.uuid,
@@ -646,7 +1134,11 @@ export default async function ProductTypePage({
             <Link href="/" className="hover:text-[#e42a27]">Home</Link>
             <span className="mx-2">&gt;</span>
             {leaf && <><Link href={`/print/${leaf.parentSlug}`} className="hover:text-[#e42a27]">{leaf.parentLabel}</Link><span className="mx-2">&gt;</span></>}
-            {leaf && <><Link href={`/print/${category}`} className="hover:text-[#e42a27]">{leaf.name}</Link><span className="mx-2">&gt;</span></>}
+            {/* Skip the subcategory segment when it's the SAME label as the
+                type (e.g. a single-type subcategory named "Standard X" whose
+                only type is ALSO "Standard X") — showing both back-to-back
+                reads as an accidental duplicate. */}
+            {leaf && leaf.name !== typeLabel && <><Link href={`/print/${category}`} className="hover:text-[#e42a27]">{leaf.name}</Link><span className="mx-2">&gt;</span></>}
             <span className="text-[#e07b39]">{typeLabel}</span>
           </p>
         </div>
@@ -674,7 +1166,7 @@ export default async function ProductTypePage({
             {/* Right: configurator driven live by categoryproductslist + productquote */}
             <div>
               <ProductConfiguratorClient
-                categoryUuid={categoryUuid}
+                categoryUuid={effectiveCategoryUuid}
                 categorySlug={category}
                 productName={typeLabel}
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}

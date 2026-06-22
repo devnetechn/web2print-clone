@@ -42,7 +42,12 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
   "business-cards": {
     label: "Business Cards",
     subcategories: [
-      { name: "Business Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "business-cards-standard", image: "/images/cat/business-cards/standard.jpg" },
+      // Named "Standard" (not bare "Business Cards") so the breadcrumb/grid
+      // card doesn't repeat the parent's own name — Boss Dwayne flagged
+      // "Business Cards > Business Cards" as looking like an accidental
+      // duplicate. Same naming pattern as Standard Postcards/Presentation
+      // Folder/Flat Flyers and Brochures elsewhere in this catalog.
+      { name: "Standard Business Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "business-cards-standard", image: "/images/cat/business-cards/standard.jpg" },
       { name: "Raised Foil", uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", slug: "raised-foil", image: "/images/cat/business-cards/raised-foil.jpg", keyword: "business card" },
       { name: "Silk Cards", uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", slug: "silk-cards", image: "/images/cat/business-cards/silk.jpg", keyword: "business card" },
       { name: "Suede Cards", uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", slug: "suede-cards", image: "/images/cat/business-cards/suede.jpg", keyword: "business card" },

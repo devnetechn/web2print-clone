@@ -74,6 +74,157 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
     { label: "Standard Presentation Folder", slug: "standard-presentation-folder", keywords: [] }, // catch-all
   ],
+  // fourprintshop's literal /marketing-material/door-hangers/products/ lists
+  // EndurACE/Standard/Tearoff — confirmed our sandbox has all 3, just split
+  // across categories (EndurACE: 1 entry in the EndurACE UUID; Tearoff: 22
+  // entries in the Tear Off Cards UUID; both merged in via
+  // EXTRA_PRODUCT_SOURCES below). "Die Cut" in the door-hangers UUID's own
+  // wording is NOT a real 4th type — door hangers are inherently die-cut
+  // (the keyhole slot), fourprintshop has no separate "Die Cut" card, and
+  // the word is inconsistently present/absent across otherwise-identical
+  // siblings (same 4over data-quality pattern as Calendars' "Saddle Stitch").
+  "door-hangers": [
+    { label: "EndurACE Door Hangers", slug: "endurace-door-hangers", keywords: ["endurace"] },
+    { label: "Tearoff Door Hangers", slug: "tearoff-door-hangers", keywords: ["tear"] },
+    { label: "Standard Door Hangers", slug: "standard-door-hangers", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /marketing-material/envelopes/products/ groups
+  // by PRINT METHOD/feature (Blank/Digital/Variable Addressing), not by
+  // stock — confirmed live: "Blank Envelopes"' own Stock dropdown covers
+  // 60LB Premium Opaque + 70LB Linen + 70LB Premium Opaque together, and
+  // "Offset Envelopes" has the SAME 3 stocks (the generic/non-blank,
+  // non-digital print). "Linen"/"Natural" only become their OWN card when
+  // NEITHER Blank nor Digital nor Variable Addressing applies — order
+  // matters: e.g. "Blank ENVELOPE on 70lb Linen..." must hit Blank before
+  // the Linen rule gets a chance, and "...Natural...w/Variable Addressing"
+  // must hit Variable Addressing before Natural.
+  envelopes: [
+    { label: "Blank Envelopes", slug: "blank-envelopes", keywords: ["blank"] },
+    { label: "Digital Envelopes", slug: "digital-envelopes", keywords: ["digital"] },
+    { label: "Variable Addressing Envelopes", slug: "variable-addressing-envelopes", keywords: ["variable"] },
+    { label: "Linen Uncoated Envelopes", slug: "linen-uncoated-envelopes", keywords: ["linen"] },
+    { label: "Natural Envelopes", slug: "natural-envelopes", keywords: ["natural"] },
+    { label: "Offset Envelopes", slug: "offset-envelopes", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /marketing-material/hang-tags/products/ is an
+  // 11-card grid — confirmed live: "Regular Hang Tags" merges 14PT/16PT
+  // C2S/18PT C1S (Stock) + Rectangle/Rounded-4-Corners (Shape) into ONE
+  // card; "Bottleneck"/"Akuafoil"/etc are each their own card with no
+  // overlap (Bottleneck's own Coating list has no Akuafoil option, so a
+  // Bottle-Neck-shaped Akuafoil entry belongs under Akuafoil, not
+  // Bottleneck — hence Akuafoil checked first). "Foiled" must be checked
+  // before "Silk": Foil Worx's own wording is "Silk Laminated Foiled Hang
+  // Tags", which would otherwise misclassify as Silk.
+  "hang-tags": [
+    { label: "Akuafoil Hang Tags", slug: "akuafoil-hang-tags", keywords: ["akuafoil"] },
+    { label: "Foil Worx Hang Tags", slug: "foil-worx-hang-tags", keywords: ["foiled"] },
+    { label: "Bottleneck Hang Tags", slug: "bottleneck-hang-tags", keywords: ["bottle neck", "bottleneck"] },
+    { label: "Brown Kraft Hang Tags", slug: "brown-kraft-hang-tags", keywords: ["brown kraft"] },
+    { label: "Natural Hang Tags", slug: "natural-hang-tags", keywords: ["natural"] },
+    { label: "Pearl Hang Tags", slug: "pearl-hang-tags", keywords: ["pearl"] },
+    { label: "Plastic Hang Tags", slug: "plastic-hang-tags", keywords: ["plastic"] },
+    { label: "Raised Spot UV Hang Tags", slug: "raised-spot-uv-hang-tags", keywords: ["raised spot"] },
+    { label: "Silk Hang Tags", slug: "silk-hang-tags", keywords: ["silk"] },
+    { label: "Suede Hang Tags", slug: "suede-hang-tags", keywords: ["suede"] },
+    { label: "Regular Hang Tags", slug: "regular-hang-tags", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /marketing-material/posters/products/ is a
+  // 6-card grid — confirmed live: "Gloss Book Posters" is 100LB Gloss Book
+  // ONLY (does NOT merge 80LB like Booklets did), "Matte-Finish Posters" =
+  // "100LB Dull Book" stock, "Photo Gloss Posters" = the dedicated "8mil
+  // Photo Poster - Gloss" stock (raw wording in this sandbox is just "8mil
+  // Poster", no "Photo"/"Gloss" words at all). Backlit/Blockout/Photo Gloss
+  // all live OUTSIDE this category's own UUID — merged in via
+  // EXTRA_PRODUCT_SOURCES below. Backlit's own descriptions are pure
+  // product_code ("9MILBACKLIT-POSTER-12X15", a 4over data gap — even
+  // fourprintshop's OWN Backlit product page is broken/sizeless live) —
+  // classifyProduct() matches keywords as a SUBSTRING of the raw text
+  // (".includes()"), so "backlit" still matches inside "9milbacklit-..."
+  // fine; no reconstruction needed since TYPE_RULES cards are titled from
+  // TYPE_LABELS below, never from the raw description.
+  posters: [
+    { label: "Backlit Posters", slug: "backlit-posters", keywords: ["backlit"] },
+    { label: "Blockout Posters", slug: "blockout-posters", keywords: ["blockout"] },
+    { label: "Photo Gloss Posters", slug: "photo-gloss-posters", keywords: ["8mil"] },
+    { label: "Matte-Finish Posters", slug: "matte-finish-posters", keywords: ["dull"] },
+    { label: "Gloss Cover Posters", slug: "gloss-cover-posters", keywords: ["gloss cover"] },
+    { label: "Gloss Book Posters", slug: "gloss-book-posters", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /marketing-material/rack-cards/products/ is a
+  // 3-card grid — confirmed live: SIZE is the top-level split for "Standard"
+  // (3.5x8.5 / 4x9, each merging its own 14PT/16PT/18PT C1S stocks), while
+  // "Akuafoil Rack Cards" is its OWN single card spanning BOTH sizes (its
+  // own Size dropdown covers 3.5x8.5 AND 4x9, Stock fixed at 16PT C2S) — so
+  // Akuafoil must classify FIRST, before the size split, or it'd get
+  // swallowed into whichever Standard size matches.
+  "rack-cards": [
+    { label: "Akuafoil Rack Cards", slug: "akuafoil-rack-cards", keywords: ["akuafoil"] },
+    { label: "3.5 x 8.5 Standard Rack Cards", slug: "3-5-x-8-5-standard-rack-cards", keywords: ['3.5" x 8.5"'] },
+    { label: "4 x 9 Standard Rack Cards", slug: "4-x-9-standard-rack-cards", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /marketing-material/sell-sheets/products/ is a
+  // 6-card grid, ALL brand-stock materials (Akuafoil/Brown Kraft/EndurACE/
+  // Pearl/Silk/Suede) — confirmed live, every one of them genuinely has
+  // "Sell Sheets" matches in the SAME shared brand-stock categories as
+  // Business/Trading/Announcement Cards' own materials (merged in via
+  // EXTRA_PRODUCT_SOURCES below). Sell Sheets' OWN UUID has zero brand-
+  // stock matches — only plain 14PT/16PT/18PT stocks fourprintshop's
+  // reference doesn't show at all; kept as a 7th "Standard" catch-all
+  // rather than discarded, since it's genuine API data.
+  "sell-sheets": [
+    { label: "Akuafoil Sell Sheets", slug: "akuafoil-sell-sheets", keywords: ["akuafoil"] },
+    { label: "Brown Kraft Sell Sheets", slug: "brown-kraft-sell-sheets", keywords: ["brown kraft"] },
+    { label: "EndurACE Sell Sheets", slug: "endurace-sell-sheets", keywords: ["endurace"] },
+    { label: "Pearl Sell Sheets", slug: "pearl-sell-sheets", keywords: ["pearl"] },
+    { label: "Silk Sell Sheets", slug: "silk-sell-sheets", keywords: ["silk"] },
+    { label: "Suede Sell Sheets", slug: "suede-sell-sheets", keywords: ["suede"] },
+    { label: "Standard Sell Sheets", slug: "standard-sell-sheets", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /marketing-material/table-tent/products/ is a
+  // 4-card grid — confirmed live: SIZE splits the plain stocks (4x6 / 5x5.5,
+  // each merging 14PT/14PT MATTE/14PT Uncoated/100LB Gloss Cover — fourprint-
+  // shop's own Stock dropdown for "4x6 Table Tent" doesn't list MATTE
+  // separately, so it's folded in as just another stock there, same as
+  // every other merged category this session), while "Natural"/"Pearl"
+  // Table Tents are each their OWN single card spanning BOTH sizes (data
+  // lives in the SAME shared Natural/Pearl categories as Business/
+  // Announcement Cards' own materials) — must classify before the size
+  // split, same reasoning as Akuafoil Rack Cards above.
+  "table-tent-cards": [
+    { label: "Natural Table Tents", slug: "natural-table-tents", keywords: ["natural"] },
+    { label: "Pearl Table Tents", slug: "pearl-table-tents", keywords: ["pearl"] },
+    { label: "4x6 Table Tent", slug: "4x6-table-tent", keywords: ['4" x 6"'] },
+    { label: "5x5.5 Table Tent", slug: "5x5-5-table-tent", keywords: [] }, // catch-all
+  ],
+  // No fourprintshop reference for this category (it's a pure 4over backend
+  // bucket mixing 3 genuinely different product types — Door Hangers,
+  // Flyers, and Postcards, each "with tear-off perforation"). Per the
+  // user's explicit instruction: just ONE card per product type, full stop
+  // — every Stock (100LB Gloss Book/Cover, 14PT/16PT/18PT C1S, etc.)
+  // selectable inside that one card's live Size/Stock/Coating cascade,
+  // same as every other TYPE_RULES category.
+  "tear-off-cards": [
+    { label: "Door Hangers with Tear-Off Perforation", slug: "door-hangers-tear-off", keywords: ["door hangers"] },
+    { label: "Flyers with Tear-Off Perforation", slug: "flyers-tear-off", keywords: ["flyers"] },
+    { label: "Postcards with Tear-Off Perforation", slug: "postcards-tear-off", keywords: [] }, // catch-all
+  ],
+  // Same situation as tear-off-cards above: fourprintshop has no standalone
+  // "EDDM" category at all (only an "EDDM - Postcards" sub-card nested
+  // under its own Postcards category) — this is a pure 4over backend
+  // bucket mixing 3 genuinely different product types (Flyers/Postcards/
+  // Sell Sheets, all "EDDM"). Verified clean 3-way split across all 158
+  // raw entries (63 Postcards / 45 Sell Sheets / 50 Flyers, zero leftover)
+  // — Flyers checked last since roughly a third of its own entries are
+  // missing the word "Flyer" entirely (4over data gap, e.g. "100LB EDDM
+  // Gloss Cover With AQ" with no type word), so it can only be expressed
+  // as the catch-all once Postcards/Sell Sheets are ruled out. One card
+  // per type per the user's instruction, Stock/Weight fully selectable in
+  // the calculator.
+  eddm: [
+    { label: "EDDM Postcards", slug: "eddm-postcards", keywords: ["postcards"] },
+    { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets", keywords: ["sell sheets"] },
+    { label: "EDDM Flyers", slug: "eddm-flyers", keywords: [] }, // catch-all
+  ],
 }
 
 // Some subcategories' product-type cards span MULTIPLE 4over categories, not
@@ -99,6 +250,60 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   "flyers-and-brochures": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
   ],
+  // "Tearoff Door Hangers" (Tear Off Cards UUID) + "EndurACE Door Hangers"
+  // (EndurACE UUID, same one used by EndurACE Business Cards/Flyers) — see
+  // the matching comment on door-hangers' TYPE_RULES entry.
+  "door-hangers": [
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "door hanger" },
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "door hanger" },
+  ],
+  // "Variable Addressing Envelopes" data lives in the dedicated "Variable
+  // Data" category (f5e2f7e8) — envelopes' own UUID has zero "variable"
+  // matches.
+  envelopes: [{ uuid: "f5e2f7e8-0ba8-47a6-964d-3ec6dddef2cb", keyword: "envelope" }],
+  // Brand-stock materials (same shared categories as Business Cards/Trading
+  // Cards/Announcement Cards) plus Plastic/Raised Spot UV (same shared
+  // categories as their Business Cards counterparts).
+  "hang-tags": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "hang tag" }, // Akuafoil
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "hang tag" }, // Brown Kraft
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "hang tag" }, // Natural
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "hang tag" }, // Pearl
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "hang tag" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "hang tag" }, // Suede
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "hang tag" }, // Foil Worx
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "hang tag" }, // Plastic
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "hang tag" }, // Raised Spot UV
+  ],
+  // "Backlit Posters" (dedicated UUID, raw product_code descriptions — see
+  // the matching comment on posters' TYPE_RULES entry) + "Blockout"/"Photo
+  // Gloss" (both nested inside the SAME "Large Posters" UUID).
+  posters: [
+    { uuid: "8294ed4d-4d8c-4bea-966e-d3ad56913e74", keyword: "poster" }, // Backlit
+    { uuid: "393c5a2d-8be0-4134-9161-aa35fdc60685", keyword: "poster" }, // Large Posters (Blockout + 8mil/Photo Gloss)
+  ],
+  // Akuafoil Rack Cards' data lives in the SAME shared Akuafoil category as
+  // Business/Trading/Announcement Cards' own Akuafoil material — described
+  // as "...Postcards with Akuafoil..." there (4over's own labeling quirk,
+  // same as rack-cards' own UUID using "Postcards" wording too). Scoped by
+  // BOTH "akuafoil" AND the exact size text so this doesn't also pull in
+  // unrelated Akuafoil Postcards at OTHER sizes (4x6, 5x7, etc).
+  "rack-cards": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: ["akuafoil", '3.5" x 8.5"'] },
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: ["akuafoil", '4" x 9"'] },
+  ],
+  "sell-sheets": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: ["akuafoil", "sell sheet"] },
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: ["brown kraft", "sell sheet"] },
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["endurace", "sell sheet"] },
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "sell sheet"] },
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: ["silk", "sell sheet"] },
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: ["suede", "sell sheet"] },
+  ],
+  "table-tent-cards": [
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
+  ],
   "announcement-cards": [
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "announcement" }, // Akuafoil
     { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "announcement" }, // Brown Kraft
@@ -108,6 +313,21 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "announcement" }, // Pearl
     { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "announcement" }, // Silk
     { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "announcement" }, // Suede
+  ],
+  // fourprintshop's literal /marketing-material/trading-cards/products/ is a
+  // flat 11-card grid (100lb Cover Linen/14pt/16pt/18pt/Akuafoil/Brown Kraft/
+  // Foil Worx/Natural/Pearl/Silk/Suede) — same "brand stock materials live in
+  // the SAME shared categories as their Business Cards counterparts" pattern
+  // as Announcement Cards (verified live: Akuafoil 5 matches, Silk 4, Foil
+  // Worx 5, Brown Kraft/Natural/Pearl/Suede 1 each).
+  "trading-cards": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "trading card" }, // Akuafoil
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "trading card" }, // Brown Kraft
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "trading card" }, // Natural
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "trading card" }, // Pearl
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "trading card" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "trading card" }, // Suede
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "trading card" }, // Foil Worx
   ],
 }
 
@@ -121,6 +341,70 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+  },
+  envelopes: {
+    "blank-envelopes": "/images/cat/envelopes/blank.jpg",
+    "digital-envelopes": "/images/cat/envelopes/digital.jpg",
+    "variable-addressing-envelopes": "/images/cat/envelopes/variable-addressing.jpg",
+    "linen-uncoated-envelopes": "/images/cat/envelopes/linen-uncoated.jpg",
+    "natural-envelopes": "/images/cat/envelopes/natural.jpg",
+    "offset-envelopes": "/images/cat/envelopes/offset.jpg",
+  },
+  "hang-tags": {
+    "akuafoil-hang-tags": "/images/cat/hang-tags/akuafoil.jpg",
+    "foil-worx-hang-tags": "/images/cat/hang-tags/foil-worx.jpg",
+    "bottleneck-hang-tags": "/images/cat/hang-tags/bottleneck.jpg",
+    "brown-kraft-hang-tags": "/images/cat/hang-tags/brown-kraft.jpg",
+    "natural-hang-tags": "/images/cat/hang-tags/natural.jpg",
+    "pearl-hang-tags": "/images/cat/hang-tags/pearl.jpg",
+    "plastic-hang-tags": "/images/cat/hang-tags/plastic.jpg",
+    "raised-spot-uv-hang-tags": "/images/cat/hang-tags/raised-spot-uv.jpg",
+    "silk-hang-tags": "/images/cat/hang-tags/silk.jpg",
+    "suede-hang-tags": "/images/cat/hang-tags/suede.jpg",
+    "regular-hang-tags": "/images/cat/hang-tags/regular.jpg",
+  },
+  posters: {
+    "backlit-posters": "/images/cat/posters/backlit.jpg",
+    "blockout-posters": "/images/cat/posters/blockout.jpg",
+    "photo-gloss-posters": "/images/cat/posters/photo-gloss.jpg",
+    "matte-finish-posters": "/images/cat/posters/matte-finish.jpg",
+    "gloss-cover-posters": "/images/cat/posters/gloss-cover.jpg",
+    "gloss-book-posters": "/images/cat/posters/gloss-book.jpg",
+  },
+  "rack-cards": {
+    "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
+    "3-5-x-8-5-standard-rack-cards": "/images/cat/rack-cards/standard-3.5x8.5.jpg",
+    "4-x-9-standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
+  },
+  "sell-sheets": {
+    "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
+    "brown-kraft-sell-sheets": "/images/cat/sell-sheets/brown-kraft.jpg",
+    "endurace-sell-sheets": "/images/cat/sell-sheets/endurace.jpg",
+    "pearl-sell-sheets": "/images/cat/sell-sheets/pearl.jpg",
+    "silk-sell-sheets": "/images/cat/sell-sheets/silk.jpg",
+    "suede-sell-sheets": "/images/cat/sell-sheets/suede.jpg",
+    "standard-sell-sheets": "/images/cat/sell-sheets.jpg",
+  },
+  "table-tent-cards": {
+    "natural-table-tents": "/images/cat/table-tent-cards/natural.jpg",
+    "pearl-table-tents": "/images/cat/table-tent-cards/pearl.jpg",
+    "4x6-table-tent": "/images/cat/table-tent-cards/4x6.jpg",
+    "5x5-5-table-tent": "/images/cat/table-tent-cards/5x5.5.jpg",
+  },
+  // No per-stock fourprintshop photos exist for this category (no reference
+  // page at all) — reusing the SAME real generic photo per product type,
+  // consistent with each type's own existing image elsewhere on the site
+  // (door-hangers.jpg, postcards.jpg, and flyers-and-brochures' own
+  // tearoff.jpg, sourced from this exact same UUID).
+  "tear-off-cards": {
+    "door-hangers-tear-off": "/images/cat/door-hangers.jpg",
+    "flyers-tear-off": "/images/cat/flyers-and-brochures/tearoff.jpg",
+    "postcards-tear-off": "/images/cat/postcards.jpg",
+  },
+  eddm: {
+    "eddm-postcards": "/images/cat/postcards.jpg",
+    "eddm-sell-sheets": "/images/cat/sell-sheets.jpg",
+    "eddm-flyers": "/images/cat/flyers-and-brochures.jpg",
   },
 }
 
@@ -137,6 +421,13 @@ function classifyProduct(description: string, categorySlug: string): TypeRule | 
   return rules[rules.length - 1] // fallback to last (catch-all)
 }
 
+// Table Tent Cards' "(Flat Size: 4 X 16.25)" parenthetical states the
+// unfolded/pre-fold dimension — redundant once the folded/usable SIZE_DIM is
+// already shown right before it, and SIZE_DIM alone only eats the numbers
+// inside, leaving a near-empty "(Flat Size: )" behind. Strip the whole thing
+// first so there's nothing left for the later "drop empty parens" cleanup to
+// even need to catch.
+const FLAT_SIZE_PAREN = /\(\s*flat\s+size\s*:?[^)]*\)\s*/gi
 // Variant dimensions removed to get the "stock/type" name used to group
 // same-product-different-size variants. Covers NxN and NxNxN (boxes) sizes
 // AND booklet/catalog page counts ("8 Page", "12 Pages").
@@ -205,8 +496,14 @@ const UV_SIDES_SUFFIX = /[\s,]+(full\s+|spot\s+)?(?<!raised\s(?:spot\s)?)uv\s+on
 // in sync with the same constant in [typeSlug]/page.tsx.
 const RAISED_SIDE_SUFFIX = /\s+on\s+(both\s+sides|front\s+only|the\s+front|the\s+back)\s*$/i
 // Binding/Finishing add-ons already exposed as calculator dropdowns/checkboxes
-// elsewhere on the product (Scoring, Variable Numbering).
-const SCORING_SUFFIX = /,?\s*(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
+// elsewhere on the product (Scoring, Variable Numbering). The optional "Die
+// Cut and " is Table Tent Cards-specific: AQ_MIDDLE (which runs earlier in
+// the chain) already strips "with AQ" as a MIDDLE modifier before this suffix
+// regex gets a chance to anchor from "with AQ" through end-of-string, so
+// without consuming "Die Cut and" here too, it's left stranded once this
+// regex removes just ", Scoring Included" — every Table Tent Cards entry is
+// both die-cut AND scored, so the phrase carries no distinguishing info.
+const SCORING_SUFFIX = /,?\s*(die\s+cut\s+and\s+)?(flat\s*-\s*no\s+scoring|scoring\s+included)\.?\s*$/i
 const VARIABLE_SUFFIX = /\s+with\s+variable\s+numbering\s*$/i
 // Envelope industry size codes ("#9", "#10", "#6 3/4", "A2", "A6", "A7", "A9")
 // are a redundant synonym for the physical dimension already in the name —
@@ -242,6 +539,35 @@ function balanceParens(s: string): string {
   return str
 }
 
+// A handful of SKUs have NO real product_description at all — 4over's own
+// data falls back to literally the product_code (e.g. Posters'
+// "100GLB-PSUC-11.5X17.5" instead of "11.5\" x 17.5\" Posters on 100LB Gloss
+// Book With No AQ" — confirmed by its OWN sibling sizes "100GLB-PSUC-11X17"/
+// "...-12X18" having normal wording). Reconstruct it from a sibling sharing
+// the same code prefix (the part before the trailing "-NUMxNUM" size
+// segment), splicing in this product's own size.
+const CODE_LIKE_DESCRIPTION = /^([A-Z0-9.]+(?:-[A-Z0-9.]+)*)-([\d.]+)X([\d.]+)$/i
+function reconstructCodeLikeDescriptions<T extends { product_description: string; product_code: string }>(
+  products: T[],
+): T[] {
+  const templates = new Map<string, string>()
+  for (const p of products) {
+    if (CODE_LIKE_DESCRIPTION.test(p.product_description)) continue
+    const m = p.product_code?.match(CODE_LIKE_DESCRIPTION)
+    if (m && !templates.has(m[1])) templates.set(m[1], p.product_description)
+  }
+  return products.map((p) => {
+    const m = p.product_description.match(CODE_LIKE_DESCRIPTION)
+    if (!m) return p
+    const template = templates.get(m[1])
+    if (!template) return p
+    const newSize = `${m[2]}" x ${m[3]}"`
+    const templateSize = template.match(SIZE_DIM)
+    const newDesc = templateSize ? template.replace(templateSize[0], newSize) : `${newSize} ${template}`
+    return { ...p, product_description: newDesc }
+  })
+}
+
 // Business Cards: Round Corner/Oval/Fold Over are Shape/Size variants of one
 // product now (see the matching comment on the business-cards-standard
 // TYPE_RULES entry below and ProductConfiguratorClient's shapeList) — strip
@@ -254,6 +580,7 @@ const SHAPE_WORDS = /\b(round\s*corners?|ovals?|fold\s*overs?)\b\s*/gi
 
 function stripSize(desc: string, isBusinessCards = false): string {
   let s = (desc || "")
+    .replace(FLAT_SIZE_PAREN, " ")
     .replace(MATTE_DULL_MIDDLE, " ")
     .replace(AQ_MIDDLE, " ")
     .replace(SIZE_DIM, " ")
@@ -273,6 +600,22 @@ function stripSize(desc: string, isBusinessCards = false): string {
     .replace(SCORING_SUFFIX, "")
     .replace(VARIABLE_SUFFIX, "")
     .replace(TRAILING_WITH, "")
+    // 4over's data is occasionally inconsistent about pluralizing the
+    // product-type noun (e.g. "16PT Round Corner Hang Tag with..." vs every
+    // other sibling's "...Hang Tags", "14PT Table Tent..." vs "...Table
+    // Tents", "Sell Sheet On 14PT..." vs "14PT ...Sell Sheets") — normalize
+    // to plural so these don't show up as extra near-duplicate cards instead
+    // of merging with their real siblings. groupKey() sorts tokens, so word
+    // ORDER ("Sell Sheet On X" vs "X Sell Sheets") doesn't matter once the
+    // word forms match.
+    .replace(/\bTag\b/g, "Tags")
+    .replace(/\bTent\b/g, "Tents")
+    .replace(/\bSheet\b/g, "Sheets")
+    // Reorder so the merged card's displayed title (picked by length, see
+    // "prefer longer name" below) reads like its siblings' "X Sell Sheets"
+    // instead of backwards as "Sell Sheets On X" — same idea as the Business
+    // Cards lamination reorder below, just for a different category.
+    .replace(/\bSell\s+Sheets\s+[Oo]n\s+(.+)$/, "$1 Sell Sheets")
   if (isBusinessCards) {
     s = s
       .replace(SHAPE_WORDS, " ")
@@ -302,6 +645,129 @@ function stripSize(desc: string, isBusinessCards = false): string {
   return balanceParens(s)
 }
 
+const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
+  // One "5.5\" x 8.5\" - 3mm White PVC Signs" entry is mislabeled — every
+  // other 3mm White PVC size/coating combo says "Counter Cards with Easel
+  // Backs" — a 4over typo, not a genuinely different product.
+  "counter-cards": [[/\bsigns\b/gi, "Counter Cards with Easel Backs"]],
+  // "(20 Inside pages 4:4 plus 4 page cover 4:4)" entries are missing the
+  // stock name entirely — confirmed via product_code: every one of these
+  // shares the SAME "100GLB-..." prefix as its normally-worded "Saddle
+  // Stitch Calendar On 100LB GLOSS BOOK" siblings, just with a different
+  // coating. The page-count info is redundant (already in the leading
+  // "N Page" PAGE_DIM token), so replace the whole parenthetical with the
+  // missing stock name instead of just stripping it.
+  "calendars": [[/\(\s*\d+\s*inside\s+pages?\s+\d+:\d+\s+plus\s+\d+\s+page\s+cover\s+\d+:\d+\s*\)/gi, "On 100LB GLOSS BOOK"]],
+  // fourprintshop's literal "Foil Worx Trading Cards" page (confirmed live)
+  // has ONE Stock dropdown covering BOTH "14PT Uncoated" and "16PT C2S" —
+  // unlike plain (non-material) Trading Cards, where 14pt/16pt/18pt ARE
+  // separate top-level cards because the bare card thickness IS the product
+  // line. For the Foiled material specifically, strip the stock-name prefix
+  // before "Foiled Trading Cards" so all stocks merge into one card, then
+  // rename "Foiled" to match fourprintshop's "Foil Worx" naming.
+  "trading-cards": [
+    [/\b\d+pt\s+(?:uncoated\s+|silk\s+laminated\s+)?(?=foiled\s+trading\s+cards)/gi, ""],
+    [/\bfoiled\s+trading\s+cards\b/gi, "Foil Worx Trading Cards"],
+    // "Uncoated" sits as a MIDDLE modifier here ("14PT Uncoated Trading
+    // Cards"), not the trailing position the existing coating regexes
+    // anchor on — without stripping it, this is the only "14PT" stock
+    // variant that fails to merge with its "No Coating"/AQ/UV siblings.
+    // Also strips it from "Natural Uncoated Trading Cards" etc., which is
+    // safe: "Natural" alone already identifies that card, "Uncoated" there
+    // adds no distinguishing information (it's just Natural stock's
+    // inherent finish, the same way 14PT plain trading cards' is).
+    [/\buncoated\s+(?=trading\s+cards)/gi, ""],
+  ],
+  // Same middle-modifier issue as Trading Cards' "Uncoated", here on
+  // "14PT Uncoated Announcement Cards" specifically (its 16PT siblings have
+  // no such word, since they're already coated by their UV/AQ/Matte option).
+  // The lookahead allows an optional Shape word in between ("...Uncoated
+  // Round Corner Announcement Cards") since this runs BEFORE stripSize's own
+  // SHAPE_WORDS removal for the extra-sourced materials — without it, only
+  // the non-Round-Corner half of e.g. Natural's products gets the word
+  // stripped, leaving 2 near-duplicate "Natural Announcement Cards" cards.
+  "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  // fourprintshop's literal page (confirmed live) merges paper WEIGHT into a
+  // Stock dropdown for Gloss Book/Gloss Cover/Matte Book specifically —
+  // "Gloss Booklets" page's own Stock dropdown lists BOTH "80LB Gloss Book"
+  // and "100LB Gloss Book". Dull Book and Premium Opaque/Uncoated Text are
+  // NOT merged this way (confirmed: their own pages show only ONE weight
+  // each) — the lookahead only matches the 3 stock names that actually do.
+  "booklets": [[/\b(?:60lb|70lb|80lb|100lb)\s+(?=(?:gloss\s*book|gloss\s*cover|matte\s*book)\b)/gi, ""]],
+  // Same middle-modifier issue as Trading Cards/Announcement Cards'
+  // "Uncoated" — "14PT Uncoated Greeting Cards" has no coating phrase to
+  // strip via the trailing-anchored regexes, so it never merged with its
+  // "14PT Greeting Cards with AQ/UV/Matte/No Coating" siblings.
+  "greeting-cards": [
+    [/\buncoated\s+(?=greeting\s+cards)/gi, ""],
+    // One "Greeting Cards on 16PT with Satin AQ..." entry word-orders the
+    // stock AFTER "Greeting Cards" (every other 16PT sibling puts it
+    // before: "16PT Greeting Cards with...") — reorder so the merged card's
+    // displayed title (picked by length) doesn't read backwards just
+    // because the "on" wording happens to be longer. Scoped to PT stock
+    // names specifically so "Greeting Cards on 100LB Gloss Cover" (already
+    // consistent across all its siblings) is untouched.
+    [/\bGreeting\s+Cards\s+[Oo]n\s+(\d+\s*pt)\b/gi, "$1 Greeting Cards"],
+    // 14PT/16PT/18PT C1S are all plain (non-Linen, non-Gloss-Cover) card
+    // stock — merge into ONE card, Stock chosen in the calculator, instead
+    // of one card per thickness. Linen/Gloss Cover stay separate (different
+    // stock FAMILY, not just a thickness number). Renamed to "Standard"
+    // below (after stripSize removes the leading size, since this set of
+    // overrides runs on the raw, still-sized description) to match the
+    // same catch-all naming used for Announcement Cards/Door Hangers/
+    // Presentation Folders/Postcards elsewhere in this catalog. The
+    // lookahead tolerates an optional "Matte/Dull Finish" in between (e.g.
+    // "14PT Matte/Dull Finish Greeting Cards") — without it, that one
+    // coating variant's PT prefix survives unstripped and it's left behind
+    // as its own near-duplicate card once stripSize removes "Matte/Dull
+    // Finish" from everything else.
+    [/\b\d+\s*pt\s*(?:c1s)?\s+(?=(?:matte\s*\/\s*dull\s+finish\s+)?greeting\s+cards)/gi, ""],
+  ],
+  // Display-only renames to match fourprintshop's naming — confirmed live,
+  // fourprintshop's own "Blank Letterheads" page's Stock dropdown actually
+  // covers all 3 of these stocks together (and "Linen"/"Premium Opaque" are
+  // each ALSO their own separate, overlapping card there) — per explicit
+  // instruction, we keep the current clean 3-cards-by-stock split instead of
+  // replicating that overlap, just renamed to read the same way.
+  letterheads: [
+    [/\bLETTERHEAD\s+on\s+60LB\s+Opaque\s+Text\b/gi, "Blank Letterheads"],
+    [/\bLETTERHEAD\s+on\s+70lb\s+LINEN\b/gi, "Linen Uncoated Letterheads"],
+    [/\bLETTERHEAD\s+on\s+70lb\s+Premium\s+Uncoated\s+Text\b/gi, "Premium Opaque Letterheads"],
+  ],
+  // Display-only renames to match fourprintshop's naming — confirmed live,
+  // same 4-card structure (2-part/3-part x plain/Wraparound-Cover), just
+  // worded differently. The Wraparound-specific patterns must run BEFORE
+  // the bare "N Part NCR Forms" ones below, or those would match the
+  // Wraparound entries' own "2 Part NCR Forms" prefix first and leave a
+  // mangled partial rename.
+  "ncr-forms": [
+    [/\b2\s*Part\s+NCR\s+Forms\s+with\s+Wraparound\s+Cover\s*-?\s*Qty\s*50\s*per\s*book\b/gi, "2-part NCR Form Pads w Wraparound Cover"],
+    [/\b3\s*Part\s+NCR\s+Forms\s+with\s+Wraparound\s+Cover\s*-?\s*Qty\s*35\s*per\s*book\b/gi, "3-part NCR Form Pads w Wraparound Cover"],
+    [/\b2\s*Part\s+NCR\s+Forms\b/gi, "2-part NCR Forms w Variable Numbering"],
+    [/\b3\s*Part\s+NCR\s+Forms\b/gi, "3-part NCR Forms w Variable Numbering"],
+  ],
+  // fourprintshop's literal page (confirmed live) merges Sheet Count (25/50)
+  // AND, for Premium Opaque specifically, BOTH weights (60LB Opaque + 70LB
+  // Premium Uncoated) into ONE card each — "Premium Opaque Notepads"' own
+  // Stock dropdown lists "60LB Premium Opaque"+"70LB Premium Opaque"
+  // together, and its "Sheets Per Pad" dropdown covers 25+50. Linen stays
+  // its own single-stock card. Sheet Count itself isn't a Stock/Coating
+  // cascade dimension — it resolves to 2 distinct product_uuids at the
+  // SAME Size+Stock+Coating, so it's exposed via the same shapeList
+  // mechanism as Round Corner/Oval/Fold Over (see extractShape()).
+  notepads: [
+    // Stripped FIRST: the full-phrase renames below anchor on "Notepad"
+    // immediately preceding "on ...", and stripping "25 Sheet "/"50 Sheet "
+    // after the rename would no longer find "Sheet" directly before
+    // "Notepad" (the rename has already moved "Notepads" to the end).
+    [/\b\d+\s*Sheet\s+(?=Notepad)/gi, ""],
+    [/\bNotepad\s+on\s+60LB\s+Opaque\s+Text\s+with\s+Chipboard\s+Backer\b/gi, "Premium Opaque Notepads"],
+    [/\bNotepad\s+on\s+70LB\s+Premium\s+Uncoated\s+Text\s+with\s+Chipboard\s+Backer\b/gi, "Premium Opaque Notepads"],
+    [/\bNotepad\s+on\s+70LB\s+LINEN\s+Uncoated\s+Text\s+with\s+Chipboard\s+Backer\b/gi, "Linen Notepads"],
+  ],
+}
+const CATEGORY_ENSURE_SUFFIX: Record<string, { test: RegExp; suffix: string }> = {}
+
 // Filler words ignored when grouping so word-order/punctuation variants of the
 // same product merge (e.g. "Matte/Dull Finish Cards" == "Cards with MATTE/DULL
 // FINISH"). Meaningful words (front/back/both/uv/aq/14pt/...) are kept.
@@ -314,7 +780,13 @@ function stripSize(desc: string, isBusinessCards = false): string {
 // siblings. Confirmed safe elsewhere: Catalogs also has "Saddle Stitch" but
 // always alongside a genuinely different binding ("Perfect Bound") that's
 // distinguished by ITS OWN tokens, not by saddle/stitch's presence.
-const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w", "calendar", "saddle", "stitch"])
+// "eddm" is here for the same reason: one EDDM Postcards size/coating combo
+// is missing the "EDDM" word entirely (4over typo), which without ignoring
+// it would show up as an extra "16PT Postcards" card alongside the correctly
+// worded "16PT EDDM Postcards" siblings — safe to ignore everywhere since
+// the STOCK weight/finish words (100LB/70LB/Matte/...) are what actually
+// distinguish different EDDM products, not the literal word "EDDM".
+const FILLER_WORDS = new Set(["with", "on", "the", "a", "an", "and", "for", "of", "to", "&", "in", "w", "calendar", "saddle", "stitch", "eddm"])
 // Business Cards only: "Soft Velvet Lamination"/"Silk Lamination" wording is
 // sometimes dropped entirely on a handful of sizes (the same kind of 4over
 // data inconsistency as Calendars' "Saddle Stitch") — ignoring these tokens
@@ -443,7 +915,7 @@ export default async function PrintCategoryPage({
   }
 
   const products = await fetchCategoryProducts(leaf.uuid, leaf.name)
-  let productList = leaf.keyword
+  let productList: (typeof products[number] & { _extraSourced?: boolean })[] = leaf.keyword
     ? products.filter((p) => matchesAllKeywords(p.product_description, leaf.keyword!))
     : products
 
@@ -452,11 +924,18 @@ export default async function PrintCategoryPage({
     const extraLists = await Promise.all(
       extraSources.map(async (src) => {
         const rows = await fetchCategoryProducts(src.uuid, `${leaf.name} (extra: ${src.uuid})`)
-        return rows.filter((p) => matchesAllKeywords(p.product_description, src.keyword))
+        // Tagged so Round Corner can be treated differently per source below
+        // (announcement-cards mixes the PRIMARY uuid's plain Standard/Round
+        // Corner — 2 genuinely separate cards, confirmed live: Standard's
+        // Stock dropdown is 14PT+16PT/Rectangle-only, Round Corner's is
+        // 16PT-only/Rounded-only — with EXTRA-sourced materials like Silk,
+        // where Round Corner IS just a Shape option within their one card).
+        return rows.filter((p) => matchesAllKeywords(p.product_description, src.keyword)).map((p) => ({ ...p, _extraSourced: true }))
       }),
     )
     productList = [...productList, ...extraLists.flat()]
   }
+  productList = reconstructCodeLikeDescriptions(productList)
 
   // ---- If we have type grouping rules, show TYPE CARDS (level 3) ----
   const hasTypeRules = !!TYPE_RULES[category]
@@ -570,11 +1049,50 @@ export default async function PrintCategoryPage({
     ? (() => {
         const groups = new Map<string, { product_uuid: string; product_description: string }>()
         for (const p of productList) {
-          let name = stripSize(p.product_description || "", isBusinessCards) || p.product_description
-          let key = groupKey(p.product_description || "", isBusinessCards) || name.toLowerCase()
+          // Applied to the RAW description, before stripSize/groupKey, so a
+          // mislabeled word (e.g. Counter Cards' one "...Signs" outlier) gets
+          // merged into the SAME group as its correctly-worded siblings, not
+          // just relabeled in place as its own separate card.
+          let rawDesc = p.product_description || ""
+          for (const [pattern, replacement] of CATEGORY_WORD_OVERRIDES[category] || []) {
+            rawDesc = rawDesc.replace(pattern, replacement)
+          }
+          // For announcement-cards specifically, Shape-merging only applies
+          // to the EXTRA-sourced materials (Silk/Pearl/...) — the PRIMARY
+          // uuid's plain "Standard"/"Round Corner" are confirmed (live,
+          // fourprintshop) to be 2 genuinely separate cards: Standard's
+          // Stock dropdown is 14PT+16PT/Rectangle-only, Round Corner's is
+          // 16PT-only/Rounded-only — different stock AVAILABILITY, not just
+          // a Shape pick within one card.
+          const useShapeMerge = isBusinessCards && (category !== "announcement-cards" || p._extraSourced)
+          let name = stripSize(rawDesc, useShapeMerge) || rawDesc
+          let key = groupKey(rawDesc, useShapeMerge) || name.toLowerCase()
           if (isBoxesPackaging) {
             name = name.replace(BOX_THICKNESS_PREFIX, "").trim() || name
             key = key.replace(/\b\d+pt\b/g, "").replace(/\s{2,}/g, " ").trim()
+          }
+          // "Standard Announcement Cards" merges 14PT+16PT the same way
+          // Boxes & Packaging merges thickness — confirmed live, its Stock
+          // dropdown covers both. Scoped to non-extra-sourced, non-Round-
+          // Corner only: Round Corner is 16PT-only (a real stock-
+          // availability difference, not just a number to ignore), and the
+          // extra-sourced materials' OWN stock differences (Silk/Suede/...)
+          // are untouched by this category-specific rule.
+          if (category === "announcement-cards" && !p._extraSourced && !/round\s*corner/i.test(rawDesc)) {
+            name = name.replace(BOX_THICKNESS_PREFIX, "Standard ").trim() || name
+            key = key.replace(/\b\d+pt\b/g, "").replace(/\s{2,}/g, " ").trim()
+          }
+          // Greeting Cards' 14PT/16PT/18PT C1S merge already happens via
+          // CATEGORY_WORD_OVERRIDES stripping the PT prefix from rawDesc
+          // before groupKey() runs — this just renames the resulting bare
+          // "Greeting Cards" to match the "Standard X" naming used for the
+          // same pattern elsewhere (Announcement Cards/Door Hangers/...).
+          if (category === "greeting-cards" && name === "Greeting Cards") {
+            name = "Standard Greeting Cards"
+          }
+          const ensureSuffix = CATEGORY_ENSURE_SUFFIX[category]
+          if (ensureSuffix && !ensureSuffix.test.test(name)) {
+            name = name + ensureSuffix.suffix
           }
           // Prefer the longer/more complete name (and its own uuid, so the
           // configurator page that loads from THIS uuid shows a matching H1)

@@ -95,6 +95,12 @@ function dedupeList(items: ListItem[]): ListItem[] {
 // product_uuids at the same Size+Stock+Coating, distinguished only by this
 // wording in the description — used to label the Shape dropdown options.
 function extractShape(desc: string): string {
+  // Notepads' "25 Sheet"/"50 Sheet Notepad..." pair resolves to 2 distinct
+  // product_uuids at the same Size+Stock+Coating, the exact same ambiguity
+  // pattern as Round Corner/Oval/Fold Over — just a sheet count instead of
+  // a shape. Checked first since it's mutually exclusive with the others.
+  const sheetMatch = desc.match(/\b(\d+)\s*sheets?\b/i)
+  if (sheetMatch) return `${sheetMatch[1]} Sheets`
   if (/round\s*corner/i.test(desc)) return "Round Corner"
   if (/\boval\b/i.test(desc)) return "Oval"
   if (/fold\s*over/i.test(desc)) return "Fold Over"
@@ -695,8 +701,10 @@ export function ProductConfiguratorClient({
       const name = g.group_name.toLowerCase().trim()
       if (hiddenSet && hiddenSet.has(name)) return false
       // The dedicated Shape dropdown below replaces this group's normally-
-      // fixed single value once there's more than one shape to pick from.
-      if (name === "shape" && shapeList.length > 1) return false
+      // fixed single value once there's more than one shape to pick from —
+      // also covers Notepads' "Sheets Per Pad" group, which extractShape()
+      // repurposes for the exact same Round-Corner-style ambiguity.
+      if ((name === "shape" || name === "sheets per pad") && shapeList.length > 1) return false
       if (seen.has(name)) return false
       seen.add(name)
       return true
@@ -818,7 +826,7 @@ export function ProductConfiguratorClient({
                   bypassing baseprices/quote re-resolution since these are
                   already known sibling uuids. */}
               {renderListRow(
-                "Shape",
+                /^\d+\s*Sheets$/.test(shapeList[0]?.shape || "") ? "Sheets Per Pad" : "Shape",
                 shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
                 shapeUuid,
                 (uuid) => {
