@@ -104,6 +104,23 @@ function extractShape(desc: string): string {
   if (/round\s*corner/i.test(desc)) return "Round Corner"
   if (/\boval\b/i.test(desc)) return "Oval"
   if (/fold\s*over/i.test(desc)) return "Fold Over"
+  if (/\bcircle\b/i.test(desc)) return "Circle"
+  // Buttons: at most ONE of Shape or Backing varies for any given size (3"
+  // Round has both a Locking-pin and a Magnet variant — Magnet checked
+  // first so that pair differentiates as "Round" vs "Magnet Backing"
+  // rather than both collapsing to "Round"; 2"x2" has Diamond vs Square,
+  // checked next, no Backing variation there).
+  if (/magnet\s*backing/i.test(desc)) return "Magnet Backing"
+  if (/diamond\s*shaped/i.test(desc)) return "Diamond"
+  if (/\bsquare\b/i.test(desc)) return "Square"
+  if (/\brectangle\b/i.test(desc)) return "Rectangle"
+  if (/\bround\b/i.test(desc)) return "Round"
+  // T-Shirts' garment types (e.g. "Men Short Sleeve Tee") resolve to 2-5
+  // distinct product_uuids at the same Size+Stock+Coating, distinguished
+  // only by a color word right before "with"/"w/" Print Area — the exact
+  // same ambiguity pattern, just Color instead of Shape.
+  const colorMatch = desc.match(/\b(black|blue|gray|grey|red|white)\b\s*(?=w\/|with)/i)
+  if (colorMatch) return colorMatch[1].charAt(0).toUpperCase() + colorMatch[1].slice(1).toLowerCase()
   return "Rectangle"
 }
 
@@ -702,9 +719,12 @@ export function ProductConfiguratorClient({
       if (hiddenSet && hiddenSet.has(name)) return false
       // The dedicated Shape dropdown below replaces this group's normally-
       // fixed single value once there's more than one shape to pick from —
-      // also covers Notepads' "Sheets Per Pad" group, which extractShape()
-      // repurposes for the exact same Round-Corner-style ambiguity.
-      if ((name === "shape" || name === "sheets per pad") && shapeList.length > 1) return false
+      // also covers Notepads' "Sheets Per Pad" group, T-Shirts' "Product
+      // Color" group, and Buttons' "Button Shape Options"/"Button Backing
+      // Options" groups, which extractShape() repurposes for the exact same
+      // Round-Corner-style ambiguity.
+      const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options"]
+      if (shapeLikeGroups.includes(name) && shapeList.length > 1) return false
       if (seen.has(name)) return false
       seen.add(name)
       return true
@@ -826,7 +846,11 @@ export function ProductConfiguratorClient({
                   bypassing baseprices/quote re-resolution since these are
                   already known sibling uuids. */}
               {renderListRow(
-                /^\d+\s*Sheets$/.test(shapeList[0]?.shape || "") ? "Sheets Per Pad" : "Shape",
+                /^\d+\s*Sheets$/.test(shapeList[0]?.shape || "")
+                  ? "Sheets Per Pad"
+                  : /^(black|blue|gray|grey|red|white)$/i.test(shapeList[0]?.shape || "")
+                    ? "Color"
+                    : "Shape",
                 shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
                 shapeUuid,
                 (uuid) => {

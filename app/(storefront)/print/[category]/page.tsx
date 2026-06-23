@@ -225,6 +225,151 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets", keywords: ["sell sheets"] },
     { label: "EDDM Flyers", slug: "eddm-flyers", keywords: [] }, // catch-all
   ],
+  // fourprintshop's literal /signs-banners/table-covers/products/ is a
+  // 2-card grid — confirmed live: "Table cloths" (4over's own internal
+  // productcategory label is "Table Throws") covers all 4 sizes (68x132,
+  // 68x156, 90x132, 90x156), "Table Runners" covers all 5 widths. All 4
+  // Table Cloth entries in this sandbox have pure product_code
+  // descriptions ("9OZPOLY-TABLETHROW-68X132") with NO clean sibling to
+  // reconstruct from (every one of them is equally code-like) — handled in
+  // [typeSlug]/page.tsx with a targeted regex instead of the generic
+  // reconstructCodeLikeDescriptions helper. Not needed here: classification
+  // below matches "tablethrow" as a raw substring fine, and this level-3
+  // page's card title comes from the static label, never the raw
+  // description.
+  "table-covers": [
+    { label: "Table Cloths", slug: "table-cloths", keywords: ["tablethrow"] },
+    { label: "Table Runners", slug: "table-runners", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /signs-banners/rigid-signs/products/ is a
+  // 9-card grid — confirmed live: 7 of these 9 (10mm/4mm/3mm/Rider/Foam
+  // Core/Aluminum Heavy Duty/Aluminum Sandwich Board) genuinely exist in
+  // this sandbox. "High Quantity Coro" (4mm White Coroplast, just a
+  // different quantity tier) and "Real Estate Post" (3mm PVC, fixed 18x24
+  // for H-Stake mounting) are confirmed ABSENT from both rigid-signs' own
+  // UUID and the dedicated Aluminum UUID — not fabricated, simply omitted.
+  // "Styrene Signs" and "Gator Board" (Black+White merged into one card)
+  // are genuine extras this sandbox has that fourprintshop's own page
+  // doesn't show — kept rather than discarded, consistent with every other
+  // genuine-extra decision this session. "Coroplast Rider Signs" must be
+  // checked before "4mm Coroplast Signs" (broader match) — every Rider
+  // entry is ALSO "4mm White Coroplast" stock.
+  "rigid-signs": [
+    { label: "10mm Coroplast Signs", slug: "10mm-coroplast-signs", keywords: ["10mm"] },
+    { label: "Coroplast Rider Signs", slug: "coroplast-rider-signs", keywords: ["rider"] },
+    { label: "4mm Coroplast Signs", slug: "4mm-coroplast-signs", keywords: ["4mm white coroplast"] },
+    { label: "3mm PVC Signs", slug: "3mm-pvc-signs", keywords: ["3mm white pvc signs"] },
+    { label: "Foam Core Signs", slug: "foam-core-signs", keywords: ["foamcore", "foam core"] },
+    { label: "Aluminum Heavy Duty", slug: "aluminum-heavy-duty", keywords: ["heavy duty"] },
+    { label: "Aluminum Sandwich Board", slug: "aluminum-sandwich-board", keywords: ["sandwich board"] },
+    { label: "Styrene Signs", slug: "styrene-signs", keywords: ["styrene"] },
+    { label: "Gator Board Signs", slug: "gator-board-signs", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /signs-banners/outdoor-banners/products/ is a
+  // 2-card grid (Mesh Banners, Scrim Vinyl Banners — confirmed live, stock
+  // "13oz Scrim Vinyl - Outdoor" matches our own "13oz Outdoor Vinyl
+  // Banner" wording) — confirmed clean 3-way split across all 522 raw
+  // entries (139 Mesh / 382 Scrim Vinyl / 1 Banner Stand Kit, zero
+  // leftover). The single "13oz Scrim Vinyl with Telescopic Backdrop
+  // Banner Stand" entry is a genuinely different bundled product (banner +
+  // stand hardware, not just a material variant) that fourprintshop's own
+  // page doesn't show — kept as a 3rd card rather than discarded, same as
+  // every other genuine-extra decision this session.
+  "outdoor-banners": [
+    { label: "Mesh Banners", slug: "mesh-banners", keywords: ["mesh"] },
+    { label: "Scrim Vinyl Banners", slug: "scrim-vinyl-banners", keywords: ["13oz outdoor vinyl banner"] },
+    { label: "Banner Stand Kit", slug: "banner-stand-kit", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /signs-banners/indoor-banners/products/ is a
+  // 5-card grid. Only 3 of these (Premium Vinyl/15oz Blockout/18oz
+  // Blockout) live in this category's own UUID — "Artist Canvas" and
+  // "Premium Polyester Banners" were INITIALLY assumed absent (this
+  // sandbox's own UUID has zero matches for either), but checking each
+  // fourprintshop product page's live Stock dropdown value+uuid revealed
+  // both actually live in the SAME shared "Fabric Banners" category
+  // (stock_uuid "a33cb149..." for Artist Canvas / "cc846f34..." for
+  // Premium Polyester — exact matches, confirmed via direct stock_uuid
+  // comparison, not just wording) — merged in via EXTRA_PRODUCT_SOURCES
+  // below. Confirmed clean 5-way split across all 508 combined raw entries
+  // (160 Canvas / 140 Polyester / 87 10mil / 63 15oz / 58 18oz, zero
+  // leftover) — Canvas/Polyester checked first since they're the more
+  // specific keywords.
+  "indoor-banners": [
+    { label: "Artist Canvas", slug: "artist-canvas", keywords: ["artist canvas"] },
+    { label: "Premium Polyester Banners", slug: "premium-polyester-banners", keywords: ["premium polyester banner"] },
+    { label: "Premium Vinyl Banners", slug: "premium-vinyl-banners", keywords: ["10mil"] },
+    { label: "15oz Blockout Indoor Vinyl Banner", slug: "15oz-blockout-indoor-vinyl-banner", keywords: ["15oz"] },
+    { label: "18oz Blockout Indoor Vinyl Banner", slug: "18oz-blockout-indoor-vinyl-banner", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /signs-banners/flags/products/ is a 3-card grid
+  // (Feather/Pole/Teardrop Flags) — confirmed live: this sandbox's own
+  // "Feather Flag" entries weren't merging into one card under the old
+  // sizeGrouped path (5 sizes: 8ft/10ft/12ft Regular/12ft Jumbo/15ft, all
+  // single linear dimensions with no "WxH" pattern at all, so the generic
+  // groupKey/stripSize machinery had nothing to strip), hence the move to
+  // TYPE_RULES here. All 12 raw entries split cleanly by shape word
+  // (5 Feather / 3 Pole / 4 Teardrop, zero leftover) — single shared stock
+  // ("3OZPOLY") across all of them.
+  flags: [
+    { label: "Feather Flags", slug: "feather-flags", keywords: ["feather"] },
+    { label: "Pole Flags", slug: "pole-flags", keywords: ["pole"] },
+    { label: "Teardrop Flags", slug: "teardrop-flags", keywords: [] }, // catch-all
+  ],
+  // fourprintshop's literal /signs-banners/window-graphics/products/ is a
+  // 4-card grid (Opaque/See-Through Perforated/Standard Clings Clear/White)
+  // — confirmed clean 4-way split across all 1485 raw entries (414 White /
+  // 240 Clear / 826 Perforated / 5 Opaque, zero leftover). One stray "8.5\"
+  // X 11\" 7mil Window Cling" entry is missing the word "White" entirely
+  // (4over data gap, product_code confirms it's the same "7MIL" stock) —
+  // "white" classification also checks the bare "7mil" keyword to catch it.
+  "window-graphics": [
+    { label: "See-Through Perforated Window Vinyl Graphic", slug: "see-through-perforated-window-vinyl-graphic", keywords: ["perforated"] },
+    { label: "Opaque Window Graphics", slug: "opaque-window-graphics", keywords: ["opaque"] },
+    { label: "Standard Clings: Clear", slug: "standard-clings-clear", keywords: ["clear"] },
+    { label: "Standard Clings: White", slug: "standard-clings-white", keywords: [] }, // catch-all (White + the "7mil" gap entry)
+  ],
+  // fourprintshop's literal /signs-banners/wall-decals/products/ is a
+  // 2-card grid (High Tack Adhesive Vinyl, Low Tack Vinyl Wall Decals).
+  // Wall Decals shares its OWN "Adhesive Vinyl" UUID with Floor Graphics
+  // (978 raw entries total) but had NO keyword filter at the categories.ts
+  // level — confirmed live: it was showing Floor Graphics' own cards mixed
+  // in. Deliberately NO catch-all here — anything that isn't "high tack" or
+  // "wall" (i.e. every Floor Graphics entry) returns null from
+  // classifyProduct() and gets excluded from this category entirely,
+  // exactly the same way a missing catch-all already works elsewhere.
+  // Covers all but 1 of the 978 raw entries (482 High Tack / 347 Wall / 148
+  // Floor Graphics, explicit keyword match) — the 1 leftover stray
+  // "8MIL-AVLT-14X62" code-like entry shares its product_code prefix with
+  // dozens of clean "8mil Low Tack Wall Graphic" siblings, so the existing
+  // generic reconstructCodeLikeDescriptions() call already fixes it before
+  // classification runs, and it naturally falls into "wall" too.
+  "wall-decals": [
+    { label: "High Tack Adhesive Vinyl", slug: "high-tack-adhesive-vinyl", keywords: ["high tack"] },
+    { label: "Low Tack Vinyl Wall Decals", slug: "low-tack-vinyl-wall-decals", keywords: ["wall"] },
+  ],
+  // fourprintshop's literal /signs-banners/displays/products/ is a 6-card
+  // grid spanning 4 DIFFERENT 4over categories — confirmed live: "Event
+  // Tents"/"Fan Cutout"/"Foam Core Counter Cards"/"White PVC Counter Cards"
+  // all live in their OWN dedicated categories (Event Tents, Fan Cutouts,
+  // Counter Cards respectively — the latter two materials, confirmed
+  // matching wording), merged in via EXTRA_PRODUCT_SOURCES below; only
+  // "Tabletop"/"Fabric Tube Displays" actually live in Displays' own UUID.
+  // "Silicon Edge Graphic Display" ALSO lives in Displays' own UUID but
+  // isn't on fourprintshop's 6-card page at all — a genuine extra, kept
+  // rather than discarded, same as every other genuine-extra decision this
+  // session. Confirmed clean 7-way split across all 19 combined raw
+  // entries (3 Tabletop / 3 Fabric Tube / 5 Silicon Edge / 1 Event Tent /
+  // 1 Fan Cutout / 3 Foam Core / 3 White PVC, zero leftover) — no catch-all
+  // needed, every type has an explicit, non-overlapping keyword.
+  displays: [
+    { label: "Tabletop Displays", slug: "tabletop-displays", keywords: ["tabletop"] },
+    { label: "Fabric Tube Displays", slug: "fabric-tube-displays", keywords: ["fabric tube"] },
+    { label: "Silicon Edge Graphic Display", slug: "silicon-edge-graphic-display", keywords: ["silicon edge"] },
+    { label: "Event Tents", slug: "event-tents", keywords: ["event tent"] },
+    { label: "Fan Cutout", slug: "fan-cutout", keywords: ["fan cutout"] },
+    { label: "Foam Core Counter Cards", slug: "foam-core-counter-cards", keywords: ["foam core"] },
+    { label: "White PVC Counter Cards", slug: "white-pvc-counter-cards", keywords: ["pvc"] },
+  ],
 }
 
 // Some subcategories' product-type cards span MULTIPLE 4over categories, not
@@ -303,6 +448,24 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   "table-tent-cards": [
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
+  ],
+  // Scoped to JUST Heavy Duty/Sandwich Board, not a bare "aluminum" match —
+  // this UUID also has an "Aluminum - Dye-Sublimation" stock fourprintshop's
+  // own page doesn't show, which would otherwise fall through to the
+  // Gator Board catch-all below.
+  "rigid-signs": [
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "heavy duty" },
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "sandwich board" },
+  ],
+  "indoor-banners": [
+    { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "artist canvas" },
+    { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "premium polyester banner" },
+  ],
+  displays: [
+    { uuid: "de3d843a-b802-4ec5-826f-1b230a17ce3a", keyword: "event tent" }, // Event Tents
+    { uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", keyword: "fan cutout" }, // Fan Cutouts
+    { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" }, // Counter Cards
+    { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" }, // Counter Cards
   ],
   "announcement-cards": [
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "announcement" }, // Akuafoil
@@ -405,6 +568,57 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "eddm-postcards": "/images/cat/postcards.jpg",
     "eddm-sell-sheets": "/images/cat/sell-sheets.jpg",
     "eddm-flyers": "/images/cat/flyers-and-brochures.jpg",
+  },
+  "table-covers": {
+    "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
+    "table-runners": "/images/cat/table-covers/table-runners.jpg",
+  },
+  "rigid-signs": {
+    "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
+    "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.jpg",
+    "4mm-coroplast-signs": "/images/cat/rigid-signs/4mm-coroplast.jpg",
+    "3mm-pvc-signs": "/images/cat/rigid-signs/3mm-pvc.jpg",
+    "foam-core-signs": "/images/cat/rigid-signs/foam-core.jpg",
+    "aluminum-heavy-duty": "/images/cat/rigid-signs/aluminum-heavy-duty.jpg",
+    "aluminum-sandwich-board": "/images/cat/rigid-signs/aluminum-sandwich-board.jpg",
+    "styrene-signs": "/images/signs/rigid-signs.jpg",
+    "gator-board-signs": "/images/signs/rigid-signs.jpg",
+  },
+  "outdoor-banners": {
+    "mesh-banners": "/images/cat/outdoor-banners/mesh.jpg",
+    "scrim-vinyl-banners": "/images/cat/outdoor-banners/scrim-vinyl.jpg",
+    "banner-stand-kit": "/images/signs/banner-stands.jpg",
+  },
+  "indoor-banners": {
+    "artist-canvas": "/images/cat/indoor-banners/artist-canvas.jpg",
+    "premium-polyester-banners": "/images/cat/indoor-banners/premium-polyester.jpg",
+    "premium-vinyl-banners": "/images/cat/indoor-banners/premium-vinyl.jpg",
+    "15oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
+    "18oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
+  },
+  flags: {
+    "feather-flags": "/images/cat/flags/feather.jpg",
+    "pole-flags": "/images/cat/flags/pole.jpg",
+    "teardrop-flags": "/images/cat/flags/teardrop.jpg",
+  },
+  "window-graphics": {
+    "see-through-perforated-window-vinyl-graphic": "/images/cat/window-graphics/perforated.jpg",
+    "opaque-window-graphics": "/images/cat/window-graphics/opaque.jpg",
+    "standard-clings-clear": "/images/cat/window-graphics/clear.jpg",
+    "standard-clings-white": "/images/cat/window-graphics/white.jpg",
+  },
+  "wall-decals": {
+    "high-tack-adhesive-vinyl": "/images/cat/wall-decals/high-tack.jpg",
+    "low-tack-vinyl-wall-decals": "/images/cat/wall-decals/low-tack.jpg",
+  },
+  displays: {
+    "tabletop-displays": "/images/cat/displays/tabletop.jpg",
+    "fabric-tube-displays": "/images/cat/displays/fabric-tube.jpg",
+    "silicon-edge-graphic-display": "/images/signs/displays.jpg",
+    "event-tents": "/images/cat/displays/event-tents.jpg",
+    "fan-cutout": "/images/cat/displays/fan-cutout.jpg",
+    "foam-core-counter-cards": "/images/cat/displays/foam-core-counter.jpg",
+    "white-pvc-counter-cards": "/images/cat/displays/white-pvc-counter.jpg",
   },
 }
 
@@ -646,6 +860,116 @@ function stripSize(desc: string, isBusinessCards = false): string {
 }
 
 const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
+  // Tote Bags' 3 raw entries are 3 color stocks (6OZCTBL/6OZCTNU/6OZCTRD)
+  // all at the SAME single size — confirmed live, fourprintshop's own
+  // "Tote Bags" page is ONE card with Color as a Stock dropdown (Blue/
+  // Natural/Red), not 3 separate cards. Since all 3 share one size,
+  // bySize's dedup can't tell them apart on size alone — needs
+  // useLiveCascadeAnchor (like T-Shirts' Color) so the Stock dropdown's
+  // live cascade gets all 3 sibling uuids, not just the one clicked.
+  "tote-bags": [
+    [/\b(blue|natural|red)\b\s*(?=with)/gi, ""],
+    [
+      /\s*with\s*[\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?\s*Print Area\s*on\s*6OZ\s*Cotton\s*Canvas\s*$/i,
+      "",
+    ],
+  ],
+  // Mugs' 2 raw entries are 2 DIFFERENT stocks (CRM11WH/CRM15WH) at 2
+  // different print-area sizes — confirmed live, fourprintshop's own
+  // "Mugs" page is ONE card with both as plain Stock/Size cascade options
+  // (no Shape-style ambiguity: each size maps to exactly one product), not
+  // 2 separate cards split by oz capacity.
+  mugs: [
+    [/,\s*\d+oz\s*/gi, " "],
+    [/\s*with\s*wraparound\s*image,?\s*/gi, " "],
+    [/,?\s*[\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?\s*print\s*area\s*$/i, ""],
+  ],
+  // Buttons' 11 raw entries are ALL one stock ("BUTTON") differing only by
+  // Size × Shape (Round/Diamond/Square/Rectangle) × Backing (Locking Safety
+  // Pin/Magnet) — confirmed live, fourprintshop's own "Buttons" page is a
+  // SINGLE card with separate Shape and Backing calculator dropdowns (both
+  // currently showing just 1 default option each, but genuinely present as
+  // their own <select> fields), not a card per shape/backing combo. The
+  // leading-size strip handles BOTH "AxB" ("2\" x 2\" Diamond...") and bare
+  // single-dimension ("1\" Round...") forms in one pattern.
+  buttons: [
+    [/^[\d.]+(?:\.\d+)?\s*["']?\s*(?:[xX]\s*[\d.]+(?:\.\d+)?\s*["']?)?\s*/, ""],
+    [/\b(round|diamond shaped|square|rectangle)\b\s*/gi, ""],
+    [/\s*with\s*(locking safety pin|magnet backing)\s*$/i, ""],
+  ],
+  // T-Shirts' 15 raw entries are 6 garment types × 2-5 colors each (Black/
+  // Blue/Gray/Red/White) — confirmed live, fourprintshop's own "Apparel"
+  // page shows ONE card per garment type with Color as a picker, not a
+  // separate card per color. Stripping the color word here (only directly
+  // before "with"/"w/", so it can't eat a color word that's genuinely part
+  // of a garment name) plus the trailing "with/w/ <size> Print Area" phrase
+  // (which otherwise left a stray "w/" vs "with" wording difference behind
+  // after SIZE_DIM strips just the dimension) collapses each garment type
+  // to one groupKey. Color itself becomes a calculator option via
+  // extractShape()'s color recognition (component-side).
+  "t-shirts": [
+    [/\b(black|blue|gray|grey|red|white)\b\s*(?=w\/|with)/gi, ""],
+    [/\s*(?:with|w\/)\s*[\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?\s*Print Area\s*$/i, ""],
+  ],
+  // fourprintshop's "Stickers By Shape" cards are title-cased (Round
+  // Corner/Round/Leaf Stickers); 4over's own raw text for these specific
+  // shapes is ALL-CAPS ("ROUND CORNER Stickers"...), while a few sibling
+  // entries already use proper case ("Oval Stickers") — normalizing here
+  // so both forms merge into one card per shape instead of splitting by
+  // casing. "Round" must run after "Round Corner" (negative lookahead
+  // guards it too) so "ROUND CORNER" doesn't partially become "Round
+  // CORNER". The last rule renames the shape-less default entries
+  // ("Stickers with UV"/"with NO UV", no shape word at all) to "Rectangle
+  // Stickers" to match fourprintshop's own naming for that card.
+  stickers: [
+    [/\bOVAL\b/g, "Oval"],
+    [/\bROUND CORNER\b/g, "Round Corner"],
+    [/\bROUND\b(?!\s+CORNER)/g, "Round"],
+    [/\bLEAF\b/g, "Leaf"],
+    [
+      /^([\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?)\s*Stickers\s+with\s+(NO\s+)?UV\s*$/i,
+      "$1 Rectangle Stickers with $2UV",
+    ],
+  ],
+  // All 792 raw entries are pure product_code ("18PTC1S-CPBXNC-10X10") —
+  // see this category's comment in lib/print/categories.ts. No clean
+  // sibling exists anywhere to reconstruct from (the generic
+  // reconstructCodeLikeDescriptions helper needs one), so this rebuilds
+  // the description directly from the 3 known coating-suffix codes;
+  // stripSize/groupKey's existing COATING_WITH stripping then merges all
+  // 3 into one card. NO "18PT C1S" prefix in the rebuilt text on purpose —
+  // fourprintshop's own card is titled bare "Print & Trim Boxes" with no
+  // stock qualifier (only one Stock value exists anyway), and Boxes &
+  // Packaging's BOX_THICKNESS_PREFIX stripping below only eats a leading
+  // "{digit}PT " — it doesn't know about a trailing "C1S", so including it
+  // here left a stray "C1S Print and Trim Boxes" card title. The 3rd
+  // pattern matches "CPBXUV" not "CPBXUVFR" — confirmed live, this
+  // category's own product_description field drops the trailing "FR" that
+  // product_code still has for that one variant (a 4over data
+  // inconsistency between the two fields, not a typo on this end).
+  "custom-boxes": [
+    [/^18PTC1S-CPBXNC-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with No Coating'],
+    [/^18PTC1S-CPBXSPUVFR-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Spot UV on the front only, No UV Coating on the back'],
+    [/^18PTC1S-CPBXUV-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Full UV on the front only, No UV Coating on the back'],
+  ],
+  // 21 raw entries, all just 14PT — 3 coating variants ("with Full UV",
+  // "Matte/Dull Finish", "Uncoated") merge into one "14PT Header Cards"
+  // card with Coating as the calculator option, same pattern as every
+  // other "Uncoated"/"Matte/Dull Finish" middle-modifier strip this
+  // session (Trading/Announcement/Greeting Cards).
+  "header-cards": [
+    [/\buncoated\s+(?=header\s+cards)/gi, ""],
+    [/\bmatte\s*\/\s*dull\s+finish\s+(?=header\s+cards)/gi, ""],
+  ],
+  // fourprintshop's own "Vinyl Floor Graphics" page confirms a real "Shape"
+  // calculator dropdown (currently just showing "Rectangle" at its default
+  // size, but the field genuinely exists) — "4mil Flexible Vinyl Floor
+  // Graphics - Circle" is the SAME stock, just the Circle shape variant.
+  // Stripped so groupKey merges it with the plain entry; extractShape() in
+  // product-configurator-client.tsx now recognizes "circle" too, so the
+  // merged card's live cascade exposes Rectangle/Circle as a Shape picker
+  // the same way Hang Tags/Announcement Cards already do.
+  "floor-graphics": [[/\s*-\s*Circle\b/gi, ""]],
   // One "5.5\" x 8.5\" - 3mm White PVC Signs" entry is mislabeled — every
   // other 3mm White PVC size/coating combo says "Counter Cards with Easel
   // Backs" — a 4over typo, not a genuinely different product.
@@ -881,10 +1205,22 @@ export default async function PrintCategoryPage({
   // (+ cache write-through) if nothing's cached yet.
   const supabase = await createClient()
   async function fetchCategoryProducts(categoryUuid: string, label: string) {
-    let { data: rows } = await supabase
-      .from("fourover_products")
-      .select("product_uuid, product_description, product_code")
-      .eq("category_uuid", categoryUuid)
+    // PostgREST's default max-rows caps a single .select() at 1000 — kept
+    // in sync with [typeSlug]/page.tsx's same fix; see that file's comment
+    // (Window Graphics' shared "ae3afb44..." category has 1485 products,
+    // silently dropping its 5 Opaque entries past row 1000).
+    let rows: { product_uuid: string; product_description: string; product_code: string }[] = []
+    const PAGE_SIZE = 1000
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data: page } = await supabase
+        .from("fourover_products")
+        .select("product_uuid, product_description, product_code")
+        .eq("category_uuid", categoryUuid)
+        .range(from, from + PAGE_SIZE - 1)
+      if (!page || page.length === 0) break
+      rows = rows.concat(page)
+      if (page.length < PAGE_SIZE) break
+    }
 
     if (!rows || rows.length === 0) {
       console.log("[v0] No products in DB for", label, "- fetching from 4over API...")
@@ -918,6 +1254,15 @@ export default async function PrintCategoryPage({
   let productList: (typeof products[number] & { _extraSourced?: boolean })[] = leaf.keyword
     ? products.filter((p) => matchesAllKeywords(p.product_description, leaf.keyword!))
     : products
+
+  // rigid-signs' own "Signs" UUID has exactly 1 "3mm White PVC Counter
+  // Cards with Easel Backs" entry mixed in — already correctly listed
+  // under Counter Cards' own UUID too, and fourprintshop's Rigid Signs
+  // page never shows it. Drop it here so it doesn't surface as (or get
+  // absorbed into) a rigid-signs card.
+  if (category === "rigid-signs") {
+    productList = productList.filter((p) => !matchesAllKeywords(p.product_description, "counter card"))
+  }
 
   const extraSources = EXTRA_PRODUCT_SOURCES[category]
   if (extraSources && extraSources.length > 0) {

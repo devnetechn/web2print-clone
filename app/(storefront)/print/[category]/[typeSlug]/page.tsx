@@ -49,6 +49,20 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
   ],
+  "rigid-signs": [
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "heavy duty" },
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "sandwich board" },
+  ],
+  "indoor-banners": [
+    { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "artist canvas" },
+    { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "premium polyester banner" },
+  ],
+  displays: [
+    { uuid: "de3d843a-b802-4ec5-826f-1b230a17ce3a", keyword: "event tent" },
+    { uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", keyword: "fan cutout" },
+    { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" },
+    { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" },
+  ],
 }
 
 // Kept in sync with TYPE_IMAGES in print/[category]/page.tsx.
@@ -117,6 +131,57 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "eddm-postcards": "/images/cat/postcards.jpg",
     "eddm-sell-sheets": "/images/cat/sell-sheets.jpg",
     "eddm-flyers": "/images/cat/flyers-and-brochures.jpg",
+  },
+  "table-covers": {
+    "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
+    "table-runners": "/images/cat/table-covers/table-runners.jpg",
+  },
+  "rigid-signs": {
+    "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
+    "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.jpg",
+    "4mm-coroplast-signs": "/images/cat/rigid-signs/4mm-coroplast.jpg",
+    "3mm-pvc-signs": "/images/cat/rigid-signs/3mm-pvc.jpg",
+    "foam-core-signs": "/images/cat/rigid-signs/foam-core.jpg",
+    "aluminum-heavy-duty": "/images/cat/rigid-signs/aluminum-heavy-duty.jpg",
+    "aluminum-sandwich-board": "/images/cat/rigid-signs/aluminum-sandwich-board.jpg",
+    "styrene-signs": "/images/signs/rigid-signs.jpg",
+    "gator-board-signs": "/images/signs/rigid-signs.jpg",
+  },
+  "outdoor-banners": {
+    "mesh-banners": "/images/cat/outdoor-banners/mesh.jpg",
+    "scrim-vinyl-banners": "/images/cat/outdoor-banners/scrim-vinyl.jpg",
+    "banner-stand-kit": "/images/signs/banner-stands.jpg",
+  },
+  "indoor-banners": {
+    "artist-canvas": "/images/cat/indoor-banners/artist-canvas.jpg",
+    "premium-polyester-banners": "/images/cat/indoor-banners/premium-polyester.jpg",
+    "premium-vinyl-banners": "/images/cat/indoor-banners/premium-vinyl.jpg",
+    "15oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
+    "18oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
+  },
+  flags: {
+    "feather-flags": "/images/cat/flags/feather.jpg",
+    "pole-flags": "/images/cat/flags/pole.jpg",
+    "teardrop-flags": "/images/cat/flags/teardrop.jpg",
+  },
+  "window-graphics": {
+    "see-through-perforated-window-vinyl-graphic": "/images/cat/window-graphics/perforated.jpg",
+    "opaque-window-graphics": "/images/cat/window-graphics/opaque.jpg",
+    "standard-clings-clear": "/images/cat/window-graphics/clear.jpg",
+    "standard-clings-white": "/images/cat/window-graphics/white.jpg",
+  },
+  "wall-decals": {
+    "high-tack-adhesive-vinyl": "/images/cat/wall-decals/high-tack.jpg",
+    "low-tack-vinyl-wall-decals": "/images/cat/wall-decals/low-tack.jpg",
+  },
+  displays: {
+    "tabletop-displays": "/images/cat/displays/tabletop.jpg",
+    "fabric-tube-displays": "/images/cat/displays/fabric-tube.jpg",
+    "silicon-edge-graphic-display": "/images/signs/displays.jpg",
+    "event-tents": "/images/cat/displays/event-tents.jpg",
+    "fan-cutout": "/images/cat/displays/fan-cutout.jpg",
+    "foam-core-counter-cards": "/images/cat/displays/foam-core-counter.jpg",
+    "white-pvc-counter-cards": "/images/cat/displays/white-pvc-counter.jpg",
   },
 }
 
@@ -226,6 +291,66 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "eddm-sell-sheets": ["sell sheets"],
     "eddm-flyers": [], // catch-all
   },
+  // "table cloth" not "tablethrow" — this file's targeted reconstruction
+  // above (right before classification) already renamed the raw
+  // "9OZPOLY-TABLETHROW-..." text to "Table Cloth - 9oz Premium
+  // Polyester - ...", unlike print/[category]/page.tsx which classifies
+  // straight off the untouched raw text.
+  "table-covers": {
+    "table-cloths": ["table cloth"],
+    "table-runners": [], // catch-all
+  },
+  "rigid-signs": {
+    "10mm-coroplast-signs": ["10mm"],
+    "coroplast-rider-signs": ["rider"],
+    "4mm-coroplast-signs": ["4mm white coroplast"],
+    "3mm-pvc-signs": ["3mm white pvc signs"],
+    "foam-core-signs": ["foamcore", "foam core"],
+    "aluminum-heavy-duty": ["heavy duty"],
+    "aluminum-sandwich-board": ["sandwich board"],
+    "styrene-signs": ["styrene"],
+    "gator-board-signs": [], // catch-all
+  },
+  "outdoor-banners": {
+    "mesh-banners": ["mesh"],
+    "scrim-vinyl-banners": ["13oz outdoor vinyl banner"],
+    "banner-stand-kit": [], // catch-all
+  },
+  "indoor-banners": {
+    "artist-canvas": ["artist canvas"],
+    "premium-polyester-banners": ["premium polyester banner"],
+    "premium-vinyl-banners": ["10mil"],
+    "15oz-blockout-indoor-vinyl-banner": ["15oz"],
+    "18oz-blockout-indoor-vinyl-banner": [], // catch-all
+  },
+  flags: {
+    "feather-flags": ["feather"],
+    "pole-flags": ["pole"],
+    "teardrop-flags": [], // catch-all
+  },
+  "window-graphics": {
+    "see-through-perforated-window-vinyl-graphic": ["perforated"],
+    "opaque-window-graphics": ["opaque"],
+    "standard-clings-clear": ["clear"],
+    "standard-clings-white": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx — see that file's comment.
+  // Deliberately NO catch-all: Floor Graphics shares this same UUID and
+  // must classify to null (excluded) here, not get absorbed into either
+  // Wall Decals card.
+  "wall-decals": {
+    "high-tack-adhesive-vinyl": ["high tack"],
+    "low-tack-vinyl-wall-decals": ["wall"],
+  },
+  displays: {
+    "tabletop-displays": ["tabletop"],
+    "fabric-tube-displays": ["fabric tube"],
+    "silicon-edge-graphic-display": ["silicon edge"],
+    "event-tents": ["event tent"],
+    "fan-cutout": ["fan cutout"],
+    "foam-core-counter-cards": ["foam core"],
+    "white-pvc-counter-cards": ["pvc"],
+  },
 }
 
 // Type slug -> display label
@@ -289,6 +414,41 @@ const TYPE_LABELS: Record<string, string> = {
   "eddm-postcards": "EDDM Postcards",
   "eddm-sell-sheets": "EDDM Sell Sheets",
   "eddm-flyers": "EDDM Flyers",
+  "table-cloths": "Table Cloths",
+  "table-runners": "Table Runners",
+  "10mm-coroplast-signs": "10mm Coroplast Signs",
+  "coroplast-rider-signs": "Coroplast Rider Signs",
+  "4mm-coroplast-signs": "4mm Coroplast Signs",
+  "3mm-pvc-signs": "3mm PVC Signs",
+  "foam-core-signs": "Foam Core Signs",
+  "aluminum-heavy-duty": "Aluminum Heavy Duty",
+  "aluminum-sandwich-board": "Aluminum Sandwich Board",
+  "styrene-signs": "Styrene Signs",
+  "gator-board-signs": "Gator Board Signs",
+  "mesh-banners": "Mesh Banners",
+  "scrim-vinyl-banners": "Scrim Vinyl Banners",
+  "banner-stand-kit": "Banner Stand Kit",
+  "artist-canvas": "Artist Canvas",
+  "premium-polyester-banners": "Premium Polyester Banners",
+  "premium-vinyl-banners": "Premium Vinyl Banners",
+  "15oz-blockout-indoor-vinyl-banner": "15oz Blockout Indoor Vinyl Banner",
+  "18oz-blockout-indoor-vinyl-banner": "18oz Blockout Indoor Vinyl Banner",
+  "feather-flags": "Feather Flags",
+  "pole-flags": "Pole Flags",
+  "teardrop-flags": "Teardrop Flags",
+  "see-through-perforated-window-vinyl-graphic": "See-Through Perforated Window Vinyl Graphic",
+  "opaque-window-graphics": "Opaque Window Graphics",
+  "standard-clings-clear": "Standard Clings: Clear",
+  "standard-clings-white": "Standard Clings: White",
+  "high-tack-adhesive-vinyl": "High Tack Adhesive Vinyl",
+  "low-tack-vinyl-wall-decals": "Low Tack Vinyl Wall Decals",
+  "tabletop-displays": "Tabletop Displays",
+  "fabric-tube-displays": "Fabric Tube Displays",
+  "silicon-edge-graphic-display": "Silicon Edge Graphic Display",
+  "event-tents": "Event Tents",
+  "fan-cutout": "Fan Cutout",
+  "foam-core-counter-cards": "Foam Core Counter Cards",
+  "white-pvc-counter-cards": "White PVC Counter Cards",
 }
 
 // Signs & Banners: hide these technical/redundant option groups from the price
@@ -386,9 +546,36 @@ const BOX_THICKNESS_PREFIX = /^\d+\s*pt\s+/i
 
 // Normalizes a physical-dimension string for matching against
 // categoryproductslist's size_list "name" field (e.g. "2.75\" X 2.75\" X
-// 2.75\"" vs "2.75\" x 2.75\"").
+// 2.75\"" vs "2.75\" x 2.75\""). Quote marks AND any whitespace around "x"
+// are stripped entirely, not just normalized — Aluminum's own raw
+// descriptions ("Aluminum Heavy Duty .080in. White - 10X10") never carry
+// quote marks or spacing around the dimension at all, while the live
+// size_list still names the same size "10\" x 10\"". Without this, the
+// 3-level anchor's startsWith() check never matches, silently falling
+// through to the unanchored default — confirmed: "Aluminum Heavy Duty"
+// was resolving prices for "Aluminum Sandwich Board" instead (same
+// category_uuid, no anchor to tell them apart).
 function normalizeSizeText(s: string): string {
-  return s.toLowerCase().replace(/[”'']/g, '"').replace(/\s+/g, " ").trim()
+  return s
+    .toLowerCase()
+    .replace(/["”']/g, "")
+    .replace(/\s*x\s*/g, "x")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+// Plain .startsWith() is the right call for size_list entries that carry a
+// descriptive suffix the bare dimension doesn't have (e.g. "8.5x22-4page"
+// for Half-Fold Brochures' 4-page fold pattern) — but stripping quote marks
+// above also strips the boundary that used to stop "12x12" from matching as
+// a prefix of "12x120" (the quote after "12" used to block it; confirmed
+// this silently mismatched Floor Graphics' "12\" x 12\"" to size_list's
+// "12\" x 120\""). Require the next character (if any) to be a non-digit,
+// so a same-prefix LONGER number can never pass as a match.
+function sizeStartsWith(normalizedName: string, sizeText: string): boolean {
+  if (!normalizedName.startsWith(sizeText)) return false
+  const next = normalizedName[sizeText.length]
+  return next === undefined || !/[0-9]/.test(next)
 }
 
 // Strips an outer "(...)" left unbalanced after an inner code (e.g. the
@@ -526,6 +713,48 @@ function extractSize(desc: string, isBusinessCards = false): string {
 // Kept in sync with print/[category]/page.tsx's CATEGORY_WORD_OVERRIDES —
 // see that file's comment for why.
 const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
+  // Kept in sync with print/[category]/page.tsx — see that file's comment.
+  "tote-bags": [
+    [/\b(blue|natural|red)\b\s*(?=with)/gi, ""],
+    [
+      /\s*with\s*[\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?\s*Print Area\s*on\s*6OZ\s*Cotton\s*Canvas\s*$/i,
+      "",
+    ],
+  ],
+  mugs: [
+    [/,\s*\d+oz\s*/gi, " "],
+    [/\s*with\s*wraparound\s*image,?\s*/gi, " "],
+    [/,?\s*[\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?\s*print\s*area\s*$/i, ""],
+  ],
+  buttons: [
+    [/^[\d.]+(?:\.\d+)?\s*["']?\s*(?:[xX]\s*[\d.]+(?:\.\d+)?\s*["']?)?\s*/, ""],
+    [/\b(round|diamond shaped|square|rectangle)\b\s*/gi, ""],
+    [/\s*with\s*(locking safety pin|magnet backing)\s*$/i, ""],
+  ],
+  "t-shirts": [
+    [/\b(black|blue|gray|grey|red|white)\b\s*(?=w\/|with)/gi, ""],
+    [/\s*(?:with|w\/)\s*[\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?\s*Print Area\s*$/i, ""],
+  ],
+  stickers: [
+    [/\bOVAL\b/g, "Oval"],
+    [/\bROUND CORNER\b/g, "Round Corner"],
+    [/\bROUND\b(?!\s+CORNER)/g, "Round"],
+    [/\bLEAF\b/g, "Leaf"],
+    [
+      /^([\d.]+(?:\.\d+)?\s*["']?\s*[xX]\s*[\d.]+(?:\.\d+)?\s*["']?)\s*Stickers\s+with\s+(NO\s+)?UV\s*$/i,
+      "$1 Rectangle Stickers with $2UV",
+    ],
+  ],
+  "custom-boxes": [
+    [/^18PTC1S-CPBXNC-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with No Coating'],
+    [/^18PTC1S-CPBXSPUVFR-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Spot UV on the front only, No UV Coating on the back'],
+    [/^18PTC1S-CPBXUV-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Full UV on the front only, No UV Coating on the back'],
+  ],
+  "header-cards": [
+    [/\buncoated\s+(?=header\s+cards)/gi, ""],
+    [/\bmatte\s*\/\s*dull\s+finish\s+(?=header\s+cards)/gi, ""],
+  ],
+  "floor-graphics": [[/\s*-\s*Circle\b/gi, ""]],
   "counter-cards": [[/\bsigns\b/gi, "Counter Cards with Easel Backs"]],
   "calendars": [[/\(\s*\d+\s*inside\s+pages?\s+\d+:\d+\s+plus\s+\d+\s+page\s+cover\s+\d+:\d+\s*\)/gi, "On 100LB GLOSS BOOK"]],
   "trading-cards": [
@@ -773,7 +1002,39 @@ export default async function ProductTypePage({
         // mode would bypass the live cascade entirely and the Sheet Count
         // picker would never appear.
         const isNotepads = category === "notepads"
-        const useLiveCascadeAnchor = stripStandardPt || isMergedBookletWeight || isGreetingCards || isNotepads
+        // Floor Graphics' Rectangle/Circle merge is the exact same pattern
+        // as Notepads' Sheet Count — genuinely 2D (Size × Shape), resolved
+        // via extractShape()'s shapeList mechanism, which only ever
+        // populates within the live cascade. sizeProducts mode's bySize Map
+        // dedupes ONE uuid per size, arbitrarily dropping whichever shape
+        // didn't win — confirmed: that left the Shape field stuck showing
+        // "Rectangle" even at sizes (12x12, 24x24, 36x36, 48x48) where a
+        // Circle product genuinely exists too.
+        const isFloorGraphics = category === "floor-graphics"
+        // T-Shirts' garment types each merge 2-5 Color variants that ALL
+        // share the same single Size/Stock/Coating (confirmed: T-Shirts'
+        // own category_uuid has exactly 1 size, 1 stock, 1 coating total) —
+        // bySize below would dedupe to a single entry regardless (every
+        // color variant extracts the SAME size text), so this flag mainly
+        // ensures allowedProductUuidsOverride carries all of a garment
+        // type's color siblings instead of just the one clicked uuid,
+        // letting extractShape()'s color recognition expose a Color picker.
+        const isTShirts = category === "t-shirts"
+        // Buttons merges Size × Shape (Round/Diamond/Square/Rectangle) ×
+        // Backing (Locking Safety Pin/Magnet) — genuinely multi-dimensional
+        // for the same reason as Floor Graphics' Shape merge, resolved via
+        // the same extractShape() shapeList mechanism (extended below to
+        // also recognize Shape/Backing words).
+        const isButtons = category === "buttons"
+        // Tote Bags merges 3 Color stocks (Blue/Natural/Red) that ALL share
+        // the same single size — bySize would dedupe to one entry
+        // regardless, so this just ensures allowedProductUuidsOverride
+        // carries all 3 siblings, letting the live cascade's normal Stock
+        // dropdown (not shapeList — Color is a real stock_uuid here, no
+        // extractShape() involvement needed) resolve to any of the 3.
+        const isToteBags = category === "tote-bags"
+        const useLiveCascadeAnchor =
+          stripStandardPt || isMergedBookletWeight || isGreetingCards || isNotepads || isFloorGraphics || isTShirts || isButtons || isToteBags
         const computeKey = (desc: string) => {
           const k = groupKey(desc, isBusinessCards)
           return stripStandardPt ? k.replace(/\b\d+pt\b/g, "").replace(/\s{2,}/g, " ").trim() : k
@@ -819,11 +1080,28 @@ export default async function ProductTypePage({
           // group when one exists, or just this one clicked product when
           // it's the sole representative of its group.
           allowedProductUuidsOverride = useLiveCascadeAnchor ? variants.map((v) => v.uuid) : [product.product_uuid]
-          const dimMatch = (product.product_description || "").match(SIZE_DIM)
-          const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
+          // Buttons' single-dimension entries ("1\" Round Promotional
+          // Buttons...", no "AxB" pattern) never match SIZE_DIM alone —
+          // same gap as the TYPE_KEYWORDS branch's Table Runners fix below,
+          // just not previously hit in THIS (sizeGrouped) branch since no
+          // prior category here had a bare single-dimension size.
+          const dimMatch =
+            (product.product_description || "").match(SIZE_DIM) ||
+            (product.product_description || "").match(/\d+(?:\.\d+)?\s*["”']/)
+          // A bare single-dimension match (no "AxB") normalizes to a lone
+          // number ("1") — too ambiguous as a startsWith prefix since it
+          // ALSO matches "1.25x1.25" (the boundary char after "1" is "."
+          // there, which sizeStartsWith's non-digit check happily allows).
+          // Doubling it into "1x1" makes the prefix match exact-or-nothing.
+          const dimText = dimMatch?.[0] || ""
+          const sizeText = dimText
+            ? dimText.includes("x") || dimText.includes("X")
+              ? normalizeSizeText(dimText)
+              : normalizeSizeText(`${dimText}x${dimText}`)
+            : ""
           const listResult = sizeText ? await getCategoryProductsList({ category_uuid: catUuid }) : null
           if (listResult?.success) {
-            const sizeMatch = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name).startsWith(sizeText))
+            const sizeMatch = listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), sizeText))
             if (sizeMatch) {
               initialSizeUuid = sizeMatch.uuid
               const stockListResult = await getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid })
@@ -929,10 +1207,25 @@ export default async function ProductTypePage({
   }
 
   async function fetchCategoryProducts(uuid: string) {
-    let { data: rows } = await supabase
-      .from("fourover_products")
-      .select("product_uuid, product_description, product_code")
-      .eq("category_uuid", uuid)
+    // PostgREST's default max-rows caps a single .select() at 1000 — Window
+    // Graphics' shared "ae3afb44..." category has 1485 products, and the 5
+    // Opaque ones silently fell outside that first page, leaving the
+    // Opaque Window Graphics type's matchedProducts empty ("No products
+    // found.") even though the level-3 grid correctly listed it. Page
+    // through with .range() until a partial (or empty) page confirms we've
+    // reached the end.
+    let rows: { product_uuid: string; product_description: string; product_code: string }[] = []
+    const PAGE_SIZE = 1000
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data: page } = await supabase
+        .from("fourover_products")
+        .select("product_uuid, product_description, product_code")
+        .eq("category_uuid", uuid)
+        .range(from, from + PAGE_SIZE - 1)
+      if (!page || page.length === 0) break
+      rows = rows.concat(page)
+      if (page.length < PAGE_SIZE) break
+    }
 
     if (!rows || rows.length === 0) {
       console.log("[v0] No products in DB for category", uuid, "- fetching from 4over API...")
@@ -974,6 +1267,12 @@ export default async function ProductTypePage({
   let allProducts: { product_uuid: string; product_description: string; product_code: string; category_uuid: string }[] =
     await fetchCategoryProducts(categoryUuid)
 
+  // Kept in sync with print/[category]/page.tsx's matching filter — see
+  // that file's comment for why.
+  if (category === "rigid-signs") {
+    allProducts = allProducts.filter((p) => !matchesAllKeywords(p.product_description, "counter card"))
+  }
+
   // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
   // see that file's comment for why ("Tearoff Flyers"' real data lives in
   // the Tear Off Cards category, not flyers-and-brochures' own).
@@ -987,6 +1286,36 @@ export default async function ProductTypePage({
     )
     allProducts = [...allProducts, ...extraLists.flat()]
   }
+  // Posters' "Backlit"/"Gloss Book" sources both contain a handful of pure-
+  // product_code descriptions (see reconstructCodeLikeDescriptions' own
+  // comment) — without this, classifyProduct() still buckets them
+  // correctly (the raw code happens to contain no OTHER type's keyword
+  // either), but the 3-level anchor below extracts a SIZE_DIM with no
+  // quote marks ("11.5X17.5") that never matches the live size_list's
+  // quoted names ("11.5\" x 17.5\""), silently failing to anchor at all —
+  // confirmed: that left "Gloss Book Posters" resolving to a "100LB Dull
+  // Book" product on the unanchored default.
+  // Table Covers' "Table Cloths" type has the same code-like-description
+  // gap, but ALL 4 of its own entries are equally code-like — no clean
+  // sibling exists for reconstructCodeLikeDescriptions to template from.
+  // Targeted regex instead, parsing the code pattern directly (confirmed
+  // against fourprintshop's own live Size dropdown: 68x132/68x156/90x132/
+  // 90x156, all 4 present). MUST run BEFORE reconstructCodeLikeDescriptions
+  // below, not after — 2 of these 4 raw descriptions have trailing \r\n
+  // garbage ("9OZPOLY-TABLETHROW-90X132\r\n") that makes
+  // CODE_LIKE_DESCRIPTION's strict `$` anchor fail to recognize them as
+  // code-like, so the generic function mistook ONE of them for a genuine
+  // clean template and used it (whitespace garbage and all) to "fix" the
+  // other, otherwise-already-clean entries — producing a mangled hybrid
+  // ("9OZPOLY-TABLETHROW-68\" x 132\"") that matched neither "table cloth"
+  // nor anything else, silently falling into the Table Runners catch-all
+  // and resolving prices for the wrong product line. Fixing this category's
+  // own entries FIRST means reconstructCodeLikeDescriptions has nothing
+  // code-like left here to find a bad template for.
+  allProducts = allProducts.map((p) => {
+    const m = p.product_description.match(/^9OZPOLY-TABLETHROW-(\d+)X(\d+)\s*$/i)
+    return m ? { ...p, product_description: `Table Cloth - 9oz Premium Polyester - ${m[1]}" x ${m[2]}"` } : p
+  })
   // Posters' "Backlit"/"Gloss Book" sources both contain a handful of pure-
   // product_code descriptions (see reconstructCodeLikeDescriptions' own
   // comment) — without this, classifyProduct() still buckets them
@@ -1051,32 +1380,54 @@ export default async function ProductTypePage({
     // "on both sides" (e.g. "...100LB GLOSS BOOK with AQ on both sides"),
     // appending "(On Both Sides)" to the size and breaking the size_list
     // lookup below for no reason — this anchor only needs the bare dimension.
-    const dimMatch = firstProduct.product_description.match(SIZE_DIM)
+    // Table Runners' own description ("Table Runner - 9oz Premium
+    // Polyester - 24\" Width") only states ONE dimension — SIZE_DIM (which
+    // requires a "WxH" pattern) never matches, leaving this anchor a no-op
+    // and the live cascade's unanchored default silently landing on a
+    // completely different product line (Table Cloths, sharing the same
+    // category_uuid and stock). The live size_list, confirmed, names this
+    // SAME product "24\" x 84\"" (4over fills in the implicit depth there
+    // even though the description never mentions it) — so falling back to
+    // just the width number + quote is enough for startsWith() below to
+    // still find it.
+    const dimMatch = firstProduct.product_description.match(SIZE_DIM) || firstProduct.product_description.match(/\d+(?:\.\d+)?\s*["”']/)
     const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
-    const listResult = sizeText ? await getCategoryProductsList({ category_uuid: effectiveCategoryUuid }) : null
+    const listResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid })
     if (listResult?.success) {
       // startsWith, not exact equality: some size_list entries carry a
       // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
       // 22\"- 4 page" for Half-Fold Brochures' 4-page fold pattern).
-      const sizeMatch = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name).startsWith(sizeText))
-      if (sizeMatch) {
-        initialSizeUuid = sizeMatch.uuid
-        const stockListResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: sizeMatch.uuid })
+      const sizeMatch = sizeText ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), sizeText)) : undefined
+      const allowedUuids = new Set(matchedProducts.map((p) => p.product_uuid))
+      // Flags' own description states a LINEAR size ("Feather Flag - 10ft -
+      // 3oz Polyester") that has ZERO textual correlation to the live
+      // size_list's literal WxH name ("32\" x 99\"") — there's no dimension
+      // text to extract at all, so sizeMatch is never found. Try the
+      // text-matched size first when one exists (the common, cheap case for
+      // every other category), then fall back to trying EVERY size in the
+      // category sequentially — stopping at the first one whose Stock (and
+      // Coating, if any) actually resolves to a product this type uses.
+      const candidateSizes = sizeMatch
+        ? [sizeMatch, ...(listResult.data?.size_list || []).filter((s) => s.uuid !== sizeMatch.uuid)]
+        : listResult.data?.size_list || []
+      // Sequential over candidate sizes AND stocks (stop at the first hit),
+      // parallel over each stock's own coatings — a stock can ALSO have a
+      // coating this type doesn't use (e.g. "All Inclusive Postcards" exists
+      // on "14PT" stock, but not every coating "14PT" offers), so the
+      // stock-level products (no coating filter) aren't a reliable enough
+      // check on their own.
+      outer: for (const candidateSize of candidateSizes) {
+        const stockListResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: candidateSize.uuid })
         const stocks = stockListResult.success ? stockListResult.data?.stock_list || [] : []
-        const allowedUuids = new Set(matchedProducts.map((p) => p.product_uuid))
-        // Sequential over stocks (stop at the first hit), parallel over each
-        // stock's own coatings — a stock can ALSO have a coating this type
-        // doesn't use (e.g. "All Inclusive Postcards" exists on "14PT" stock,
-        // but not every coating "14PT" offers), so the stock-level products
-        // (no coating filter) aren't a reliable enough check on their own.
         for (const stock of stocks) {
-          const stockResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })
+          const stockResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: candidateSize.uuid, stock_uuid: stock.uuid })
           if (!stockResult.success) continue
           const coatings = stockResult.data?.coating_list || []
           if (coatings.length === 0) {
             if ((stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) {
+              initialSizeUuid = candidateSize.uuid
               initialStockUuid = stock.uuid
-              break
+              break outer
             }
             continue
           }
@@ -1084,7 +1435,7 @@ export default async function ProductTypePage({
             coatings.map((coating) =>
               getCategoryProductsList({
                 category_uuid: effectiveCategoryUuid,
-                size_uuid: sizeMatch.uuid,
+                size_uuid: candidateSize.uuid,
                 stock_uuid: stock.uuid,
                 coating_uuid: coating.uuid,
               }),
@@ -1094,9 +1445,10 @@ export default async function ProductTypePage({
             (probe) => probe.success && (probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
           )
           if (coatingHit >= 0) {
+            initialSizeUuid = candidateSize.uuid
             initialStockUuid = stock.uuid
             initialCoatingUuid = coatings[coatingHit].uuid
-            break
+            break outer
           }
         }
       }

@@ -123,7 +123,14 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       { name: "Outdoor Banners", uuid: "d9181764-0579-402f-bfc8-4ff65408886e", slug: "outdoor-banners", image: "/images/signs/outdoor-banners.jpg" },
       { name: "Indoor Banners", uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", slug: "indoor-banners", image: "/images/signs/indoor-banners.jpg" },
       { name: "Flags", uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", slug: "flags", image: "/images/signs/flags.jpg" },
-      { name: "Window Graphics", uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", slug: "window-graphics", image: "/images/signs/window-graphics.jpg" },
+      // 4over's "2d084783..." Window Graphics category is a near-empty
+      // subset containing ONLY the "8mil Clear" stock (18 entries, all the
+      // same product) — its sibling "ae3afb44..." category (4over's own
+      // description for it: "7mil Window Cling") is the REAL data: same
+      // "8MILCLEAR" stock_uuid PLUS White/Perforated/Opaque, confirmed
+      // exact stock_uuid matches against fourprintshop's own live Stock
+      // dropdown for all 4 of its Window Graphics cards.
+      { name: "Window Graphics", uuid: "ae3afb44-beb1-4fda-8b2c-3f940f005fc6", slug: "window-graphics", image: "/images/signs/window-graphics.jpg" },
       { name: "Wall Decals", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "wall-decals", image: "/images/signs/wall-decals.jpg" },
       // Floor Graphics products (Aluminum/Flexible Vinyl, incl. a Circle
       // shape variant) are nested inside the same "Adhesive Vinyl" 4over
@@ -139,7 +146,21 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     label: "Boxes & Packaging",
     subcategories: [
       { name: "Packaging", uuid: "c11d8936-67ad-4b59-a48d-1683f42f055c", slug: "packaging", image: "/images/cat/packaging.jpg" },
-      { name: "Custom Boxes", uuid: "776a6fc9-b3fe-4ede-82e9-bbfccd51c293", slug: "custom-boxes", image: "/images/cat/custom-boxes.jpg" },
+      // 4over's own product_description for every entry here is literally
+      // its product_code ("18PTC1S-CPBXNC-10X10", no clean sibling
+      // anywhere to reconstruct from) — confirmed via exact stock_uuid
+      // match that this is fourprintshop's "Print & Trim Boxes" (under
+      // Standard Boxes), not a genuinely separate "Custom Boxes" product.
+      // Renamed to match; slug kept as "custom-boxes" since it's just the
+      // URL, not user-facing.
+      { name: "Print & Trim Boxes", uuid: "776a6fc9-b3fe-4ede-82e9-bbfccd51c293", slug: "custom-boxes", image: "/images/cat/custom-boxes.jpg" },
+      // fourprintshop nests this under "Standard Packaging Tags & Cards"
+      // alongside Bottleneck/Regular Hang Tags (and "Majestic Packaging
+      // Tags & Cards" alongside the rest of Hang Tags' own materials) — per
+      // the user's explicit choice, NOT duplicating Hang Tags here since
+      // it's already correctly represented under Marketing Materials; this
+      // is the one genuinely new item from that grouping.
+      { name: "Header Cards", uuid: "a842ec1b-280d-4e13-aa74-18a2be824737", slug: "header-cards", image: "/images/cat/header-cards.jpg" },
     ],
   },
   "roll-labels-stickers": {
@@ -147,7 +168,13 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     subcategories: [
       { name: "Roll Labels", uuid: "a2b13bce-0643-41ce-9a03-e21f9a92d7d4", slug: "roll-labels", image: "/images/cat/roll-labels.jpg" },
       { name: "Stickers", uuid: "7381a85e-5e48-4673-aa67-862dd6553ef0", slug: "stickers", image: "/images/cat/stickers.jpg" },
-      { name: "Adhesive Vinyl", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "adhesive-vinyl", image: "/images/cat/adhesive-vinyl.jpg" },
+      // Removed "Adhesive Vinyl" — it pointed at the SAME UUID as Signs &
+      // Banners' Floor Graphics/Wall Decals ("4bf65303..."), an unrelated
+      // category misplaced here; fourprintshop's own Roll Labels & Stickers
+      // structure has no such subcategory (its 5: Labels By Shape/By Stock,
+      // Popular Stickers, Stickers By Shape, Bumper Stickers — all already
+      // covered by Roll Labels/Stickers above; "Adhesive Vinyl Bumper
+      // Sticker" there is just the material name, not this UUID).
     ],
   },
   "promo-products": {

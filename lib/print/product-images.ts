@@ -12,18 +12,18 @@ interface ImageRule {
 }
 
 const RULES: Record<string, ImageRule[]> = {
-  "rigid-signs": [
-    { test: /coroplast.*rider|rider.*coroplast/i, image: "/images/signs/rigid-signs/coroplast-rider.jpg" },
-    { test: /10mm.*coroplast/i, image: "/images/signs/rigid-signs/10mm-coroplast.jpg" },
-    { test: /4mm.*coroplast/i, image: "/images/signs/rigid-signs/4mm-coroplast.jpg" },
-    { test: /gator/i, image: "/images/signs/rigid-signs/foam-core.jpg" },
-    { test: /foam\s*core|foamcore|foam\s*board/i, image: "/images/signs/rigid-signs/foam-core.jpg" },
-    { test: /styrene/i, image: "/images/signs/rigid-signs/3mm-pvc.jpg" },
-    { test: /pvc/i, image: "/images/signs/rigid-signs/3mm-pvc.jpg" },
-    { test: /aluminum.*sandwich|sandwich.*board/i, image: "/images/signs/rigid-signs/aluminum-sandwich-board.jpg" },
-    { test: /aluminum/i, image: "/images/signs/rigid-signs/aluminum-heavy-duty.jpg" },
-    { test: /real\s*estate|\bpost\b/i, image: "/images/signs/rigid-signs/real-estate-post.jpg" },
-    { test: /high\s*quantity|high-quantity\s*coro/i, image: "/images/signs/rigid-signs/high-quantity-coro.jpg" },
+  // "Ladies Slim Fit Short Sleeve Premium Tee" contains "premium" too, so it
+  // must be checked before the generic men's "premium" rule. The 3 genuine
+  // extras not on fourprintshop's own Apparel page (Men Short Sleeve Tee/
+  // Long Sleeve Tee/Tank Top) fall through to the generic fallback image.
+  "t-shirts": [
+    { test: /kids/i, image: "/images/cat/t-shirts/kids.jpg" },
+    { test: /ladies|slim\s*fit/i, image: "/images/cat/t-shirts/women-premium.jpg" },
+    { test: /premium/i, image: "/images/cat/t-shirts/men-premium.jpg" },
+  ],
+  "floor-graphics": [
+    { test: /aluminum/i, image: "/images/cat/floor-graphics/aluminum.jpg" },
+    { test: /vinyl/i, image: "/images/cat/floor-graphics/vinyl.jpg" },
   ],
   packaging: [
     { test: /250bc|500bc/i, image: "/images/cat/packaging/business-card-boxes.jpg" },
