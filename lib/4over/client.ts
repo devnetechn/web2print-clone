@@ -465,6 +465,17 @@ export async function getCategoryProductsList(params: CategoryProductsListParams
       {
         method: "GET",
         headers: { "Accept": "application/json" },
+        // Pure catalog structure (which sizes/stocks/coatings/products
+        // exist for a category) — no pricing fields, so caching is safe.
+        // This call is the dominant cost of every product page: the
+        // server-side anchor resolution alone fires 3-4 sequential rounds
+        // of it (confirmed ~350-950ms each against 4over's sandbox), and
+        // the client's live Size/Stock/Coating cascade calls it again on
+        // every selection change. A 1-hour cache turns repeat hits (same
+        // category+size+stock+coating combo, common across visitors AND
+        // across the anchor probe's own near-duplicate calls) into
+        // near-instant responses instead of round-tripping every time.
+        next: { revalidate: 3600 },
       }
     )
     if (!response.ok) {

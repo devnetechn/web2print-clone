@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { fourOverClient } from "@/lib/4over/client"
-import { applyMarkup } from "@/lib/4over/markup"
 
 // Get live product pricing from 4over
 export async function POST(request: Request) {
@@ -43,8 +42,7 @@ export async function GET(request: Request) {
     const colorspecUuid = searchParams.get("colorspec_uuid")
     const runsizeUuid = searchParams.get("runsize_uuid")
     const turnaroundUuid = searchParams.get("turnaround_uuid")
-    const category = searchParams.get("category") || "default"
-    
+
     if (productUuid && colorspecUuid && runsizeUuid && turnaroundUuid) {
       // Additional option_uuids (Grommets, Orientation, H-Stakes, etc.) that
       // affect the price. Passed as repeated ?options=<uuid> query params.
@@ -63,10 +61,9 @@ export async function GET(request: Request) {
         // Verified field name from 4over API docs: total_price
         const priceData = result.data
         const wholesale = parseFloat(priceData.total_price || priceData.base_price || priceData.product_baseprice || 0)
-        const retail = applyMarkup(wholesale, category)
-        return NextResponse.json({ 
-          success: true, 
-          price: retail,
+        return NextResponse.json({
+          success: true,
+          price: wholesale,
           wholesale,
           data: priceData
         })
@@ -82,7 +79,7 @@ export async function GET(request: Request) {
           const wholesale = parseFloat(matchingPrice.product_baseprice || "0")
           return NextResponse.json({
             success: true,
-            price: applyMarkup(wholesale, category),
+            price: wholesale,
             wholesale,
           })
         }

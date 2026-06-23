@@ -956,10 +956,22 @@ export default async function ProductTypePage({
           initialSizeUuid = match?.uuid
         }
       } else if (catUuid && baseName) {
-        const { data: siblingsRaw } = await supabase
-          .from("fourover_products")
-          .select("product_uuid, product_description, product_code")
-          .eq("category_uuid", catUuid)
+        // Same 1000-row PostgREST cap as fetchCategoryProducts above — this
+        // query shares Window Graphics' "ae3afb44..." category (1485 rows),
+        // so an unpaginated .select() here risks the same silent truncation
+        // bug, just affecting the anchor's sibling/Size-dropdown computation
+        // instead of the level-4 product list.
+        let siblingsRaw: { product_uuid: string; product_description: string; product_code: string }[] = []
+        for (let from = 0; ; from += 1000) {
+          const { data: page } = await supabase
+            .from("fourover_products")
+            .select("product_uuid, product_description, product_code")
+            .eq("category_uuid", catUuid)
+            .range(from, from + 999)
+          if (!page || page.length === 0) break
+          siblingsRaw = siblingsRaw.concat(page)
+          if (page.length < 1000) break
+        }
         // Applied to RAW descriptions before computing groupKey, same as
         // print/[category]/page.tsx's productList loop — otherwise whichever
         // sibling happens to win as the clicked representative determines
@@ -1107,29 +1119,53 @@ export default async function ProductTypePage({
               const stockListResult = await getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid })
               const stocks = stockListResult.success ? stockListResult.data?.stock_list || [] : []
               const allowedUuids = new Set(allowedProductUuidsOverride)
-              for (const stock of stocks) {
-                const stockResult = await getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })
-                if (!stockResult.success) continue
-                const coatings = stockResult.data?.coating_list || []
-                if (coatings.length === 0) {
-                  if ((stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) {
-                    initialStockUuid = stock.uuid
-                    break
-                  }
-                  continue
+              // Each categoryproductslist round-trip costs ~350-950ms (4over
+              // sandbox API latency, not our own CPU) — probing stocks one
+              // at a time, awaiting each before trying the next, made this
+              // anchor block dominate page load for any category with more
+              // than 1-2 stocks (confirmed: T-Shirts' SSR took ~2.9s warm,
+              // matching ~4 sequential round-trips). Firing every stock (and
+              // every coating within it) in parallel up front, then picking
+              // the lowest-index hit, gets the same "first stock, first
+              // coating" result in the time of the SLOWEST single request
+              // instead of the SUM of all of them.
+              const stockResults = await Promise.all(
+                stocks.map((stock) => getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid })),
+              )
+              const noCoatingHitIdx = stockResults.findIndex(
+                (stockResult, i) =>
+                  stockResult.success &&
+                  (stockResult.data?.coating_list || []).length === 0 &&
+                  (stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
+              )
+              if (noCoatingHitIdx >= 0) {
+                initialStockUuid = stocks[noCoatingHitIdx].uuid
+              } else {
+                const coatingProbeMeta: { stockIdx: number; coatingIdx: number }[] = []
+                const coatingProbePromises = stockResults.flatMap((stockResult, stockIdx) => {
+                  if (!stockResult.success) return []
+                  const coatings = stockResult.data?.coating_list || []
+                  return coatings.map((coating, coatingIdx) => {
+                    coatingProbeMeta.push({ stockIdx, coatingIdx })
+                    return getCategoryProductsList({
+                      category_uuid: catUuid,
+                      size_uuid: sizeMatch.uuid,
+                      stock_uuid: stocks[stockIdx].uuid,
+                      coating_uuid: coatings[coatingIdx].uuid,
+                    })
+                  })
+                })
+                const coatingProbes = await Promise.all(coatingProbePromises)
+                let bestHit = -1
+                for (let i = 0; i < coatingProbes.length; i++) {
+                  const probe = coatingProbes[i]
+                  if (!probe.success || !(probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) continue
+                  if (bestHit === -1 || coatingProbeMeta[i].stockIdx < coatingProbeMeta[bestHit].stockIdx) bestHit = i
                 }
-                const coatingProbes = await Promise.all(
-                  coatings.map((coating) =>
-                    getCategoryProductsList({ category_uuid: catUuid, size_uuid: sizeMatch.uuid, stock_uuid: stock.uuid, coating_uuid: coating.uuid }),
-                  ),
-                )
-                const coatingHit = coatingProbes.findIndex(
-                  (probe) => probe.success && (probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
-                )
-                if (coatingHit >= 0) {
-                  initialStockUuid = stock.uuid
-                  initialCoatingUuid = coatings[coatingHit].uuid
-                  break
+                if (bestHit >= 0) {
+                  const { stockIdx, coatingIdx } = coatingProbeMeta[bestHit]
+                  initialStockUuid = stocks[stockIdx].uuid
+                  initialCoatingUuid = (stockResults[stockIdx].data?.coating_list || [])[coatingIdx]?.uuid
                 }
               }
             }
@@ -1416,40 +1452,60 @@ export default async function ProductTypePage({
       // on "14PT" stock, but not every coating "14PT" offers), so the
       // stock-level products (no coating filter) aren't a reliable enough
       // check on their own.
+      // Each categoryproductslist round-trip costs ~350-950ms (4over sandbox
+      // API latency) — probing stocks one at a time within a size, awaiting
+      // each before trying the next, made this anchor block a major chunk of
+      // page load for any category with more than 1-2 stocks per size.
+      // Firing every stock (and every coating within it) in parallel, then
+      // picking the lowest-index hit, gets the same "first stock, first
+      // coating" result in the time of the SLOWEST single request instead
+      // of the SUM of all of them. The outer sizes loop stays sequential —
+      // sizeMatch puts the real candidate first, so it's the only iteration
+      // that runs for every category except Flags-style brute force.
       outer: for (const candidateSize of candidateSizes) {
         const stockListResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: candidateSize.uuid })
         const stocks = stockListResult.success ? stockListResult.data?.stock_list || [] : []
-        for (const stock of stocks) {
-          const stockResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: candidateSize.uuid, stock_uuid: stock.uuid })
-          if (!stockResult.success) continue
+        const stockResults = await Promise.all(
+          stocks.map((stock) => getCategoryProductsList({ category_uuid: effectiveCategoryUuid, size_uuid: candidateSize.uuid, stock_uuid: stock.uuid })),
+        )
+        const noCoatingHitIdx = stockResults.findIndex(
+          (stockResult) =>
+            stockResult.success &&
+            (stockResult.data?.coating_list || []).length === 0 &&
+            (stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
+        )
+        if (noCoatingHitIdx >= 0) {
+          initialSizeUuid = candidateSize.uuid
+          initialStockUuid = stocks[noCoatingHitIdx].uuid
+          break outer
+        }
+        const coatingProbeMeta: { stockIdx: number; coatingIdx: number }[] = []
+        const coatingProbePromises = stockResults.flatMap((stockResult, stockIdx) => {
+          if (!stockResult.success) return []
           const coatings = stockResult.data?.coating_list || []
-          if (coatings.length === 0) {
-            if ((stockResult.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) {
-              initialSizeUuid = candidateSize.uuid
-              initialStockUuid = stock.uuid
-              break outer
-            }
-            continue
-          }
-          const coatingProbes = await Promise.all(
-            coatings.map((coating) =>
-              getCategoryProductsList({
-                category_uuid: effectiveCategoryUuid,
-                size_uuid: candidateSize.uuid,
-                stock_uuid: stock.uuid,
-                coating_uuid: coating.uuid,
-              }),
-            ),
-          )
-          const coatingHit = coatingProbes.findIndex(
-            (probe) => probe.success && (probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid)),
-          )
-          if (coatingHit >= 0) {
-            initialSizeUuid = candidateSize.uuid
-            initialStockUuid = stock.uuid
-            initialCoatingUuid = coatings[coatingHit].uuid
-            break outer
-          }
+          return coatings.map((coating, coatingIdx) => {
+            coatingProbeMeta.push({ stockIdx, coatingIdx })
+            return getCategoryProductsList({
+              category_uuid: effectiveCategoryUuid,
+              size_uuid: candidateSize.uuid,
+              stock_uuid: stocks[stockIdx].uuid,
+              coating_uuid: coatings[coatingIdx].uuid,
+            })
+          })
+        })
+        const coatingProbes = await Promise.all(coatingProbePromises)
+        let bestHit = -1
+        for (let i = 0; i < coatingProbes.length; i++) {
+          const probe = coatingProbes[i]
+          if (!probe.success || !(probe.data?.products || []).some((p: any) => allowedUuids.has(p.product_uuid))) continue
+          if (bestHit === -1 || coatingProbeMeta[i].stockIdx < coatingProbeMeta[bestHit].stockIdx) bestHit = i
+        }
+        if (bestHit >= 0) {
+          const { stockIdx, coatingIdx } = coatingProbeMeta[bestHit]
+          initialSizeUuid = candidateSize.uuid
+          initialStockUuid = stocks[stockIdx].uuid
+          initialCoatingUuid = (stockResults[stockIdx].data?.coating_list || [])[coatingIdx]?.uuid
+          break outer
         }
       }
     }

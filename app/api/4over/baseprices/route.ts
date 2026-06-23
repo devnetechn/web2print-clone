@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { getProductBasePrices, getProductFeed } from "@/lib/4over/client"
-import { applyMarkup } from "@/lib/4over/markup"
 
 // Returns the authoritative list of VALID colorspec/runsize/turnaround
 // combinations for a product, each with a retail price. The configurator uses
@@ -16,7 +15,6 @@ import { applyMarkup } from "@/lib/4over/markup"
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const productUuid = searchParams.get("product_uuid")
-  const category = searchParams.get("category") || "default"
 
   if (!productUuid) {
     return NextResponse.json({ success: false, error: "product_uuid required" }, { status: 400 })
@@ -59,7 +57,7 @@ export async function GET(request: Request) {
         turnaround_uuid: opt.option_uuid,
         turnaround: opt.option_description || opt.option_name || "",
         wholesale,
-        price: applyMarkup(wholesale, category),
+        price: wholesale,
       }
     })
     .filter((c): c is NonNullable<typeof c> => c !== null && !!c.colorspec_uuid && !!c.runsize_uuid && !!c.turnaround_uuid)
