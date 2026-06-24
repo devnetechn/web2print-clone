@@ -17,6 +17,7 @@ import { ArrowLeft, ShieldCheck, CheckCircle2, Loader2, AlertCircle } from "luci
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
 import { createClient } from "@/lib/supabase/client"
+import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
 
 import { createSimpleCheckoutSession } from "@/app/actions/checkout"
 
@@ -39,6 +40,7 @@ type PrintCartItem = {
 
 function CheckoutContent() {
   const router = useRouter()
+  const authChecked = useRequireCustomerAuth()
   const [checkoutComplete, setCheckoutComplete] = useState(false)
   const [cartItems, setCartItems] = useState<PrintCartItem[]>([])
   const [shippingCost, setShippingCost] = useState(0)
@@ -159,7 +161,7 @@ function CheckoutContent() {
     )
   }
 
-  if (!ready) {
+  if (!authChecked || !ready) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">

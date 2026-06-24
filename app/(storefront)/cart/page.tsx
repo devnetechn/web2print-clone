@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
+import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
 
 type PrintCartItem = {
   id: string
@@ -30,6 +31,7 @@ type PrintCartItem = {
 
 export default function CartPage() {
   const router = useRouter()
+  const authChecked = useRequireCustomerAuth()
   const [cartItems, setCartItems] = useState<PrintCartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [couponCode, setCouponCode] = useState("")
@@ -99,7 +101,7 @@ export default function CartPage() {
     router.push("/checkout/shipping")
   }
 
-  if (loading) {
+  if (!authChecked || loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-slate-400" />

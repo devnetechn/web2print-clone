@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useState } from "react"
+import { sendNewCustomerToCRM } from "@/app/actions/crm"
 
 function GoogleIcon() {
   return (
@@ -64,8 +65,11 @@ function CustomerSignUpForm() {
       })
       if (error) throw error
 
-      // CRM hand-off (name/email/phone) goes here once the CRM's API/webhook
-      // details are available — the form already collects everything it needs.
+      // Awaited (not fire-and-forget) — the immediate router.push right
+      // after was letting the page navigate away before the Server
+      // Action's underlying request to the CRM had actually finished,
+      // so the webhook call was getting cut off before GHL received it.
+      await sendNewCustomerToCRM({ fullName, email, phone })
 
       router.push("/auth/check-email")
     } catch (error: unknown) {

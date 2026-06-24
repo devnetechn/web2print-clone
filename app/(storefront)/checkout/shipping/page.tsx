@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, ArrowRight, Loader2, MapPin } from "lucide-react"
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
+import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -61,6 +62,7 @@ const EMPTY_FORM: ShippingForm = {
 
 export default function ShippingStepPage() {
   const router = useRouter()
+  const authChecked = useRequireCustomerAuth()
   const [cartItems, setCartItems] = useState<PrintCartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -192,7 +194,7 @@ export default function ShippingStepPage() {
     router.push("/checkout")
   }
 
-  if (loading) {
+  if (!authChecked || loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
