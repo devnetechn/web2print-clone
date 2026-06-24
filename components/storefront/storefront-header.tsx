@@ -89,7 +89,7 @@ export function StorefrontHeader() {
             </Link>
 
             {/* Login/Register */}
-            <Link href="/auth/login" className="text-sm text-slate-700 hover:text-[#e42a27]">
+            <Link href="/account/login" className="text-sm text-slate-700 hover:text-[#e42a27]">
               Login/Register
             </Link>
           </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useCallback, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   EmbeddedCheckout,
@@ -9,8 +9,14 @@ import {
 } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, ShieldCheck, CheckCircle2, Loader2, AlertCircle } from "lucide-react"
+import { CheckoutSteps } from "@/components/checkout/checkout-steps"
+import { PriceSummary } from "@/components/checkout/price-summary"
+import { createClient } from "@/lib/supabase/client"
 
 import { createSimpleCheckoutSession } from "@/app/actions/checkout"
 
@@ -20,64 +26,111 @@ import { createSimpleCheckoutSession } from "@/app/actions/checkout"
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
+// Matches the unwired "Tax Rate (%)" default in admin/settings — there's no
+// settings persistence yet, so this is a placeholder until that's wired up.
+const TAX_RATE = 0.08875
+
+type PrintCartItem = {
+  id: string
+  productName: string
+  quantity?: number
+  price?: number
+}
+
 function CheckoutContent() {
-  const searchParams = useSearchParams()
-  const totalParam = searchParams.get("total")
+  const router = useRouter()
   const [checkoutComplete, setCheckoutComplete] = useState(false)
-  const [totalInCents, setTotalInCents] = useState<number>(0)
+  const [cartItems, setCartItems] = useState<PrintCartItem[]>([])
+  const [shippingCost, setShippingCost] = useState(0)
+  const [couponCode, setCouponCode] = useState("")
+  const [couponApplied, setCouponApplied] = useState(false)
+  const [poNumber, setPoNumber] = useState("")
+  const [orderNotes, setOrderNotes] = useState("")
+  const [customerEmail, setCustomerEmail] = useState<string | undefined>()
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Get total from URL params or calculate from cart
-    if (totalParam) {
-      setTotalInCents(parseInt(totalParam))
-    } else {
-      // Fallback: calculate from localStorage carts
-      let total = 0
-      
-      // Check print_cart (4over products)
-      const printCart = localStorage.getItem("print_cart")
-      if (printCart) {
-        try {
-          const items = JSON.parse(printCart)
-          total += items.reduce((sum: number, item: any) => {
-            return sum + (parseFloat(item.price || "0") * 100)
-          }, 0)
-        } catch (e) {
-          console.error("Failed to parse print cart:", e)
-        }
-      }
-      
-      // Check regular cart
-      const storedCart = localStorage.getItem("cart")
-      if (storedCart) {
-        try {
-          const items = JSON.parse(storedCart)
-          total += items.reduce((sum: number, item: any) => {
-            return sum + (parseFloat(item.price || "0") * 100)
-          }, 0)
-        } catch (e) {
-          console.error("Failed to parse cart:", e)
-        }
-      }
-      
-      if (total > 0) {
-        setTotalInCents(Math.round(total))
+    const printCart = localStorage.getItem("print_cart")
+    const regularCart = localStorage.getItem("cart")
+    const items: PrintCartItem[] = []
+
+    if (printCart) {
+      try {
+        items.push(...JSON.parse(printCart))
+      } catch (e) {
+        console.error("Failed to parse print cart:", e)
       }
     }
-  }, [totalParam])
+    if (regularCart) {
+      try {
+        const parsed = JSON.parse(regularCart)
+        items.push(...parsed.map((item: any, i: number) => ({
+          id: item.id || `legacy-${i}`,
+          productName: item.productName,
+          quantity: parseInt(item.quantity) || 1,
+          price: parseFloat(item.price) || 0,
+        })))
+      } catch (e) {
+        console.error("Failed to parse cart:", e)
+      }
+    }
+
+    if (items.length === 0) {
+      router.replace("/cart")
+      return
+    }
+
+    const savedShipping = sessionStorage.getItem("checkout_shipping")
+    if (!savedShipping) {
+      router.replace("/checkout/shipping")
+      return
+    }
+
+    setCartItems(items)
+    setShippingCost(parseFloat(sessionStorage.getItem("checkout_shipping_cost") || "0"))
+
+    const savedCoupon = sessionStorage.getItem("checkout_coupon")
+    if (savedCoupon) {
+      try {
+        const { code, applied } = JSON.parse(savedCoupon)
+        setCouponCode(code || "")
+        setCouponApplied(!!applied)
+      } catch {}
+    }
+
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user?.email) setCustomerEmail(data.user.email)
+    })
+
+    setReady(true)
+  }, [router])
+
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0)
+  const discount = couponApplied ? subtotal * 0.1 : 0
+  const tax = Math.max(0, subtotal + shippingCost - discount) * TAX_RATE
+  const totalInCents = Math.round((subtotal + shippingCost - discount + tax) * 100)
+
+  const handleApplyCoupon = () => {
+    if (couponCode.toLowerCase() === "save10") {
+      setCouponApplied(true)
+      sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: true }))
+    }
+  }
 
   const fetchClientSecret = useCallback(async () => {
     if (totalInCents <= 0) {
       throw new Error("Invalid total amount")
     }
-    return createSimpleCheckoutSession(totalInCents, "Web2Print Order")
-  }, [totalInCents])
+    return createSimpleCheckoutSession(totalInCents, "Web2Print Order", customerEmail)
+  }, [totalInCents, customerEmail])
 
   const handleComplete = () => {
     setCheckoutComplete(true)
-    // Clear all carts after successful checkout
     localStorage.removeItem("cart")
     localStorage.removeItem("print_cart")
+    sessionStorage.removeItem("checkout_shipping")
+    sessionStorage.removeItem("checkout_shipping_cost")
+    sessionStorage.removeItem("checkout_coupon")
   }
 
   if (checkoutComplete) {
@@ -106,7 +159,7 @@ function CheckoutContent() {
     )
   }
 
-  if (totalInCents <= 0) {
+  if (!ready) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
@@ -121,79 +174,85 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/cart">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Cart
-                </Link>
-              </Button>
-              <div className="h-6 w-px bg-slate-200" />
-              <h1 className="font-semibold">Secure Checkout</h1>
-            </div>
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-slate-900">Payment Details</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-green-600" />
               <span>SSL Secured</span>
             </div>
           </div>
+          <CheckoutSteps current={3} />
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          {/* Order Summary */}
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Order Total</span>
-                <span className="text-xl font-bold text-primary">
-                  ${(totalInCents / 100).toFixed(2)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardContent className="p-0">
+                {stripePromise ? (
+                  <EmbeddedCheckoutProvider
+                    stripe={stripePromise}
+                    options={{ fetchClientSecret, onComplete: handleComplete }}
+                  >
+                    <EmbeddedCheckout />
+                  </EmbeddedCheckoutProvider>
+                ) : (
+                  <div className="p-8 text-center">
+                    <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+                    <p className="font-medium">Payments are not configured</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to enable checkout.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Stripe Embedded Checkout */}
-          <Card>
-            <CardContent className="p-0">
-              {stripePromise ? (
-                <EmbeddedCheckoutProvider
-                  stripe={stripePromise}
-                  options={{
-                    fetchClientSecret,
-                    onComplete: handleComplete
-                  }}
-                >
-                  <EmbeddedCheckout />
-                </EmbeddedCheckoutProvider>
-              ) : (
-                <div className="p-8 text-center">
-                  <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
-                  <p className="font-medium">Payments are not configured</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to enable checkout.
-                  </p>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Special Instruction for Order</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="poNumber">PO Number</Label>
+                  <Input id="poNumber" value={poNumber} onChange={(e) => setPoNumber(e.target.value)} />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <div>
+                  <Label htmlFor="orderNotes">Additional order instructions</Label>
+                  <Textarea id="orderNotes" value={orderNotes} onChange={(e) => setOrderNotes(e.target.value)} />
+                </div>
+                <p className="text-xs text-slate-500">
+                  <strong>IMPORTANT:</strong> I have verified that spelling and contents are correct. I am satisfied
+                  with the document layout. I understand that my document will print exactly as it appears here. I
+                  cannot make any changes once my order is placed and I assume all responsibility for typographical
+                  errors.
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* Trust Badges */}
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" />
-              <span>256-bit SSL</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              <span>Money-back Guarantee</span>
-            </div>
+            <Button variant="outline" asChild>
+              <Link href="/checkout/shipping">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Shipping
+              </Link>
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <PriceSummary
+              items={cartItems.map((item) => ({ id: item.id, name: item.productName, qty: item.quantity, price: item.price || 0 }))}
+              subtotal={subtotal}
+              shipping={shippingCost}
+              discount={discount}
+              tax={tax}
+              couponCode={couponCode}
+              onCouponCodeChange={setCouponCode}
+              onApplyCoupon={handleApplyCoupon}
+              couponApplied={couponApplied}
+            />
           </div>
         </div>
       </div>

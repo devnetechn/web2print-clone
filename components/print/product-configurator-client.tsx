@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart } from "lucide-react"
+import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart, Zap } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 interface ListItem {
   name: string
@@ -154,6 +156,7 @@ export function ProductConfiguratorClient({
   initialStockUuid,
   initialCoatingUuid,
 }: ProductConfiguratorClientProps) {
+  const router = useRouter()
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
   // Lowercased set of option-group names to HIDE (null = show all).
   const hiddenSet = useMemo(
@@ -661,15 +664,16 @@ export function ProductConfiguratorClient({
     }
   }, [productUuid, colorspecUuid, runsizeUuid, turnaroundUuid, shipZip, selectedExtras])
 
-  // Add the current configuration to the print cart (localStorage "print_cart"),
-  // matching the shape the /cart page reads.
-  const addToCart = useCallback(() => {
-    if (!productUuid || price == null) return
+  // Shared by "Add to Cart" and "Buy Now" — builds the localStorage
+  // "print_cart" item the /cart page reads, returns null if nothing's
+  // resolved yet (Add to Cart and Buy Now are both disabled in that case).
+  const buildCartItem = useCallback(() => {
+    if (!productUuid || price == null) return null
     const sizeName = sizeList.find((s) => s.uuid === sizeUuid)?.name
     const colorspecName = colorspecOptions.find((o) => o.option_uuid === colorspecUuid)?.option_name
     const runsizeName = runsizeOptions.find((o) => o.option_uuid === runsizeUuid)?.option_name
     const turnaroundName = turnaroundOptions.find((o) => o.option_uuid === turnaroundUuid)?.option_name
-    const item = {
+    return {
       id: `${productUuid}-${Date.now()}`,
       productType: categorySlug,
       productName,
@@ -683,15 +687,6 @@ export function ProductConfiguratorClient({
       runsizeUuid,
       turnaroundUuid,
       optionUuids: Object.values(selectedExtras).filter(Boolean),
-    }
-    try {
-      const existing = JSON.parse(localStorage.getItem("print_cart") || "[]")
-      existing.push(item)
-      localStorage.setItem("print_cart", JSON.stringify(existing))
-      setAdded(true)
-      setTimeout(() => setAdded(false), 3000)
-    } catch {
-      // ignore storage errors
     }
   }, [
     productUuid,
@@ -708,6 +703,52 @@ export function ProductConfiguratorClient({
     categorySlug,
     selectedExtras,
   ])
+
+  // Both Add to Cart and Buy Now require a logged-in account before
+  // touching the cart at all — sends the customer to login/register with
+  // a `next` back to this exact product+selection so they land right back
+  // here (cart write still hasn't happened yet) once they're signed in.
+  const requireAuth = useCallback(async () => {
+    const { data } = await createClient().auth.getUser()
+    if (data.user) return true
+    router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+    return false
+  }, [router])
+
+  // Add the current configuration to the print cart and stay on the page —
+  // for customers who want to keep configuring other products before
+  // checking out.
+  const addToCart = useCallback(async () => {
+    const item = buildCartItem()
+    if (!item) return
+    if (!(await requireAuth())) return
+    try {
+      const existing = JSON.parse(localStorage.getItem("print_cart") || "[]")
+      existing.push(item)
+      localStorage.setItem("print_cart", JSON.stringify(existing))
+      setAdded(true)
+      setTimeout(() => setAdded(false), 3000)
+    } catch {
+      // ignore storage errors
+    }
+  }, [buildCartItem, requireAuth])
+
+  // Same cart write as Add to Cart, but skips straight to the Shipping step
+  // instead of staying on the product page — for the common "just this one
+  // thing" order, matching printfast.ca's "Buy now" shortcut.
+  const buyNow = useCallback(async () => {
+    const item = buildCartItem()
+    if (!item) return
+    if (!(await requireAuth())) return
+    try {
+      const existing = JSON.parse(localStorage.getItem("print_cart") || "[]")
+      existing.push(item)
+      localStorage.setItem("print_cart", JSON.stringify(existing))
+    } catch {
+      // ignore storage errors
+    }
+    router.push("/checkout/shipping")
+  }, [buildCartItem, requireAuth, router])
 
   // Extra groups to actually display: apply the allow-list and de-duplicate by
   // name (the productsfeed can repeat a group like "Foil Color"). Hidden/dup
@@ -916,26 +957,35 @@ export function ProductConfiguratorClient({
                 )}
               </div>
 
-              {/* ADD TO CART */}
-              <div className="pt-4">
+              {/* BUY NOW / ADD TO CART */}
+              <div className="pt-4 grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={buyNow}
+                  disabled={price == null}
+                  className="flex items-center justify-center gap-2 bg-[#e42a27] hover:bg-[#c42020] disabled:opacity-50 text-white rounded px-4 py-3 text-sm font-semibold transition-colors"
+                >
+                  <Zap className="h-4 w-4" />
+                  Buy Now
+                </button>
                 <button
                   type="button"
                   onClick={addToCart}
                   disabled={price == null}
-                  className="w-full flex items-center justify-center gap-2 bg-[#2c327a] hover:bg-[#1a1f4e] disabled:opacity-50 text-white rounded px-4 py-3 text-sm font-semibold transition-colors"
+                  className="flex items-center justify-center gap-2 bg-[#2c327a] hover:bg-[#1a1f4e] disabled:opacity-50 text-white rounded px-4 py-3 text-sm font-semibold transition-colors"
                 >
                   <ShoppingCart className="h-4 w-4" />
                   Add to Cart
                 </button>
-                {added && (
-                  <p className="text-center text-sm text-green-600 mt-2">
-                    Added to cart!{" "}
-                    <Link href="/cart" className="underline font-medium">
-                      View Cart
-                    </Link>
-                  </p>
-                )}
               </div>
+              {added && (
+                <p className="text-center text-sm text-green-600 mt-2">
+                  Added to cart!{" "}
+                  <Link href="/cart" className="underline font-medium">
+                    View Cart
+                  </Link>
+                </p>
+              )}
             </>
           )}
         </CardContent>
