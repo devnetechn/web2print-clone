@@ -3,9 +3,9 @@ import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, MapPin, CreditCard, FileText, Printer, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { OrderStatusCard } from "@/components/admin/order-status-card"
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -72,9 +72,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Print Invoice</Button>
-          <Button variant="outline">Send Email</Button>
-          <Button>Process Order</Button>
+          <Button variant="outline" asChild>
+            <Link href={`/admin/orders/${order.id}/invoice`}>Print Invoice</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/admin/orders/4over-transfer">Submit to 4over</Link>
+          </Button>
         </div>
       </div>
 
@@ -204,37 +207,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Order Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium">Current Status</label>
-                <Select defaultValue={order.status}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="production">Production</SelectItem>
-                    <SelectItem value="shipped">Shipped</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Payment Status</label>
-                <Badge variant={order.payment_status === "paid" ? "default" : "destructive"} className="capitalize">
-                  {order.payment_status}
-                </Badge>
-              </div>
-              <Button className="w-full">Update Status</Button>
-            </CardContent>
-          </Card>
+          <OrderStatusCard orderId={order.id} initialStatus={order.status} initialPaymentStatus={order.payment_status} />
 
           {/* Customer Info */}
           <Card>

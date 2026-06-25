@@ -195,3 +195,101 @@ export async function createOrderAndCheckoutSession({
 
   return session.client_secret
 }
+
+export async function updateOrderStatus({
+  orderId,
+  status,
+  paymentStatus,
+  notes,
+}: {
+  orderId: string
+  status: "pending" | "processing" | "production" | "shipped" | "completed" | "cancelled"
+  paymentStatus: "unpaid" | "paid" | "refunded"
+  notes?: string
+}) {
+  const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) {
+    return { success: false, error: "Not logged in" }
+  }
+
+  const admin = createAdminClient()
+
+  const dateFields: Record<string, string> = {}
+  if (status === "production") dateFields.production_date = new Date().toISOString()
+  if (status === "shipped") dateFields.shipped_date = new Date().toISOString()
+  if (status === "completed") dateFields.completed_date = new Date().toISOString()
+
+  const { error } = await admin
+    .from("orders")
+    .update({ status, payment_status: paymentStatus, ...dateFields, updated_at: new Date().toISOString() })
+    .eq("id", orderId)
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  await admin.from("order_status_logs").insert({
+    order_id: orderId,
+    status,
+    notes: notes || `Status updated to ${status}`,
+    created_by: userData.user.id,
+  })
+
+  return { success: true }
+}
+
+export async function refundOrder(orderId: string) {
+  const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) {
+    return { success: false, error: "Not logged in" }
+  }
+
+  const admin = createAdminClient()
+
+  const { data: order } = await admin
+    .from("orders")
+    .select("id, payment_status, payment_intent_id")
+    .eq("id", orderId)
+    .single()
+
+  if (!order) {
+    return { success: false, error: "Order not found" }
+  }
+  if (order.payment_status !== "paid") {
+    return { success: false, error: "Only paid orders can be refunded" }
+  }
+  if (!order.payment_intent_id) {
+    return { success: false, error: "No payment record found for this order" }
+  }
+
+  try {
+    // payment_intent_id actually stores the Checkout Session ID (cs_...) -
+    // the PaymentIntent itself (needed for the refund call) only exists on
+    // the session once it's completed, so it has to be looked up here.
+    const session = await stripe.checkout.sessions.retrieve(order.payment_intent_id)
+    const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id
+    if (!paymentIntentId) {
+      return { success: false, error: "No payment intent found on this checkout session" }
+    }
+
+    await stripe.refunds.create({ payment_intent: paymentIntentId })
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Stripe refund failed" }
+  }
+
+  await admin
+    .from("orders")
+    .update({ payment_status: "refunded", status: "cancelled", updated_at: new Date().toISOString() })
+    .eq("id", orderId)
+
+  await admin.from("order_status_logs").insert({
+    order_id: orderId,
+    status: "cancelled",
+    notes: "Order refunded via Stripe",
+    created_by: userData.user.id,
+  })
+
+  return { success: true }
+}

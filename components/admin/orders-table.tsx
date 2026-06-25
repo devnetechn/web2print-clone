@@ -9,8 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Eye, Edit, Copy, RotateCcw, MoreVertical, Search, Filter, Download } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Eye, Edit, Copy, RotateCcw, MoreVertical, Search, Filter, Download, Loader2 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { refundOrder } from "@/app/actions/orders"
 
 type Order = {
   id: string
@@ -36,6 +47,26 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
   const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "all")
   const [dateFrom, setDateFrom] = useState(searchParams.get("from") || "")
+  const [refundTarget, setRefundTarget] = useState<Order | null>(null)
+  const [refunding, setRefunding] = useState(false)
+  const [refundError, setRefundError] = useState<string | null>(null)
+
+  const handleRefund = async () => {
+    if (!refundTarget) return
+    setRefunding(true)
+    setRefundError(null)
+    try {
+      const result = await refundOrder(refundTarget.id)
+      if (result.success) {
+        setRefundTarget(null)
+        router.refresh()
+      } else {
+        setRefundError(result.error || "Refund failed")
+      }
+    } finally {
+      setRefunding(false)
+    }
+  }
 
   const handleSearch = () => {
     const params = new URLSearchParams()
@@ -261,11 +292,17 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                           <Copy className="h-4 w-4" />
                           Duplicate Order
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <Download className="h-4 w-4" />
-                          Download Invoice
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/orders/${order.id}/invoice`} className="flex items-center gap-2">
+                            <Download className="h-4 w-4" />
+                            Download Invoice
+                          </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-red-500"
+                          disabled={order.payment_status !== "paid"}
+                          onClick={() => setRefundTarget(order)}
+                        >
                           <RotateCcw className="h-4 w-4" />
                           Refund
                         </DropdownMenuItem>
@@ -278,6 +315,33 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={!!refundTarget} onOpenChange={(open) => !open && setRefundTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Refund Order #{refundTarget?.order_number}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This issues a full refund of ${Number(refundTarget?.total || 0).toFixed(2)} via Stripe to{" "}
+              {refundTarget?.customer_email}, and marks the order as refunded/cancelled. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {refundError && <p className="text-sm text-red-500">{refundError}</p>}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={refunding}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleRefund()
+              }}
+              disabled={refunding}
+              className="bg-red-500 hover:bg-red-600 gap-2"
+            >
+              {refunding && <Loader2 className="h-4 w-4 animate-spin" />}
+              Issue Refund
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }
