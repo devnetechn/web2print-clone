@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment, type ChangeEvent } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart, Zap } from "lucide-react"
+import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart, Zap, FileText } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -214,10 +214,11 @@ export function ProductConfiguratorClient({
   // carried through to the cart item so it shows up in cart/checkout and
   // later in the admin order view, matching the reference backend's
   // "Upload Design" + order-thumbnail flow.
-  const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string; path: string } | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string; path: string; contentType: string } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const isPreviewableImage = uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff"
 
   const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -229,7 +230,7 @@ export function ProductConfiguratorClient({
       formData.append("file", file)
       const result = await uploadDesignFile(formData)
       if (result.success) {
-        setUploadedFile({ fileName: result.fileName!, url: result.url!, path: result.path! })
+        setUploadedFile({ fileName: result.fileName!, url: result.url!, path: result.path!, contentType: result.contentType! })
       } else {
         setUploadError(result.error || "Upload failed")
       }
@@ -719,7 +720,9 @@ export function ProductConfiguratorClient({
       runsizeUuid,
       turnaroundUuid,
       optionUuids: Object.values(selectedExtras).filter(Boolean),
-      designFile: uploadedFile ? { fileName: uploadedFile.fileName, url: uploadedFile.url } : undefined,
+      designFile: uploadedFile
+        ? { fileName: uploadedFile.fileName, url: uploadedFile.url, contentType: uploadedFile.contentType }
+        : undefined,
     }
   }, [
     productUuid,
@@ -1122,8 +1125,14 @@ export function ProductConfiguratorClient({
             disabled={uploading}
             className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left disabled:opacity-60"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0 overflow-hidden">
+              {uploading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : isPreviewableImage ? (
+                <img src={uploadedFile!.url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <Upload className="h-5 w-5" />
+              )}
             </span>
             <span>
               <span className="block font-medium text-slate-900">
@@ -1136,10 +1145,24 @@ export function ProductConfiguratorClient({
           </button>
           {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
           {uploadedFile && !uploading && (
-            <p className="text-sm text-green-600 flex items-center gap-1">
-              <Upload className="h-3.5 w-3.5" />
-              File ready — it will be attached when you Add to Cart or Buy Now.
-            </p>
+            <div className="border border-slate-200 rounded-lg p-3">
+              {isPreviewableImage ? (
+                <img
+                  src={uploadedFile.url}
+                  alt={uploadedFile.fileName}
+                  className="w-full max-h-64 object-contain rounded bg-slate-50"
+                />
+              ) : (
+                <div className="flex items-center gap-3 bg-slate-50 rounded p-3">
+                  <FileText className="h-8 w-8 text-slate-400 shrink-0" />
+                  <span className="text-sm text-slate-600 truncate">{uploadedFile.fileName}</span>
+                </div>
+              )}
+              <p className="text-sm text-green-600 flex items-center gap-1 mt-2">
+                <Upload className="h-3.5 w-3.5" />
+                File ready — it will be attached when you Add to Cart or Buy Now.
+              </p>
+            </div>
           )}
         </div>
       </div>

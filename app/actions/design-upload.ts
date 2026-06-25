@@ -43,5 +43,11 @@ export async function uploadDesignFile(formData: FormData) {
     return { success: false, error: signError.message }
   }
 
-  return { success: true, path, fileName: file.name, url: signed.signedUrl }
+  return {
+    success: true,
+    path,
+    fileName: file.name,
+    url: signed.signedUrl,
+    contentType: file.type || "application/octet-stream",
+  }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, type ChangeEvent } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -8,11 +8,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   ShoppingCart, Trash2, ArrowRight, Package,
-  ShieldCheck, Truck, ArrowLeft, Loader2, Clock, FileText
+  ShieldCheck, Truck, ArrowLeft, Loader2, Clock, FileText, Upload
 } from "lucide-react"
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
 import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
+import { uploadDesignFile } from "@/app/actions/design-upload"
 
 type PrintCartItem = {
   id: string
@@ -27,7 +28,7 @@ type PrintCartItem = {
   colorspecUuid?: string
   runsizeUuid?: string
   turnaroundUuid?: string
-  designFile?: { fileName: string; url: string }
+  designFile?: { fileName: string; url: string; contentType?: string }
 }
 
 export default function CartPage() {
@@ -80,6 +81,46 @@ export default function CartPage() {
     localStorage.setItem("cart", JSON.stringify(updatedCart.filter(i => !i.productUuid)))
   }
 
+  const persistCart = (updated: PrintCartItem[]) => {
+    setCartItems(updated)
+    localStorage.setItem("print_cart", JSON.stringify(updated.filter(i => i.productUuid)))
+    localStorage.setItem("cart", JSON.stringify(updated.filter(i => !i.productUuid)))
+  }
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null)
+  const [uploadingItemId, setUploadingItemId] = useState<string | null>(null)
+
+  const startArtworkUpload = (itemId: string) => {
+    setUploadTargetId(itemId)
+    fileInputRef.current?.click()
+  }
+
+  const handleArtworkFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const itemId = uploadTargetId
+    e.target.value = ""
+    if (!file || !itemId) return
+
+    setUploadingItemId(itemId)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const result = await uploadDesignFile(formData)
+      if (result.success) {
+        const updated = cartItems.map((item) =>
+          item.id === itemId
+            ? { ...item, designFile: { fileName: result.fileName!, url: result.url!, contentType: result.contentType! } }
+            : item
+        )
+        persistCart(updated)
+      }
+    } finally {
+      setUploadingItemId(null)
+      setUploadTargetId(null)
+    }
+  }
+
   const clearCart = () => {
     setCartItems([])
     localStorage.removeItem("print_cart")
@@ -112,6 +153,13 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept=".pdf,.ai,.eps,.indd,.jpg,.jpeg,.png,.tif,.tiff"
+        onChange={handleArtworkFileSelected}
+      />
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-3 mb-6">
@@ -154,8 +202,29 @@ export default function CartPage() {
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex gap-4">
-                      <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center shrink-0">
-                        <Package className="h-10 w-10 text-slate-300" />
+                      <div className="shrink-0 flex flex-col items-center gap-1.5">
+                        <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center overflow-hidden">
+                          {uploadingItemId === item.id ? (
+                            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                          ) : item.designFile?.contentType?.startsWith("image/") && item.designFile.contentType !== "image/tiff" ? (
+                            <img src={item.designFile.url} alt={item.designFile.fileName} className="h-full w-full object-cover" />
+                          ) : item.designFile ? (
+                            <FileText className="h-10 w-10 text-slate-300" />
+                          ) : (
+                            <Package className="h-10 w-10 text-slate-300" />
+                          )}
+                        </div>
+                        {!item.designFile && (
+                          <button
+                            type="button"
+                            onClick={() => startArtworkUpload(item.id)}
+                            disabled={uploadingItemId === item.id}
+                            className="text-xs text-[#2c327a] hover:underline flex items-center gap-1 disabled:opacity-60"
+                          >
+                            <Upload className="h-3 w-3" />
+                            Upload artwork
+                          </button>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">

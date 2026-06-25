@@ -12,7 +12,7 @@ export interface PriceSummaryItem {
   name: string
   qty?: number
   price: number
-  designFile?: { fileName: string; url: string }
+  designFile?: { fileName: string; url: string; contentType?: string }
 }
 
 interface PriceSummaryProps {
@@ -51,8 +51,12 @@ export function PriceSummary({
         <div className="space-y-3">
           {items.map((item) => (
             <div key={item.id} className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-100">
-                <Package className="h-5 w-5 text-slate-400" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-100 overflow-hidden">
+                {item.designFile?.contentType?.startsWith("image/") && item.designFile.contentType !== "image/tiff" ? (
+                  <img src={item.designFile.url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <Package className="h-5 w-5 text-slate-400" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">{item.name}</p>

@@ -19,7 +19,7 @@ import { PriceSummary } from "@/components/checkout/price-summary"
 import { createClient } from "@/lib/supabase/client"
 import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
 
-import { createSimpleCheckoutSession } from "@/app/actions/checkout"
+import { createOrderAndCheckoutSession } from "@/app/actions/orders"
 
 // Guard: only initialize Stripe if a publishable key is configured.
 // Avoids "Please call Stripe() with your publishable key" crash when the
@@ -36,7 +36,27 @@ type PrintCartItem = {
   productName: string
   quantity?: number
   price?: number
-  designFile?: { fileName: string; url: string }
+  size?: string
+  colorspec?: string
+  turnaround?: string
+  productUuid?: string
+  colorspecUuid?: string
+  runsizeUuid?: string
+  turnaroundUuid?: string
+  designFile?: { fileName: string; url: string; contentType?: string }
+}
+
+type ShippingForm = {
+  firstName: string
+  lastName: string
+  address: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  companyName: string
+  mobileNumber: string
+  notes: string
 }
 
 function CheckoutContent() {
@@ -50,6 +70,8 @@ function CheckoutContent() {
   const [poNumber, setPoNumber] = useState("")
   const [orderNotes, setOrderNotes] = useState("")
   const [customerEmail, setCustomerEmail] = useState<string | undefined>()
+  const [shippingForm, setShippingForm] = useState<ShippingForm | null>(null)
+  const [deliveryMethod, setDeliveryMethod] = useState<"shipping" | "pickup">("shipping")
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -88,6 +110,17 @@ function CheckoutContent() {
       router.replace("/checkout/shipping")
       return
     }
+    try {
+      setShippingForm(JSON.parse(savedShipping))
+    } catch {
+      router.replace("/checkout/shipping")
+      return
+    }
+
+    const savedDeliveryMethod = sessionStorage.getItem("checkout_delivery_method")
+    if (savedDeliveryMethod === "pickup" || savedDeliveryMethod === "shipping") {
+      setDeliveryMethod(savedDeliveryMethod)
+    }
 
     setCartItems(items)
     setShippingCost(parseFloat(sessionStorage.getItem("checkout_shipping_cost") || "0"))
@@ -111,7 +144,8 @@ function CheckoutContent() {
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0)
   const discount = couponApplied ? subtotal * 0.1 : 0
   const tax = Math.max(0, subtotal + shippingCost - discount) * TAX_RATE
-  const totalInCents = Math.round((subtotal + shippingCost - discount + tax) * 100)
+  const total = subtotal + shippingCost - discount + tax
+  const totalInCents = Math.round(total * 100)
 
   const handleApplyCoupon = () => {
     if (couponCode.toLowerCase() === "save10") {
@@ -124,8 +158,27 @@ function CheckoutContent() {
     if (totalInCents <= 0) {
       throw new Error("Invalid total amount")
     }
-    return createSimpleCheckoutSession(totalInCents, "Web2Print Order", customerEmail)
-  }, [totalInCents, customerEmail])
+    if (!shippingForm) {
+      throw new Error("Missing shipping details")
+    }
+    const secret = await createOrderAndCheckoutSession({
+      items: cartItems,
+      shippingForm,
+      deliveryMethod,
+      subtotal,
+      shippingCost,
+      discount,
+      tax,
+      total,
+      customerEmail,
+      poNumber,
+      orderNotes,
+    })
+    if (!secret) {
+      throw new Error("Failed to start checkout")
+    }
+    return secret
+  }, [totalInCents, customerEmail, cartItems, shippingForm, deliveryMethod, subtotal, shippingCost, discount, tax, total, poNumber, orderNotes])
 
   const handleComplete = () => {
     setCheckoutComplete(true)

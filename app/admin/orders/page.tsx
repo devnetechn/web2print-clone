@@ -7,8 +7,9 @@ import Link from "next/link"
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: { status?: string; search?: string; from?: string; to?: string }
+  searchParams: Promise<{ status?: string; search?: string; from?: string; to?: string }>
 }) {
+  const params = await searchParams
   const supabase = await createClient()
 
   let query = supabase
@@ -26,20 +27,20 @@ export default async function OrdersPage({
     .order("order_date", { ascending: false })
 
   // Apply filters
-  if (searchParams.status && searchParams.status !== "all") {
-    query = query.eq("status", searchParams.status)
+  if (params.status && params.status !== "all") {
+    query = query.eq("status", params.status)
   }
 
-  if (searchParams.search) {
-    query = query.or(`customer_email.ilike.%${searchParams.search}%,order_notes.ilike.%${searchParams.search}%`)
+  if (params.search) {
+    query = query.or(`customer_email.ilike.%${params.search}%,order_notes.ilike.%${params.search}%`)
   }
 
-  if (searchParams.from) {
-    query = query.gte("order_date", searchParams.from)
+  if (params.from) {
+    query = query.gte("order_date", params.from)
   }
 
-  if (searchParams.to) {
-    query = query.lte("order_date", searchParams.to)
+  if (params.to) {
+    query = query.lte("order_date", params.to)
   }
 
   const { data: orders, error } = await query
