@@ -6,11 +6,17 @@ import {
   getProductBasePrices,
   getProductsFeed
 } from "@/lib/4over/client"
+import { requireAdmin } from "@/lib/supabase/server"
 
 // This endpoint fetches all 4over data and returns it organized
 // In production, this would be cached in a database
 
 export async function GET() {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     console.log("[v0] Starting 4over data sync...")
 

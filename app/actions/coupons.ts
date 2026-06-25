@@ -1,14 +1,17 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient, requireAdmin } from "@/lib/supabase/server"
 
 export async function validateCoupon(code: string, subtotal: number) {
   if (!code.trim()) {
     return { valid: false, error: "Enter a coupon code" }
   }
 
-  const supabase = await createClient()
-  const { data: coupon, error } = await supabase
+  // Looked up via the admin client, not the public anon client - coupon
+  // codes (and which ones are inactive/expired/near their usage cap)
+  // shouldn't be readable by just querying the table directly.
+  const admin = createAdminClient()
+  const { data: coupon, error } = await admin
     .from("coupons")
     .select("*")
     .ilike("code", code.trim())
@@ -46,8 +49,12 @@ export async function createCoupon(data: {
   maxUses?: number | null
   expiresAt?: string | null
 }) {
-  const supabase = await createClient()
-  const { error } = await supabase.from("coupons").insert({
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
+  }
+  const admin = createAdminClient()
+  const { error } = await admin.from("coupons").insert({
     code: data.code.trim().toUpperCase(),
     discount_type: data.discountType,
     discount_value: data.discountValue,
@@ -62,8 +69,12 @@ export async function createCoupon(data: {
 }
 
 export async function toggleCouponActive(id: string, active: boolean) {
-  const supabase = await createClient()
-  const { error } = await supabase.from("coupons").update({ active, updated_at: new Date().toISOString() }).eq("id", id)
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
+  }
+  const admin = createAdminClient()
+  const { error } = await admin.from("coupons").update({ active, updated_at: new Date().toISOString() }).eq("id", id)
   if (error) {
     return { success: false, error: error.message }
   }
@@ -71,8 +82,12 @@ export async function toggleCouponActive(id: string, active: boolean) {
 }
 
 export async function deleteCoupon(id: string) {
-  const supabase = await createClient()
-  const { error } = await supabase.from("coupons").delete().eq("id", id)
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
+  }
+  const admin = createAdminClient()
+  const { error } = await admin.from("coupons").delete().eq("id", id)
   if (error) {
     return { success: false, error: error.message }
   }

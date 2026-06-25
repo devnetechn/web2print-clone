@@ -1,9 +1,14 @@
-import { createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient, requireAdmin } from "@/lib/supabase/server"
 import { getOrderStatus } from "@/lib/4over/client"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
+    const { user, error: authError } = await requireAdmin()
+    if (!user) {
+      return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+    }
+
     const admin = createAdminClient()
 
     const body = await request.json()

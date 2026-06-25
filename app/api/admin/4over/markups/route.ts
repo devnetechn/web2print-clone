@@ -1,7 +1,12 @@
-import { createClient } from "@/lib/supabase/server"
+import { createClient, requireAdmin } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
 export async function GET() {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     let supabase
     try {
@@ -34,6 +39,11 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     const supabase = await createClient()
     const { id, markup_value } = await request.json()

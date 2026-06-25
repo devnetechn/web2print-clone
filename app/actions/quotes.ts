@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient, requireAdmin } from "@/lib/supabase/server"
 
 export async function submitQuoteRequest({
   fullName,
@@ -54,8 +54,12 @@ export async function updateQuoteRequest({
   quotedPrice?: number | null
   adminNotes?: string | null
 }) {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
+  }
+  const admin = createAdminClient()
+  const { error } = await admin
     .from("custom_quote_requests")
     .update({
       status,
@@ -82,8 +86,12 @@ export async function updateApparelQuoteRequest({
   quotedPrice?: number | null
   internalNotes?: string | null
 }) {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
+  }
+  const admin = createAdminClient()
+  const { error } = await admin
     .from("quote_requests")
     .update({
       status,

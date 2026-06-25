@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { requireAdmin } from "@/lib/supabase/server"
 
 // This route must never be statically evaluated at build time.
 export const dynamic = "force-dynamic"
@@ -17,6 +18,11 @@ function getSupabaseAdmin() {
 }
 
 export async function POST() {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     const supabaseAdmin = getSupabaseAdmin()
     // Execute each SQL statement separately using Supabase's rpc or direct query

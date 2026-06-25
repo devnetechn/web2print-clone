@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient, requireAdmin } from "@/lib/supabase/server"
 import { stripe } from "@/lib/stripe"
 
 type OrderCartItem = {
@@ -207,10 +207,9 @@ export async function updateOrderStatus({
   paymentStatus: "unpaid" | "paid" | "refunded"
   notes?: string
 }) {
-  const supabase = await createClient()
-  const { data: userData } = await supabase.auth.getUser()
-  if (!userData.user) {
-    return { success: false, error: "Not logged in" }
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
   }
 
   const admin = createAdminClient()
@@ -233,17 +232,16 @@ export async function updateOrderStatus({
     order_id: orderId,
     status,
     notes: notes || `Status updated to ${status}`,
-    created_by: userData.user.id,
+    created_by: user.id,
   })
 
   return { success: true }
 }
 
 export async function refundOrder(orderId: string) {
-  const supabase = await createClient()
-  const { data: userData } = await supabase.auth.getUser()
-  if (!userData.user) {
-    return { success: false, error: "Not logged in" }
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return { success: false, error: authError }
   }
 
   const admin = createAdminClient()
@@ -288,7 +286,7 @@ export async function refundOrder(orderId: string) {
     order_id: orderId,
     status: "cancelled",
     notes: "Order refunded via Stripe",
-    created_by: userData.user.id,
+    created_by: user.id,
   })
 
   return { success: true }

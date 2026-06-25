@@ -32,7 +32,13 @@ export default async function OrdersPage({
   }
 
   if (params.search) {
-    query = query.or(`customer_email.ilike.%${params.search}%,order_notes.ilike.%${params.search}%`)
+    // Strip characters meaningful to PostgREST's filter syntax (commas
+    // separate or() conditions, parens/periods can alter how a clause
+    // parses) so a search string can't inject extra filter conditions.
+    const safeSearch = params.search.replace(/[,().]/g, "")
+    if (safeSearch) {
+      query = query.or(`customer_email.ilike.%${safeSearch}%,order_notes.ilike.%${safeSearch}%`)
+    }
   }
 
   if (params.from) {

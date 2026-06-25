@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { 
+import { createClient, requireAdmin } from "@/lib/supabase/server"
+import {
   getAllCategories, 
   getProducts, 
   getProductsFeed, 
@@ -21,6 +21,11 @@ function isAllowedCategory(name: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   const supabase = await createClient()
   const startTime = Date.now()
   

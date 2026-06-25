@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { 
-  submitOrder, 
-  getOrderStatus, 
-  getTracking, 
+import { createClient, requireAdmin } from "@/lib/supabase/server"
+import {
+  submitOrder,
+  getOrderStatus,
+  getTracking,
   cancelOrder,
   attachFilesToJob,
   getPaymentProfiles
@@ -11,10 +11,15 @@ import {
 
 // GET - Get orders from database, order status, tracking, or payment profiles
 export async function GET(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   const { searchParams } = new URL(request.url)
   const action = searchParams.get("action")
   const jobId = searchParams.get("job_id")
-  
+
   try {
     // Get payment profiles from 4over
     if (action === "payment-profiles") {
@@ -54,9 +59,14 @@ export async function GET(request: Request) {
 // POST - Submit new order to 4over
 // Per docs: POST /orders with order_id, jobs array, and optional payment
 export async function POST(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     const body = await request.json()
-    
+
     // Validate required fields per 4over documentation
     if (!body.order_id) {
       return NextResponse.json({ error: "order_id is required" }, { status: 400 })
@@ -130,9 +140,14 @@ export async function POST(request: Request) {
 // DELETE - Cancel an order/job
 // Per docs: DELETE /orders/{job_id} - Can only cancel before "Batch Imposition" status
 export async function DELETE(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   const { searchParams } = new URL(request.url)
   const jobId = searchParams.get("job_id")
-  
+
   if (!jobId) {
     return NextResponse.json({ error: "job_id is required" }, { status: 400 })
   }
@@ -156,10 +171,15 @@ export async function DELETE(request: Request) {
 // PATCH - Attach files to a job placed with skip_files=true
 // Per docs: POST /jobs/{job_id}/files
 export async function PATCH(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     const body = await request.json()
     const { job_id, files } = body
-    
+
     if (!job_id) {
       return NextResponse.json({ error: "job_id is required" }, { status: 400 })
     }
