@@ -1,16 +1,16 @@
-import { createClient } from "@/lib/supabase/server"
-import { fourOverAPI } from "@/lib/4over-api"
+import { createAdminClient } from "@/lib/supabase/server"
+import { getOrderStatus } from "@/lib/4over/client"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const admin = createAdminClient()
 
     const body = await request.json()
     const { orderId } = body
 
     // Get order items with 4over order IDs
-    const { data: orderItems } = await supabase
+    const { data: orderItems } = await admin
       .from("order_items")
       .select("id, provider_order_id, provider_status")
       .eq("order_id", orderId)
@@ -24,31 +24,39 @@ export async function POST(request: NextRequest) {
 
     for (const item of orderItems) {
       if (item.provider_order_id) {
-        const status = await fourOverAPI.getOrderStatus(item.provider_order_id)
+        const result = await getOrderStatus(item.provider_order_id)
+        if (!result.success) continue
+
+        // Verified against the live sandbox: the response is
+        // { entities: [{ status, date_set, ... }, ...] } - a status
+        // HISTORY list, most-recent first - not a single {status} object.
+        const newStatus = result.data?.entities?.[0]?.status
+        if (!newStatus) continue
 
         updates.push({
           item_id: item.id,
-          new_status: status.status,
-          tracking_number: status.trackingNumber,
+          new_status: newStatus,
         })
 
         // Update item status
-        await supabase
+        await admin
           .from("order_items")
           .update({
-            provider_status: status.status,
+            provider_status: newStatus,
           })
           .eq("id", item.id)
       }
     }
 
     // Check if all items are shipped
-    const { data: allItems } = await supabase.from("order_items").select("provider_status").eq("order_id", orderId)
+    const { data: allItems } = await admin.from("order_items").select("provider_status").eq("order_id", orderId)
 
-    const allShipped = allItems?.every((item: any) => item.provider_status === "shipped")
+    const allShipped = allItems?.length
+      ? allItems.every((item: any) => item.provider_status?.toLowerCase() === "shipped")
+      : false
 
     if (allShipped) {
-      await supabase
+      await admin
         .from("orders")
         .update({
           status: "shipped",
@@ -56,7 +64,7 @@ export async function POST(request: NextRequest) {
         })
         .eq("id", orderId)
 
-      await supabase.from("order_status_logs").insert({
+      await admin.from("order_status_logs").insert({
         order_id: orderId,
         status: "shipped",
         notes: "All items shipped from 4over",

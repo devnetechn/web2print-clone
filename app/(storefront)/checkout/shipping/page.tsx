@@ -21,6 +21,7 @@ const PICKUP_LOCATION = {
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
 import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
+import { validateCoupon } from "@/app/actions/coupons"
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -80,6 +81,13 @@ export default function ShippingStepPage() {
   const [error, setError] = useState<string | null>(null)
   const [couponCode, setCouponCode] = useState("")
   const [couponApplied, setCouponApplied] = useState(false)
+  const [discount, setDiscount] = useState(0)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [applyingCoupon, setApplyingCoupon] = useState(false)
+  const [shipMultiple, setShipMultiple] = useState(false)
+  const [multiAddresses, setMultiAddresses] = useState<
+    { firstName: string; lastName: string; address: string; city: string; state: string; postalCode: string; quantity: number }[]
+  >([])
 
   useEffect(() => {
     const printCart = localStorage.getItem("print_cart")
@@ -118,9 +126,10 @@ export default function ShippingStepPage() {
     const savedCoupon = sessionStorage.getItem("checkout_coupon")
     if (savedCoupon) {
       try {
-        const { code, applied } = JSON.parse(savedCoupon)
+        const { code, applied, discount: savedDiscount } = JSON.parse(savedCoupon)
         setCouponCode(code || "")
         setCouponApplied(!!applied)
+        setDiscount(savedDiscount || 0)
       } catch {}
     }
 
@@ -136,20 +145,47 @@ export default function ShippingStepPage() {
       setDeliveryMethod(savedDeliveryMethod)
     }
 
+    if (sessionStorage.getItem("checkout_ship_multiple") === "true") {
+      setShipMultiple(true)
+      try {
+        setMultiAddresses(JSON.parse(sessionStorage.getItem("checkout_multi_addresses") || "[]"))
+      } catch {}
+    }
+
     setLoading(false)
   }, [router])
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0)
-  const discount = couponApplied ? subtotal * 0.1 : 0
 
-  const handleApplyCoupon = () => {
-    if (couponCode.toLowerCase() === "save10") {
-      setCouponApplied(true)
+  const handleApplyCoupon = async () => {
+    setCouponError(null)
+    setApplyingCoupon(true)
+    try {
+      const result = await validateCoupon(couponCode, subtotal)
+      if (result.valid) {
+        setCouponApplied(true)
+        setDiscount(result.discount!)
+      } else {
+        setCouponApplied(false)
+        setDiscount(0)
+        setCouponError(result.error || "Invalid coupon")
+      }
+    } finally {
+      setApplyingCoupon(false)
     }
   }
 
   const updateField = (field: keyof ShippingForm) => (value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleMultiContinue = () => {
+    // The shipping cost was already estimated (flat rate × address count)
+    // back on the multi-shipping page, and the addresses themselves are
+    // already in sessionStorage from there - this step just carries the
+    // coupon decision forward, same as the single-address path.
+    sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied, discount }))
+    router.push("/checkout")
   }
 
   const handleContinue = async () => {
@@ -170,7 +206,7 @@ export default function ShippingStepPage() {
 
     if (deliveryMethod === "pickup") {
       sessionStorage.setItem("checkout_shipping", JSON.stringify(form))
-      sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied }))
+      sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied, discount }))
       sessionStorage.setItem("checkout_shipping_cost", "0")
       sessionStorage.setItem("checkout_delivery_method", "pickup")
       router.push("/checkout")
@@ -217,7 +253,7 @@ export default function ShippingStepPage() {
     }
 
     sessionStorage.setItem("checkout_shipping", JSON.stringify(form))
-    sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied }))
+    sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied, discount }))
     sessionStorage.setItem("checkout_shipping_cost", String(shippingCost))
     sessionStorage.setItem("checkout_delivery_method", "shipping")
 
@@ -244,6 +280,29 @@ export default function ShippingStepPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
+            {shipMultiple ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Multiple Shipping Addresses</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {multiAddresses.map((addr, i) => (
+                    <div key={i} className="border-b pb-3 last:border-0 last:pb-0">
+                      <p className="font-medium text-slate-900">
+                        {addr.firstName} {addr.lastName} — {addr.quantity.toLocaleString()} units
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {addr.address}, {addr.city}, {addr.state} {addr.postalCode}
+                      </p>
+                    </div>
+                  ))}
+                  <Link href="/checkout/multi-shipping" className="inline-block text-sm text-[#2c327a] hover:underline">
+                    Edit addresses
+                  </Link>
+                </CardContent>
+              </Card>
+            ) : (
+            <>
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Select Shipping</CardTitle>
@@ -358,6 +417,8 @@ export default function ShippingStepPage() {
                 <Textarea id="notes" value={form.notes} onChange={(e) => updateField("notes")(e.target.value)} />
               </CardContent>
             </Card>
+            </>
+            )}
 
             {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -368,7 +429,12 @@ export default function ShippingStepPage() {
                   Back to Cart
                 </Link>
               </Button>
-              <Button className="gap-2 bg-[#e42a27] hover:bg-[#c42020]" size="lg" onClick={handleContinue} disabled={submitting}>
+              <Button
+                className="gap-2 bg-[#e42a27] hover:bg-[#c42020]"
+                size="lg"
+                onClick={shipMultiple ? handleMultiContinue : handleContinue}
+                disabled={submitting}
+              >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Continue<ArrowRight className="h-4 w-4" /></>}
               </Button>
             </div>
@@ -383,6 +449,8 @@ export default function ShippingStepPage() {
               onCouponCodeChange={setCouponCode}
               onApplyCoupon={handleApplyCoupon}
               couponApplied={couponApplied}
+              couponError={couponError}
+              applyingCoupon={applyingCoupon}
             />
           </div>
         </div>

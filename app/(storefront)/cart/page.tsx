@@ -14,6 +14,7 @@ import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
 import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
 import { uploadDesignFile } from "@/app/actions/design-upload"
+import { validateCoupon } from "@/app/actions/coupons"
 
 type PrintCartItem = {
   id: string
@@ -38,6 +39,9 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true)
   const [couponCode, setCouponCode] = useState("")
   const [couponApplied, setCouponApplied] = useState(false)
+  const [discount, setDiscount] = useState(0)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [applyingCoupon, setApplyingCoupon] = useState(false)
 
   useEffect(() => {
     const printCart = localStorage.getItem("print_cart")
@@ -128,18 +132,30 @@ export default function CartPage() {
   }
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0)
-  const discount = couponApplied ? subtotal * 0.1 : 0
 
-  const handleApplyCoupon = () => {
-    if (couponCode.toLowerCase() === "save10") {
-      setCouponApplied(true)
+  const handleApplyCoupon = async () => {
+    setCouponError(null)
+    setApplyingCoupon(true)
+    try {
+      const result = await validateCoupon(couponCode, subtotal)
+      if (result.valid) {
+        setCouponApplied(true)
+        setDiscount(result.discount!)
+      } else {
+        setCouponApplied(false)
+        setDiscount(0)
+        setCouponError(result.error || "Invalid coupon")
+      }
+    } finally {
+      setApplyingCoupon(false)
     }
   }
 
   const handleContinue = () => {
     // Shipping cost and tax aren't known yet — collected on the Shipping
-    // step next. Persist just the coupon decision so it carries through.
-    sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied }))
+    // step next. The discount amount is carried along too so later steps
+    // don't need to re-validate the coupon against the (unchanged) subtotal.
+    sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied, discount }))
     router.push("/checkout/shipping")
   }
 
@@ -311,11 +327,23 @@ export default function CartPage() {
                 onCouponCodeChange={setCouponCode}
                 onApplyCoupon={handleApplyCoupon}
                 couponApplied={couponApplied}
+                couponError={couponError}
+                applyingCoupon={applyingCoupon}
                 footer={
-                  <Button className="w-full gap-2 bg-[#e42a27] hover:bg-[#c42020]" size="lg" onClick={handleContinue}>
-                    Continue
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <div className="space-y-3">
+                    {cartItems.length === 1 && (cartItems[0].quantity || 1) > 1 && (
+                      <Link
+                        href="/checkout/multi-shipping"
+                        className="block text-center text-sm text-[#2c327a] hover:underline"
+                      >
+                        Ship to Multiple Address
+                      </Link>
+                    )}
+                    <Button className="w-full gap-2 bg-[#e42a27] hover:bg-[#c42020]" size="lg" onClick={handleContinue}>
+                      Continue
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 }
               />
 

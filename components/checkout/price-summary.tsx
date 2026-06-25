@@ -25,6 +25,8 @@ interface PriceSummaryProps {
   onCouponCodeChange: (value: string) => void
   onApplyCoupon: () => void
   couponApplied: boolean
+  couponError?: string | null
+  applyingCoupon?: boolean
   footer?: React.ReactNode
 }
 
@@ -38,6 +40,8 @@ export function PriceSummary({
   onCouponCodeChange,
   onApplyCoupon,
   couponApplied,
+  couponError,
+  applyingCoupon = false,
   footer,
 }: PriceSummaryProps) {
   const total = subtotal + shipping - discount + tax
@@ -87,11 +91,17 @@ export function PriceSummary({
             onChange={(e) => onCouponCodeChange(e.target.value)}
             disabled={couponApplied}
           />
-          <Button type="button" variant="secondary" onClick={onApplyCoupon} disabled={couponApplied || !couponCode}>
-            Apply
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onApplyCoupon}
+            disabled={couponApplied || !couponCode || applyingCoupon}
+          >
+            {applyingCoupon ? "Checking..." : "Apply"}
           </Button>
         </div>
         {couponApplied && <p className="text-xs text-green-600">Coupon applied!</p>}
+        {couponError && !couponApplied && <p className="text-xs text-red-500">{couponError}</p>}
 
         <Separator />
 

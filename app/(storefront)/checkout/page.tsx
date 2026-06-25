@@ -20,6 +20,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
 
 import { createOrderAndCheckoutSession } from "@/app/actions/orders"
+import { validateCoupon } from "@/app/actions/coupons"
 
 // Guard: only initialize Stripe if a publishable key is configured.
 // Avoids "Please call Stripe() with your publishable key" crash when the
@@ -43,6 +44,7 @@ type PrintCartItem = {
   colorspecUuid?: string
   runsizeUuid?: string
   turnaroundUuid?: string
+  optionUuids?: string[]
   designFile?: { fileName: string; url: string; contentType?: string }
 }
 
@@ -67,11 +69,17 @@ function CheckoutContent() {
   const [shippingCost, setShippingCost] = useState(0)
   const [couponCode, setCouponCode] = useState("")
   const [couponApplied, setCouponApplied] = useState(false)
+  const [discount, setDiscount] = useState(0)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [applyingCoupon, setApplyingCoupon] = useState(false)
   const [poNumber, setPoNumber] = useState("")
   const [orderNotes, setOrderNotes] = useState("")
   const [customerEmail, setCustomerEmail] = useState<string | undefined>()
   const [shippingForm, setShippingForm] = useState<ShippingForm | null>(null)
   const [deliveryMethod, setDeliveryMethod] = useState<"shipping" | "pickup">("shipping")
+  const [multiAddresses, setMultiAddresses] = useState<
+    { firstName: string; lastName: string; address: string; city: string; state: string; postalCode: string; quantity: number; country: string }[]
+  >([])
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -105,16 +113,37 @@ function CheckoutContent() {
       return
     }
 
-    const savedShipping = sessionStorage.getItem("checkout_shipping")
-    if (!savedShipping) {
-      router.replace("/checkout/shipping")
-      return
-    }
-    try {
-      setShippingForm(JSON.parse(savedShipping))
-    } catch {
-      router.replace("/checkout/shipping")
-      return
+    const isMultiAddress = sessionStorage.getItem("checkout_ship_multiple") === "true"
+    const savedMultiAddresses = sessionStorage.getItem("checkout_multi_addresses")
+
+    if (isMultiAddress && savedMultiAddresses) {
+      try {
+        setMultiAddresses(JSON.parse(savedMultiAddresses))
+        // The order still needs a name/contact on file - the multi-shipping
+        // page doesn't collect one separately, so the first address's
+        // contact stands in for it.
+        const first = JSON.parse(savedMultiAddresses)[0]
+        setShippingForm({
+          firstName: first?.firstName || "",
+          lastName: first?.lastName || "",
+          address: "", city: "", state: "", postalCode: "", country: "US", companyName: "", mobileNumber: "", notes: "",
+        })
+      } catch {
+        router.replace("/checkout/shipping")
+        return
+      }
+    } else {
+      const savedShipping = sessionStorage.getItem("checkout_shipping")
+      if (!savedShipping) {
+        router.replace("/checkout/shipping")
+        return
+      }
+      try {
+        setShippingForm(JSON.parse(savedShipping))
+      } catch {
+        router.replace("/checkout/shipping")
+        return
+      }
     }
 
     const savedDeliveryMethod = sessionStorage.getItem("checkout_delivery_method")
@@ -128,9 +157,10 @@ function CheckoutContent() {
     const savedCoupon = sessionStorage.getItem("checkout_coupon")
     if (savedCoupon) {
       try {
-        const { code, applied } = JSON.parse(savedCoupon)
+        const { code, applied, discount: savedDiscount } = JSON.parse(savedCoupon)
         setCouponCode(code || "")
         setCouponApplied(!!applied)
+        setDiscount(savedDiscount || 0)
       } catch {}
     }
 
@@ -142,15 +172,26 @@ function CheckoutContent() {
   }, [router])
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price || 0), 0)
-  const discount = couponApplied ? subtotal * 0.1 : 0
   const tax = Math.max(0, subtotal + shippingCost - discount) * TAX_RATE
   const total = subtotal + shippingCost - discount + tax
   const totalInCents = Math.round(total * 100)
 
-  const handleApplyCoupon = () => {
-    if (couponCode.toLowerCase() === "save10") {
-      setCouponApplied(true)
-      sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: true }))
+  const handleApplyCoupon = async () => {
+    setCouponError(null)
+    setApplyingCoupon(true)
+    try {
+      const result = await validateCoupon(couponCode, subtotal)
+      if (result.valid) {
+        setCouponApplied(true)
+        setDiscount(result.discount!)
+        sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: true, discount: result.discount }))
+      } else {
+        setCouponApplied(false)
+        setDiscount(0)
+        setCouponError(result.error || "Invalid coupon")
+      }
+    } finally {
+      setApplyingCoupon(false)
     }
   }
 
@@ -165,6 +206,7 @@ function CheckoutContent() {
       items: cartItems,
       shippingForm,
       deliveryMethod,
+      multiAddresses: multiAddresses.length > 0 ? multiAddresses : undefined,
       subtotal,
       shippingCost,
       discount,
@@ -178,7 +220,7 @@ function CheckoutContent() {
       throw new Error("Failed to start checkout")
     }
     return secret
-  }, [totalInCents, customerEmail, cartItems, shippingForm, deliveryMethod, subtotal, shippingCost, discount, tax, total, poNumber, orderNotes])
+  }, [totalInCents, customerEmail, cartItems, shippingForm, deliveryMethod, multiAddresses, subtotal, shippingCost, discount, tax, total, poNumber, orderNotes])
 
   const handleComplete = () => {
     setCheckoutComplete(true)
@@ -187,6 +229,9 @@ function CheckoutContent() {
     sessionStorage.removeItem("checkout_shipping")
     sessionStorage.removeItem("checkout_shipping_cost")
     sessionStorage.removeItem("checkout_coupon")
+    sessionStorage.removeItem("checkout_delivery_method")
+    sessionStorage.removeItem("checkout_ship_multiple")
+    sessionStorage.removeItem("checkout_multi_addresses")
   }
 
   if (checkoutComplete) {
@@ -308,6 +353,8 @@ function CheckoutContent() {
               onCouponCodeChange={setCouponCode}
               onApplyCoupon={handleApplyCoupon}
               couponApplied={couponApplied}
+              couponError={couponError}
+              applyingCoupon={applyingCoupon}
             />
           </div>
         </div>

@@ -799,7 +799,14 @@ export interface FourOverJob {
   colorspec_uuid: string
   option_uuids: string[] // Required but can be empty array
   dropship: boolean
+  // Verified against the live sandbox: required at the job's top level (a
+  // job_name nested under `files` alone is NOT enough - 4over returns a
+  // "Job Name missing" 409 without this).
+  job_name: string
   sets?: number // For group shipping - multiple sets with different files
+  // Submitting `files` inline on the job 500s on 4over's sandbox regardless
+  // of shape. skip_files: true + a separate POST /jobs/{id}/files call via
+  // attachFilesToJob() after the order succeeds is the path that works.
   skip_files?: boolean // If true, files can be submitted later
   files?: {
     [setKey: string]: { // e.g. "set_001", "set_002"
@@ -852,6 +859,10 @@ export interface FourOverJob {
 }
 
 // Submit order to 4over - POST /orders
+// Verified against the live sandbox: omitting `payment` gets the order
+// rejected with "You must post a payment at the time of order" even when
+// is_test_order is true, so despite being typed optional it's effectively
+// required - call getPaymentProfiles() for a profile_token first.
 export async function submitOrder(orderData: {
   order_id: string // Customer's order ID (required)
   is_test_order?: boolean // Test orders don't go to production

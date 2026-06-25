@@ -250,16 +250,41 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <p className="text-slate-600">{order.customer_email}</p>
                 {order.profiles?.phone && <p className="text-slate-600">{order.profiles.phone}</p>}
               </div>
-              {order.shipping_address && (
+              {order.shipping_address?.method === "multiple" ? (
                 <div>
-                  <p className="mb-1 font-medium">Shipping Address</p>
+                  <p className="mb-1 font-medium">Shipping Addresses ({order.shipping_address.addresses?.length})</p>
+                  <div className="space-y-2">
+                    {order.shipping_address.addresses?.map((addr: any, i: number) => (
+                      <div key={i} className="border-l-2 border-slate-200 pl-2">
+                        <p className="text-slate-900">
+                          {addr.firstName} {addr.lastName} — {Number(addr.quantity).toLocaleString()} units
+                        </p>
+                        <p className="text-slate-600">
+                          {addr.address}, {addr.city}, {addr.state} {addr.postalCode}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : order.shipping_address?.method === "pickup" ? (
+                <div>
+                  <p className="mb-1 font-medium">Pickup</p>
+                  <p className="text-slate-600">{order.shipping_address.location}</p>
                   <p className="text-slate-600">
-                    {typeof order.shipping_address === "object" && order.shipping_address !== null
-                      ? JSON.stringify(order.shipping_address)
-                      : order.shipping_address}
+                    {order.shipping_address.firstName} {order.shipping_address.lastName} •{" "}
+                    {order.shipping_address.mobileNumber}
                   </p>
                 </div>
-              )}
+              ) : order.shipping_address ? (
+                <div>
+                  <p className="mb-1 font-medium">Shipping Address</p>
+                  <p className="text-slate-600">{order.shipping_address.name}</p>
+                  <p className="text-slate-600">
+                    {order.shipping_address.address}, {order.shipping_address.city}, {order.shipping_address.state}{" "}
+                    {order.shipping_address.postalCode}
+                  </p>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 

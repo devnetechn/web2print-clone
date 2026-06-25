@@ -14,6 +14,7 @@ type OrderCartItem = {
   colorspecUuid?: string
   runsizeUuid?: string
   turnaroundUuid?: string
+  optionUuids?: string[]
   designFile?: { fileName: string; url: string; contentType?: string }
 }
 
@@ -40,6 +41,7 @@ export async function createOrderAndCheckoutSession({
   items,
   shippingForm,
   deliveryMethod,
+  multiAddresses,
   subtotal,
   shippingCost,
   discount,
@@ -52,6 +54,16 @@ export async function createOrderAndCheckoutSession({
   items: OrderCartItem[]
   shippingForm: ShippingForm
   deliveryMethod: "shipping" | "pickup"
+  multiAddresses?: {
+    firstName: string
+    lastName: string
+    address: string
+    city: string
+    state: string
+    postalCode: string
+    quantity: number
+    country: string
+  }[]
   subtotal: number
   shippingCost: number
   discount: number
@@ -74,11 +86,21 @@ export async function createOrderAndCheckoutSession({
   const admin = createAdminClient()
 
   const shippingAddress =
-    deliveryMethod === "pickup"
-      ? { method: "pickup", location: "Web2Print USA - 7901 4th St. N #27125, St. Petersburg, FL 33702" }
+    multiAddresses && multiAddresses.length > 0
+      ? { method: "multiple", addresses: multiAddresses }
+      : deliveryMethod === "pickup"
+      ? {
+          method: "pickup",
+          location: "Web2Print USA - 7901 4th St. N #27125, St. Petersburg, FL 33702",
+          firstName: shippingForm.firstName,
+          lastName: shippingForm.lastName,
+          mobileNumber: shippingForm.mobileNumber,
+        }
       : {
           method: "shipping",
           name: `${shippingForm.firstName} ${shippingForm.lastName}`.trim(),
+          firstName: shippingForm.firstName,
+          lastName: shippingForm.lastName,
           address: shippingForm.address,
           city: shippingForm.city,
           state: shippingForm.state,
@@ -133,6 +155,7 @@ export async function createOrderAndCheckoutSession({
         colorspecUuid: item.colorspecUuid,
         runsizeUuid: item.runsizeUuid,
         turnaroundUuid: item.turnaroundUuid,
+        optionUuids: item.optionUuids || [],
       },
       design_file_url: item.designFile?.url || null,
       print_provider: item.productUuid ? "4over" : null,
