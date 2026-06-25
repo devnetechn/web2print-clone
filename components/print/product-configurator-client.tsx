@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef, Fragment, type ChangeEvent } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart, Zap } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { uploadDesignFile } from "@/app/actions/design-upload"
 
 interface ListItem {
   name: string
@@ -208,6 +209,37 @@ export function ProductConfiguratorClient({
   const [shipError, setShipError] = useState<string | null>(null)
 
   const [added, setAdded] = useState(false)
+
+  // Uploaded artwork (PDF/AI/EPS/JPG/PNG/TIFF) for this configuration —
+  // carried through to the cart item so it shows up in cart/checkout and
+  // later in the admin order view, matching the reference backend's
+  // "Upload Design" + order-thumbnail flow.
+  const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string; path: string } | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const result = await uploadDesignFile(formData)
+      if (result.success) {
+        setUploadedFile({ fileName: result.fileName!, url: result.url!, path: result.path! })
+      } else {
+        setUploadError(result.error || "Upload failed")
+      }
+    } catch {
+      setUploadError("Upload failed")
+    } finally {
+      setUploading(false)
+      e.target.value = ""
+    }
+  }, [])
 
   // Monotonic request id: only the response from the most recent cascade
   // request is allowed to update state. Prevents a stale (size+oldStock+oldCoating)
@@ -687,6 +719,7 @@ export function ProductConfiguratorClient({
       runsizeUuid,
       turnaroundUuid,
       optionUuids: Object.values(selectedExtras).filter(Boolean),
+      designFile: uploadedFile ? { fileName: uploadedFile.fileName, url: uploadedFile.url } : undefined,
     }
   }, [
     productUuid,
@@ -702,6 +735,7 @@ export function ProductConfiguratorClient({
     productName,
     categorySlug,
     selectedExtras,
+    uploadedFile,
   ])
 
   // Both Add to Cart and Buy Now require a logged-in account before
@@ -1075,18 +1109,38 @@ export function ProductConfiguratorClient({
               <span className="block text-xs text-slate-500">Choose from our template collection</span>
             </span>
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept=".pdf,.ai,.eps,.indd,.jpg,.jpeg,.png,.tif,.tiff"
+            onChange={handleFileSelected}
+          />
           <button
             type="button"
-            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left disabled:opacity-60"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-              <Upload className="h-5 w-5" />
+              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
             </span>
             <span>
-              <span className="block font-medium text-slate-900">Upload Design</span>
-              <span className="block text-xs text-slate-500">Upload your print-ready artwork</span>
+              <span className="block font-medium text-slate-900">
+                {uploading ? "Uploading..." : uploadedFile ? "Replace Design File" : "Upload Design"}
+              </span>
+              <span className="block text-xs text-slate-500">
+                {uploadedFile ? uploadedFile.fileName : "Upload your print-ready artwork"}
+              </span>
             </span>
           </button>
+          {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
+          {uploadedFile && !uploading && (
+            <p className="text-sm text-green-600 flex items-center gap-1">
+              <Upload className="h-3.5 w-3.5" />
+              File ready — it will be attached when you Add to Cart or Buy Now.
+            </p>
+          )}
         </div>
       </div>
     </div>

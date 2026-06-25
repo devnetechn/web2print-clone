@@ -32,6 +32,7 @@ type PrintCartItem = {
   colorspecUuid?: string
   runsizeUuid?: string
   turnaroundUuid?: string
+  designFile?: { fileName: string; url: string }
 }
 
 type ShippingForm = {
@@ -305,7 +306,7 @@ export default function ShippingStepPage() {
 
           <div className="space-y-4">
             <PriceSummary
-              items={cartItems.map((item) => ({ id: item.id, name: item.productName, qty: item.quantity, price: item.price || 0 }))}
+              items={cartItems.map((item) => ({ id: item.id, name: item.productName, qty: item.quantity, price: item.price || 0, designFile: item.designFile }))}
               subtotal={subtotal}
               discount={discount}
               couponCode={couponCode}

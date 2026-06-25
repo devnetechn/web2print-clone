@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Package } from "lucide-react"
+import { Package, FileText } from "lucide-react"
 
 export interface PriceSummaryItem {
   id: string
   name: string
   qty?: number
   price: number
+  designFile?: { fileName: string; url: string }
 }
 
 interface PriceSummaryProps {
@@ -56,6 +57,17 @@ export function PriceSummary({
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">{item.name}</p>
                 {item.qty && <p className="text-xs text-slate-500">Qty: {item.qty}</p>}
+                {item.designFile && (
+                  <a
+                    href={item.designFile.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-[#2c327a] hover:underline truncate"
+                  >
+                    <FileText className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{item.designFile.fileName}</span>
+                  </a>
+                )}
               </div>
               <p className="text-sm font-medium text-slate-900 whitespace-nowrap">${item.price.toFixed(2)}</p>
             </div>

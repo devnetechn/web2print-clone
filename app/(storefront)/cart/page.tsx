@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   ShoppingCart, Trash2, ArrowRight, Package,
-  ShieldCheck, Truck, ArrowLeft, Loader2, Clock
+  ShieldCheck, Truck, ArrowLeft, Loader2, Clock, FileText
 } from "lucide-react"
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
@@ -27,6 +27,7 @@ type PrintCartItem = {
   colorspecUuid?: string
   runsizeUuid?: string
   turnaroundUuid?: string
+  designFile?: { fileName: string; url: string }
 }
 
 export default function CartPage() {
@@ -175,6 +176,17 @@ export default function CartPage() {
                                 </Badge>
                               )}
                             </div>
+                            {item.designFile && (
+                              <a
+                                href={item.designFile.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#2c327a] hover:underline"
+                              >
+                                <FileText className="h-3.5 w-3.5" />
+                                {item.designFile.fileName}
+                              </a>
+                            )}
                           </div>
                           <p className="text-xl font-bold text-[#2c327a] whitespace-nowrap">
                             ${(item.price || 0).toFixed(2)}
@@ -190,7 +202,9 @@ export default function CartPage() {
                             <Trash2 className="h-4 w-4" />
                             Remove
                           </Button>
-                          <Link href={`/print/${item.productType}`}>
+                          <Link
+                            href={item.productUuid ? `/print/${item.productType}/edit?uuid=${item.productUuid}` : `/print/${item.productType}`}
+                          >
                             <Button variant="outline" size="sm">Edit Options</Button>
                           </Link>
                         </div>
@@ -220,6 +234,7 @@ export default function CartPage() {
                   name: item.productName,
                   qty: item.quantity,
                   price: item.price || 0,
+                  designFile: item.designFile,
                 }))}
                 subtotal={subtotal}
                 discount={discount}
