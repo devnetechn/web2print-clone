@@ -41,6 +41,7 @@ function CustomerLoginForm() {
   // logged in yet, so they land back on the action they were trying to
   // take instead of just the homepage.
   const next = useSearchParams().get("next") || "/"
+  const authError = useSearchParams().get("error")
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -112,6 +113,11 @@ function CustomerLoginForm() {
               <div className="h-px flex-1 bg-slate-200" />
             </div>
 
+            {authError === "auth-failed" && (
+              <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+                Email confirmation failed. The link may have expired — please sign in directly or request a new confirmation email.
+              </p>
+            )}
             <form onSubmit={handleLogin}>
               <div className="flex flex-col gap-4">
                 <div className="grid gap-2">
