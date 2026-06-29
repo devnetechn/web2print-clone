@@ -1191,7 +1191,7 @@ export default async function ProductTypePage({
         <div className="max-w-5xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
-            <div>
+            <div className="lg:sticky lg:top-8">
               <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
                 <img
                   src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
