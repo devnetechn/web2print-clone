@@ -319,6 +319,9 @@ export default function CartPage() {
                   name: item.productName,
                   qty: item.quantity,
                   price: item.price || 0,
+                  size: item.size,
+                  colorspec: item.colorspec,
+                  turnaround: item.turnaround,
                   designFile: item.designFile,
                 }))}
                 subtotal={subtotal}

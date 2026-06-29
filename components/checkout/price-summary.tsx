@@ -12,6 +12,9 @@ export interface PriceSummaryItem {
   name: string
   qty?: number
   price: number
+  size?: string
+  colorspec?: string
+  turnaround?: string
   designFile?: { fileName: string; url: string; contentType?: string }
 }
 
@@ -64,7 +67,10 @@ export function PriceSummary({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">{item.name}</p>
+                {item.size && <p className="text-xs text-slate-500">Size: {item.size}</p>}
+                {item.colorspec && <p className="text-xs text-slate-500">Print: {item.colorspec}</p>}
                 {item.qty && <p className="text-xs text-slate-500">Qty: {item.qty}</p>}
+                {item.turnaround && <p className="text-xs text-slate-500">Turnaround: {item.turnaround}</p>}
                 {item.designFile && (
                   <a
                     href={item.designFile.url}

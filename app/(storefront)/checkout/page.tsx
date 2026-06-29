@@ -344,7 +344,7 @@ function CheckoutContent() {
 
           <div className="space-y-4">
             <PriceSummary
-              items={cartItems.map((item) => ({ id: item.id, name: item.productName, qty: item.quantity, price: item.price || 0, designFile: item.designFile }))}
+              items={cartItems.map((item) => ({ id: item.id, name: item.productName, qty: item.quantity, price: item.price || 0, size: item.size, colorspec: item.colorspec, turnaround: item.turnaround, designFile: item.designFile }))}
               subtotal={subtotal}
               shipping={shippingCost}
               discount={discount}
