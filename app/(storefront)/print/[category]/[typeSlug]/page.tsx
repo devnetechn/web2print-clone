@@ -1190,8 +1190,8 @@ export default async function ProductTypePage({
         </div>
         <div className="max-w-5xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
-            <div className="lg:sticky lg:top-8">
+          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8">
+            <div className="lg:self-start lg:sticky lg:top-8">
               <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
                 <img
                   src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
@@ -1561,9 +1561,9 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8">
             {/* Left: product image */}
-            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
+            <div className="self-start sticky top-8 aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
               <img
                 src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
                 alt={typeLabel}
