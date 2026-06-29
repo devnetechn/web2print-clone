@@ -2,7 +2,6 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { getProductFeed, getAllProductsForCategory, getCategoryProductsList } from "@/lib/4over/client"
 import { ProductConfiguratorClient } from "@/components/print/product-configurator-client"
-import { StickyProductImage } from "@/components/print/sticky-product-image"
 import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/lib/print/categories"
 import { resolveProductImage } from "@/lib/print/product-images"
 
@@ -1191,13 +1190,15 @@ export default async function ProductTypePage({
         </div>
         <div className="max-w-5xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8">
+          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             <div>
-              <StickyProductImage
-                src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
-                alt={productName}
-                className="w-full h-full object-contain"
-              />
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
+                <img
+                  src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
+                  alt={productName}
+                  className="w-full h-full object-contain"
+                />
+              </div>
               {/* Description / Templates (left column, under image) */}
               <div className="mt-6 max-w-[360px]">
                 <div className="border-b border-slate-200 flex gap-6">
@@ -1560,13 +1561,15 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8">
+          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image */}
-            <StickyProductImage
-              src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
-              alt={typeLabel}
-              className="w-full h-full object-contain"
-            />
+            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
+              <img
+                src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
+                alt={typeLabel}
+                className="w-full h-full object-contain"
+              />
+            </div>
 
             {/* Right: configurator driven live by categoryproductslist + productquote */}
             <div>
