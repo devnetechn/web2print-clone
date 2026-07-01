@@ -710,6 +710,47 @@ function extractSize(desc: string, isBusinessCards = false): string {
   return "Standard"
 }
 
+// For signs-banners type pages: build a sizeProducts list directly from the
+// matched products so the Size dropdown shows only THIS sign type's sizes
+// (not all 120+ from the whole rigid-signs category) and bypasses the live
+// Stock/Coating cascade entirely (which shows raw 4over stock codes like
+// "10CORO", "316GATORBLACK" that are meaningless to customers).
+// For sign types with multiple products at the same dimension (Gator Board
+// has Black/White variants), includes the color in the size label so no
+// variant is silently dropped.
+function buildSignSizeProducts(products: { product_uuid: string; product_description: string }[]): { uuid: string; size: string }[] {
+  const withDim = products.map((p) => {
+    const dim = p.product_description.match(SIZE_DIM)
+    const baseSize = dim ? dim[0].replace(/\s+/g, " ").trim() : "Standard"
+    return { uuid: p.product_uuid, desc: p.product_description, baseSize }
+  })
+  const byBase = new Map<string, typeof withDim>()
+  for (const item of withDim) {
+    const key = item.baseSize.toLowerCase()
+    const list = byBase.get(key) || []
+    list.push(item)
+    byBase.set(key, list)
+  }
+  const result: { uuid: string; size: string }[] = []
+  for (const group of byBase.values()) {
+    if (group.length === 1) {
+      result.push({ uuid: group[0].uuid, size: group[0].baseSize })
+    } else {
+      for (const item of group) {
+        const afterDim = item.desc.replace(SIZE_DIM, "").replace(/^[\s\-–—]+/, "").trim()
+        const colorMatch = afterDim.match(/\b(black|white|red|blue|clear|opaque)\b/i)
+        const qualifier = colorMatch ? colorMatch[0] : afterDim.split(/[\s\-–]+/)[0] || ""
+        result.push({ uuid: item.uuid, size: qualifier ? `${item.baseSize} (${qualifier})` : item.baseSize })
+      }
+    }
+  }
+  return result.sort((a, b) => {
+    const aW = parseFloat(a.size)
+    const bW = parseFloat(b.size)
+    return aW !== bW ? aW - bW : a.size.localeCompare(b.size)
+  })
+}
+
 // Kept in sync with print/[category]/page.tsx's CATEGORY_WORD_OVERRIDES —
 // see that file's comment for why.
 const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
@@ -1406,10 +1447,14 @@ export default async function ProductTypePage({
   // happens, ProductConfiguratorClient's allowedProductUuids filter silently
   // falls back to ANY product at that stock — the page still shows a price,
   // just for the wrong product type. See initialStockUuid's doc comment.
+  const isSignsBanners = leaf?.parentSlug === "signs-banners"
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
-  if (typeRules.length > 0 && firstProduct) {
+  // Signs-banners uses sizeProducts mode (Size dropdown → direct product_uuid),
+  // so the live-cascade anchor (initialSizeUuid/Stock/Coating) is not needed
+  // and the expensive 4over API probe calls below can be skipped entirely.
+  if (!isSignsBanners && typeRules.length > 0 && firstProduct) {
     // Bare SIZE_DIM match only — NOT extractSize(), whose RAISED_SIDE_SUFFIX
     // suffix-appending (for Raised Foil's Size-dropdown disambiguation) would
     // misfire here on an unrelated COATING phrase that happens to also end in
@@ -1511,6 +1556,10 @@ export default async function ProductTypePage({
     }
   }
 
+  const signsSizeProducts = isSignsBanners && matchedProducts.length > 0
+    ? buildSignSizeProducts(matchedProducts)
+    : undefined
+
   if (firstProduct) {
     const { data: dbOptionGroups } = await supabase
       .from("fourover_option_groups")
@@ -1578,10 +1627,11 @@ export default async function ProductTypePage({
                 categorySlug={category}
                 productName={typeLabel}
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
-                hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
-                initialSizeUuid={initialSizeUuid}
-                initialStockUuid={initialStockUuid}
-                initialCoatingUuid={initialCoatingUuid}
+                hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
+                sizeProducts={signsSizeProducts}
+                initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
+                initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
+                initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
               />
             </div>
           </div>
