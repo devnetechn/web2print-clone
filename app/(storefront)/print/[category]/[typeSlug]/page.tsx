@@ -721,7 +721,31 @@ function extractSize(desc: string, isBusinessCards = false): string {
 function buildSignSizeProducts(products: { product_uuid: string; product_description: string }[]): { uuid: string; size: string }[] {
   const withDim = products.map((p) => {
     const dim = p.product_description.match(SIZE_DIM)
-    const baseSize = dim ? dim[0].replace(/\s+/g, " ").trim() : "Standard"
+    let baseSize = dim ? dim[0].replace(/\s+/g, " ").trim() : ""
+    // Normalize bare "NXN" codes (no quotes/spaces) from Aluminum Heavy Duty
+    // descriptions → "N\" x N\"" for consistent display.
+    if (baseSize && /^\d+(?:\.\d+)?[xX×]\d+(?:\.\d+)?$/.test(baseSize)) {
+      const [w, h] = baseSize.split(/[xX×]/)
+      baseSize = `${w}" x ${h}"`
+    }
+    if (!baseSize) {
+      // Fallback for "N' x N'" foot-mark format not matched by SIZE_DIM's
+      // quote character class (event tents: "10' x 10' Aluminum ...").
+      // Use [^\w\s] to match any punctuation/quote as a unit marker.
+      const feetMatch = p.product_description.match(/\d+(?:\.\d+)?\s*[^\w\s]\s*[xX×]\s*\d+(?:\.\d+)?\s*[^\w\s]?/)
+      if (feetMatch) baseSize = feetMatch[0].trim()
+    }
+    if (!baseSize) {
+      // Fallback for "Type - Size - Material" descriptions (flags, banner stands)
+      // where the size uses linear/ft units that SIZE_DIM doesn't match.
+      // e.g. "Feather Flag - 12ft Jumbo - 3oz Polyester" → "12ft Jumbo"
+      const parts = p.product_description.split(/\s*-\s*/)
+      if (parts.length >= 3) {
+        const sizeCandidate = parts.slice(1, -1).find((s) => /\d/.test(s))
+        if (sizeCandidate) baseSize = sizeCandidate.trim()
+      }
+    }
+    if (!baseSize) baseSize = "Standard"
     return { uuid: p.product_uuid, desc: p.product_description, baseSize }
   })
   const byBase = new Map<string, typeof withDim>()
