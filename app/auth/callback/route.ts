@@ -27,6 +27,10 @@ export async function GET(request: Request) {
         // lifecycle end) before the CRM fetch actually went out.
         await sendNewCustomerToCRM({ fullName: name, email: user.email || "", phone })
       }
+      if (next === "/") {
+        const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single()
+        if (profile?.is_admin) return NextResponse.redirect(`${origin}/admin`)
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

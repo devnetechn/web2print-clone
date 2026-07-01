@@ -50,9 +50,10 @@ function CustomerLoginForm() {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
-      router.push(next)
+      const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", authData.user.id).single()
+      router.push(profile?.is_admin ? "/admin" : next)
       router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred")
