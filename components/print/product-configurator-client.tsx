@@ -83,6 +83,7 @@ interface ProductConfiguratorClientProps {
   // cascade (a stock can have a coating this type doesn't use either). Only
   // applied while stockUuid still equals initialStockUuid.
   initialCoatingUuid?: string
+  isBusinessCards?: boolean
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -92,6 +93,23 @@ function dedupeList(items: ListItem[]): ListItem[] {
     seen.add(i.uuid)
     return true
   })
+}
+
+// Shape suffixes baked into size names by the 4over API (e.g. "2\" X 3.5\" (Oval)").
+// For BC, Oval/FoldOver/RoundCorner are Shape options, not size variants — strip them
+// and deduplicate so the Size dropdown shows clean dimensions matching 4over's UI.
+const BC_SHAPE_SUFFIX = /\s*\((Oval|Fold\s*Over|Round\s*Corners?)\)\s*$/i
+
+function cleanBCSizeList(items: ListItem[]): ListItem[] {
+  const seen = new Set<string>()
+  return items
+    .map((item) => ({ ...item, name: item.name.replace(BC_SHAPE_SUFFIX, "").trim() }))
+    .filter((item) => {
+      const key = item.name.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 }
 
 // Business Cards (and similar) sell Round Corner/Oval as separate
@@ -156,6 +174,7 @@ export function ProductConfiguratorClient({
   initialSizeUuid,
   initialStockUuid,
   initialCoatingUuid,
+  isBusinessCards = false,
 }: ProductConfiguratorClientProps) {
   const router = useRouter()
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
@@ -815,9 +834,10 @@ export function ProductConfiguratorClient({
     items: ListItem[],
     value: string,
     onChange: (v: string) => void,
+    forceDropdown = false,
   ) => {
     if (items.length === 0) return null
-    if (items.length === 1) {
+    if (items.length === 1 && !forceDropdown) {
       return (
         <div className="flex items-center justify-between py-3 border-b border-slate-100">
           <label className="text-sm font-medium text-slate-700">{label}</label>

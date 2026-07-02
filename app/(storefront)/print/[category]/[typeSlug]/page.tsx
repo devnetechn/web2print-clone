@@ -1286,6 +1286,7 @@ export default async function ProductTypePage({
               initialSizeUuid={initialSizeUuid}
               initialStockUuid={initialStockUuid}
               initialCoatingUuid={initialCoatingUuid}
+              isBusinessCards={isBusinessCards}
             />
           </div>
         </div>
@@ -1472,6 +1473,8 @@ export default async function ProductTypePage({
   // falls back to ANY product at that stock — the page still shows a price,
   // just for the wrong product type. See initialStockUuid's doc comment.
   const isSignsBanners = leaf?.parentSlug === "signs-banners"
+  const isBusinessCardsType = leaf?.parentSlug === "business-cards" &&
+    category !== "oval-cards" && category !== "fold-over-cards"
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
@@ -1656,6 +1659,7 @@ export default async function ProductTypePage({
                 initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
                 initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
                 initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
+                isBusinessCards={isBusinessCardsType}
               />
             </div>
           </div>
