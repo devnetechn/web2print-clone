@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createAdminClient, requireAdmin } from "@/lib/supabase/server"
+import { SLUG_TO_CATEGORY } from "@/lib/print/categories"
 import type { FAQ, FilePrepInfo, TemplateLink } from "@/lib/print/product-content"
 
 export type SaveContentPayload = {
@@ -18,6 +19,10 @@ export async function saveProductContent(
   const { user, error: authError } = await requireAdmin()
   if (!user) {
     return { success: false, error: authError ?? "Unauthorized" }
+  }
+
+  if (!SLUG_TO_CATEGORY[slug]) {
+    return { success: false, error: "Invalid slug" }
   }
 
   const admin = createAdminClient()
