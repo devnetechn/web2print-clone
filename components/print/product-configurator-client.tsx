@@ -929,14 +929,20 @@ export function ProductConfiguratorClient({
           ) : (
             <>
               {/* SIZE */}
-              {renderListRow("Size", sizeList, sizeUuid, setSizeUuid)}
+              {renderListRow(
+                "Size",
+                isBusinessCards ? cleanBCSizeList(sizeList) : sizeList,
+                sizeUuid,
+                setSizeUuid,
+                isBusinessCards,
+              )}
 
               {/* STOCK */}
-              {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
+              {renderListRow("Stock", stockList, stockUuid, setStockUuid, isBusinessCards)}
 
               {/* COATING */}
               {(!hiddenSet || !hiddenSet.has("coating")) &&
-                renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+                renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid, isBusinessCards)}
 
               {/* SHAPE (Rectangle/Round Corner/Oval/...) — only shown when the
                   resolved Size+Stock+Coating still matches more than one
