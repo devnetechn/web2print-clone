@@ -244,6 +244,7 @@ export function ProductConfiguratorClient({
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [projectName, setProjectName] = useState("")
+  const [jobSamplesChecked, setJobSamplesChecked] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isPreviewableImage = uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff"
 
@@ -558,8 +559,16 @@ export function ProductConfiguratorClient({
         setExtraGroups(extras)
         // Default each extra to its first option
         const defaults: Record<string, string> = {}
-        for (const g of extras) defaults[g.group_uuid] = g.options[0].option_uuid
+        for (const g of extras) {
+          // Job Samples is opt-in via checkbox — default unchecked (empty = excluded from quote)
+          if (isBusinessCards && /job.?sample/i.test(g.group_name)) {
+            defaults[g.group_uuid] = ""
+          } else {
+            defaults[g.group_uuid] = g.options[0].option_uuid
+          }
+        }
         setSelectedExtras(defaults)
+        setJobSamplesChecked(false)   // reset checkbox when product changes
       })
       .catch(() => {
         if (active) {
@@ -748,6 +757,7 @@ export function ProductConfiguratorClient({
       turnaroundUuid,
       optionUuids: Object.values(selectedExtras).filter(Boolean),
       projectName: projectName || undefined,
+      jobSamples: jobSamplesChecked || undefined,
       designFile: uploadedFile
         ? { fileName: uploadedFile.fileName, url: uploadedFile.url, contentType: uploadedFile.contentType }
         : undefined,
@@ -768,6 +778,7 @@ export function ProductConfiguratorClient({
     selectedExtras,
     uploadedFile,
     projectName,
+    jobSamplesChecked,
   ])
 
   // Both Add to Cart and Buy Now require a logged-in account before
@@ -843,6 +854,24 @@ export function ProductConfiguratorClient({
     () => isBusinessCards ? extraGroups.find((g) => /radius.*corner/i.test(g.group_name)) : undefined,
     [extraGroups, isBusinessCards],
   )
+
+  // BC: "Job Samples" extra group — rendered as a checkbox, not a dropdown
+  const jobSamplesGroup = useMemo(
+    () => isBusinessCards ? extraGroups.find((g) => /job.?sample/i.test(g.group_name)) : undefined,
+    [extraGroups, isBusinessCards],
+  )
+
+  // Keep selectedExtras in sync with the Job Samples checkbox so the live
+  // quote API receives (or excludes) the Job Samples option UUID automatically.
+  useEffect(() => {
+    if (!isBusinessCards || !jobSamplesGroup) return
+    setSelectedExtras((prev) => ({
+      ...prev,
+      [jobSamplesGroup.group_uuid]: jobSamplesChecked
+        ? jobSamplesGroup.options[0]?.option_uuid || ""
+        : "",
+    }))
+  }, [jobSamplesChecked, jobSamplesGroup, isBusinessCards])
 
   // BC: the current shape label to determine if Radius of Corners should show
   const currentShapeLabel = useMemo(
@@ -1048,6 +1077,25 @@ export function ProductConfiguratorClient({
                       )}
                     </Fragment>
                   ))}
+
+                  {/* JOB SAMPLES checkbox — BC only, opt-in, +$9.99 via quote API */}
+                  {jobSamplesGroup && (
+                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                      <label className="text-sm font-medium text-slate-700">Job Samples</label>
+                      <label className="flex items-center gap-2 cursor-pointer min-w-[220px]">
+                        <input
+                          type="checkbox"
+                          checked={jobSamplesChecked}
+                          onChange={(e) => setJobSamplesChecked(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 text-[#e07b39] focus:ring-[#e07b39]"
+                        />
+                        <span className="text-sm text-slate-600">
+                          Sample of Completed Job (per set){" "}
+                          <span className="font-medium text-slate-800">+$9.99</span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
