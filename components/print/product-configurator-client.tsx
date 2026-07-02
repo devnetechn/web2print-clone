@@ -164,6 +164,13 @@ const HANDLED_GROUP_NAMES = new Set([
   "handling fee",
 ])
 
+// BC-specific extra group ordering (rendered in this order before remaining groups)
+const BC_GROUP_ORDER = ["spot uv sides", "lamination", "scoring options"]
+// Extra groups hidden from BC UI (not shown on 4over's calculator)
+const BC_HIDDEN_EXTRA_NAMES = new Set(["majestic type", "product orientation"])
+// BC extra groups that are rendered separately (not via the generic extras loop)
+const BC_SEPARATE_EXTRA_NAMES = /^(radius of corners|job.?sample)/i
+
 export function ProductConfiguratorClient({
   categoryUuid,
   categorySlug,
@@ -831,6 +838,46 @@ export function ProductConfiguratorClient({
     })
   }, [extraGroups, hiddenSet, shapeList])
 
+  // BC: group for "Radius of Corners" — shown conditionally based on Shape
+  const radiusGroup = useMemo(
+    () => isBusinessCards ? extraGroups.find((g) => /radius.*corner/i.test(g.group_name)) : undefined,
+    [extraGroups, isBusinessCards],
+  )
+
+  // BC: the current shape label to determine if Radius of Corners should show
+  const currentShapeLabel = useMemo(
+    () => shapeList.find((s) => s.uuid === shapeUuid)?.shape || "",
+    [shapeList, shapeUuid],
+  )
+
+  // BC: extra groups filtered for BC display (excludes hidden + separately-rendered groups)
+  const bcVisibleExtras = useMemo(() => {
+    if (!isBusinessCards) return []
+    const seen = new Set<string>()
+    return extraGroups.filter((g) => {
+      const name = g.group_name.toLowerCase().trim()
+      if (BC_HIDDEN_EXTRA_NAMES.has(name)) return false
+      if (BC_SEPARATE_EXTRA_NAMES.test(g.group_name)) return false
+      const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options"]
+      if (shapeLikeGroups.includes(name) && shapeList.length > 1) return false
+      if (g.options.length === 0) return false
+      if (seen.has(name)) return false
+      seen.add(name)
+      return true
+    })
+  }, [isBusinessCards, extraGroups, shapeList])
+
+  // BC: ordered extras (SPOT UV SIDES → Lamination → Scoring → remaining)
+  const bcOrderedExtras = useMemo(() => {
+    const ordered = BC_GROUP_ORDER
+      .map((name) => bcVisibleExtras.find((g) => g.group_name.toLowerCase().trim() === name))
+      .filter((g): g is ExtraGroup => g !== undefined)
+    const rest = bcVisibleExtras.filter(
+      (g) => !BC_GROUP_ORDER.includes(g.group_name.toLowerCase().trim()),
+    )
+    return [...ordered, ...rest]
+  }, [bcVisibleExtras])
+
   // ---- renderers ----
   const renderListRow = (
     label: string,
@@ -931,94 +978,149 @@ export function ProductConfiguratorClient({
             </div>
           ) : (
             <>
-              {/* PROJECT NAME / P.O. — BC only */}
-              {isBusinessCards && (
-                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                  <label className="text-sm font-medium text-slate-700">
-                    Project Name / P.O.
-                  </label>
-                  <input
-                    type="text"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="Name Your Project"
-                    className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
-                  />
-                </div>
-              )}
+              {isBusinessCards ? (
+                <>
+                  {/* ── BC FIELD ORDER (matches 4over) ── */}
 
-              {/* SIZE */}
-              {renderListRow(
-                "Size",
-                isBusinessCards ? cleanBCSizeList(sizeList) : sizeList,
-                sizeUuid,
-                setSizeUuid,
-                isBusinessCards,
-              )}
+                  {/* PROJECT NAME / P.O. */}
+                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                    <label className="text-sm font-medium text-slate-700">Project Name / P.O.</label>
+                    <input
+                      type="text"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      placeholder="Name Your Project"
+                      className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                    />
+                  </div>
 
-              {/* STOCK */}
-              {renderListRow("Stock", stockList, stockUuid, setStockUuid, isBusinessCards)}
+                  {/* SIZE */}
+                  {renderListRow("Size", cleanBCSizeList(sizeList), sizeUuid, setSizeUuid, true)}
 
-              {/* COATING */}
-              {(!hiddenSet || !hiddenSet.has("coating")) &&
-                renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid, isBusinessCards)}
-
-              {/* SHAPE (Rectangle/Round Corner/Oval/...) — only shown when the
-                  resolved Size+Stock+Coating still matches more than one
-                  product_uuid; selecting a value sets productUuid directly,
-                  bypassing baseprices/quote re-resolution since these are
-                  already known sibling uuids. */}
-              {renderListRow(
-                /^\d+\s*Sheets$/.test(shapeList[0]?.shape || "")
-                  ? "Sheets Per Pad"
-                  : /^(black|blue|gray|grey|red|white)$/i.test(shapeList[0]?.shape || "")
-                    ? "Color"
-                    : "Shape",
-                shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
-                shapeUuid,
-                (uuid) => {
-                  setShapeUuid(uuid)
-                  setProductUuid(uuid)
-                },
-              )}
-
-              {loadingOptions && (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-                </div>
-              )}
-
-              {/* COLORSPEC (labeled "Sides" for non-BC, "Colorspec" for BC) */}
-              {renderListRow(
-                isBusinessCards ? "Colorspec" : "Sides",
-                colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
-                colorspecUuid,
-                setColorspecUuid,
-                isBusinessCards,
-              )}
-
-              {/* EXTRA OPTION GROUPS (Orientation, Grommets, Lamination, Foil Color, ...) */}
-              {/* Hidden/duplicate groups still use their default option in the live quote. */}
-              {visibleExtraGroups.map((g) => (
-                <Fragment key={g.group_uuid}>
+                  {/* SHAPE — shown before Stock for BC (same data as non-BC shapeList) */}
                   {renderListRow(
-                    g.group_name,
-                    g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
-                    selectedExtras[g.group_uuid] || "",
-                    (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                    "Shape",
+                    shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
+                    shapeUuid,
+                    (uuid) => { setShapeUuid(uuid); setProductUuid(uuid) },
+                    true,
                   )}
-                </Fragment>
-              ))}
 
-              {/* QUANTITY (runsize) */}
+                  {/* RADIUS OF CORNERS — conditional: only when a rounded shape is selected */}
+                  {radiusGroup && /round/i.test(currentShapeLabel) && renderListRow(
+                    radiusGroup.group_name,
+                    radiusGroup.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    selectedExtras[radiusGroup.group_uuid] || "",
+                    (v) => setSelectedExtras((prev) => ({ ...prev, [radiusGroup.group_uuid]: v })),
+                    true,
+                  )}
+
+                  {/* STOCK */}
+                  {renderListRow("Stock", stockList, stockUuid, setStockUuid, true)}
+
+                  {loadingOptions && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                    </div>
+                  )}
+
+                  {/* COLORSPEC */}
+                  {renderListRow(
+                    "Colorspec",
+                    colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    colorspecUuid,
+                    setColorspecUuid,
+                    true,
+                  )}
+
+                  {/* COATING */}
+                  {renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid, true)}
+
+                  {/* BC ORDERED EXTRAS: SPOT UV SIDES → Lamination → Scoring → remaining */}
+                  {bcOrderedExtras.map((g) => (
+                    <Fragment key={g.group_uuid}>
+                      {renderListRow(
+                        g.group_name,
+                        g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                        selectedExtras[g.group_uuid] || "",
+                        (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                        true,
+                      )}
+                    </Fragment>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {/* ── NON-BC FIELD ORDER (unchanged) ── */}
+
+                  {/* SIZE */}
+                  {renderListRow("Size", sizeList, sizeUuid, setSizeUuid)}
+
+                  {/* STOCK */}
+                  {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
+
+                  {/* COATING */}
+                  {(!hiddenSet || !hiddenSet.has("coating")) &&
+                    renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+
+                  {/* SHAPE (Rectangle/Round Corner/Oval/...) — only shown when the
+                      resolved Size+Stock+Coating still matches more than one
+                      product_uuid; selecting a value sets productUuid directly,
+                      bypassing baseprices/quote re-resolution since these are
+                      already known sibling uuids. */}
+                  {renderListRow(
+                    /^\d+\s*Sheets$/.test(shapeList[0]?.shape || "")
+                      ? "Sheets Per Pad"
+                      : /^(black|blue|gray|grey|red|white)$/i.test(shapeList[0]?.shape || "")
+                        ? "Color"
+                        : "Shape",
+                    shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
+                    shapeUuid,
+                    (uuid) => {
+                      setShapeUuid(uuid)
+                      setProductUuid(uuid)
+                    },
+                  )}
+
+                  {loadingOptions && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                    </div>
+                  )}
+
+                  {/* SIDES (colorspec) */}
+                  {renderListRow(
+                    "Sides",
+                    colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    colorspecUuid,
+                    setColorspecUuid,
+                  )}
+
+                  {/* EXTRA OPTION GROUPS (Orientation, Grommets, Lamination, Foil Color, ...) */}
+                  {/* Hidden/duplicate groups still use their default option in the live quote. */}
+                  {visibleExtraGroups.map((g) => (
+                    <Fragment key={g.group_uuid}>
+                      {renderListRow(
+                        g.group_name,
+                        g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                        selectedExtras[g.group_uuid] || "",
+                        (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                      )}
+                    </Fragment>
+                  ))}
+                </>
+              )}
+
+              {/* QUANTITY — shared by BC and non-BC */}
               {renderListRow(
                 "Quantity",
                 runsizeOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
                 runsizeUuid,
                 setRunsizeUuid,
+                isBusinessCards,
               )}
 
-              {/* TURNAROUND TIME */}
+              {/* TURNAROUND TIME — shared */}
               {renderListRow(
                 "Turnaround Time",
                 turnaroundOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
