@@ -236,6 +236,7 @@ export function ProductConfiguratorClient({
   const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string; path: string; contentType: string } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [projectName, setProjectName] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isPreviewableImage = uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff"
 
@@ -739,6 +740,7 @@ export function ProductConfiguratorClient({
       runsizeUuid,
       turnaroundUuid,
       optionUuids: Object.values(selectedExtras).filter(Boolean),
+      projectName: projectName || undefined,
       designFile: uploadedFile
         ? { fileName: uploadedFile.fileName, url: uploadedFile.url, contentType: uploadedFile.contentType }
         : undefined,
@@ -758,6 +760,7 @@ export function ProductConfiguratorClient({
     categorySlug,
     selectedExtras,
     uploadedFile,
+    projectName,
   ])
 
   // Both Add to Cart and Buy Now require a logged-in account before
@@ -928,6 +931,22 @@ export function ProductConfiguratorClient({
             </div>
           ) : (
             <>
+              {/* PROJECT NAME / P.O. — BC only */}
+              {isBusinessCards && (
+                <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <label className="text-sm font-medium text-slate-700">
+                    Project Name / P.O.
+                  </label>
+                  <input
+                    type="text"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Name Your Project"
+                    className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                  />
+                </div>
+              )}
+
               {/* SIZE */}
               {renderListRow(
                 "Size",
@@ -969,12 +988,13 @@ export function ProductConfiguratorClient({
                 </div>
               )}
 
-              {/* SIDES (colorspec) */}
+              {/* COLORSPEC (labeled "Sides" for non-BC, "Colorspec" for BC) */}
               {renderListRow(
-                "Sides",
+                isBusinessCards ? "Colorspec" : "Sides",
                 colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
                 colorspecUuid,
                 setColorspecUuid,
+                isBusinessCards,
               )}
 
               {/* EXTRA OPTION GROUPS (Orientation, Grommets, Lamination, Foil Color, ...) */}
