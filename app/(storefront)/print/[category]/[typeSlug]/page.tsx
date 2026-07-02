@@ -4,6 +4,8 @@ import { getProductFeed, getAllProductsForCategory, getCategoryProductsList } fr
 import { ProductConfiguratorClient } from "@/components/print/product-configurator-client"
 import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/lib/print/categories"
 import { resolveProductImage } from "@/lib/print/product-images"
+import { ProductInfoTabs } from "@/components/print/product-info-tabs"
+import type { ProductContent } from "@/lib/print/product-content"
 
 // Only includes TYPE_RULES (hasTypeRules) categories — the OTHER entries in
 // print/[category]/page.tsx's EXTRA_PRODUCT_SOURCES (e.g. announcement-cards)
@@ -889,6 +891,12 @@ export default async function ProductTypePage({
   const { uuid } = await searchParams
   const supabase = await createClient()
 
+  const { data: productContent } = await supabase
+    .from("product_content")
+    .select("*")
+    .eq("category_slug", category)
+    .maybeSingle<ProductContent>()
+
   const leaf = SLUG_TO_CATEGORY[category]
 
   // ---- If uuid is provided, go directly to individual product calculator ----
@@ -1264,17 +1272,6 @@ export default async function ProductTypePage({
                   className="w-full h-full object-contain"
                 />
               </div>
-              {/* Description / Templates (left column, under image) */}
-              <div className="mt-6 max-w-[360px]">
-                <div className="border-b border-slate-200 flex gap-6">
-                  <span className="border-b-2 border-[#e07b39] text-[#e07b39] py-2 text-sm font-medium">Description</span>
-                  <span className="text-slate-500 py-2 text-sm">Templates</span>
-                </div>
-                <p className="text-sm text-slate-600 leading-relaxed mt-3">
-                  {productName} — high quality professional printing with premium materials, durable and
-                  weather-resistant for both indoor and outdoor use.
-                </p>
-              </div>
             </div>
             <ProductConfiguratorClient
               categoryUuid={product.category_uuid || leaf?.uuid || ""}
@@ -1286,6 +1283,14 @@ export default async function ProductTypePage({
               initialSizeUuid={initialSizeUuid}
               initialStockUuid={initialStockUuid}
               initialCoatingUuid={initialCoatingUuid}
+              isBusinessCards={isBusinessCards}
+            />
+          </div>
+          <div className="mt-10 pb-12">
+            <ProductInfoTabs
+              categoryUuid={product.category_uuid || leaf?.uuid || ""}
+              productName={productName}
+              content={productContent ?? null}
               isBusinessCards={isBusinessCards}
             />
           </div>
@@ -1637,32 +1642,42 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
-            {/* Left: product image */}
-            <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
-              <img
-                src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
-                alt={typeLabel}
-                className="w-full h-full object-contain"
-              />
-            </div>
+          <>
+            <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+              {/* Left: product image */}
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
+                <img
+                  src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
+                  alt={typeLabel}
+                  className="w-full h-full object-contain"
+                />
+              </div>
 
-            {/* Right: configurator driven live by categoryproductslist + productquote */}
-            <div>
-              <ProductConfiguratorClient
+              {/* Right: configurator driven live by categoryproductslist + productquote */}
+              <div>
+                <ProductConfiguratorClient
+                  categoryUuid={effectiveCategoryUuid}
+                  categorySlug={category}
+                  productName={typeLabel}
+                  allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
+                  hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
+                  sizeProducts={signsSizeProducts}
+                  initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
+                  initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
+                  initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
+                  isBusinessCards={isBusinessCardsType}
+                />
+              </div>
+            </div>
+            <div className="mt-10 pb-12">
+              <ProductInfoTabs
                 categoryUuid={effectiveCategoryUuid}
-                categorySlug={category}
                 productName={typeLabel}
-                allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
-                hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
-                sizeProducts={signsSizeProducts}
-                initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
-                initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
-                initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
+                content={productContent ?? null}
                 isBusinessCards={isBusinessCardsType}
               />
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>
