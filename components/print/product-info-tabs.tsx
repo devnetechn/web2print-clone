@@ -96,6 +96,7 @@ export function ProductInfoTabs({
       const r2 = await fetch(
         `/api/4over/product-options?product_uuid=${encodeURIComponent(firstProductUuid)}`
       )
+      if (!r2.ok) throw new Error("product-options failed")
       const d2 = await r2.json()
 
       let colorspecs: string[] = []
