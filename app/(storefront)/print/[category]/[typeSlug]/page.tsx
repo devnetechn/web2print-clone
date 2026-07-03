@@ -973,6 +973,7 @@ export default async function ProductTypePage({
       (leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
       ((category === "announcement-cards" || category.endsWith("-announcement-cards")) &&
         product.category_uuid !== leaf?.uuid)
+    const isAllInclusive = typeSlug.includes("all-inclusive")
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
@@ -1286,12 +1287,17 @@ export default async function ProductTypePage({
               categorySlug={category}
               productName={productName}
               allowedProductUuids={allowedProductUuidsOverride || [product.product_uuid]}
-              hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
+              hiddenGroups={
+                leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS :
+                isAllInclusive ? ["product orientation", "print method"] :
+                undefined
+              }
               sizeProducts={sizeProducts}
               initialSizeUuid={initialSizeUuid}
               initialStockUuid={initialStockUuid}
               initialCoatingUuid={initialCoatingUuid}
               isBusinessCards={isBusinessCards}
+              isAllInclusive={isAllInclusive}
             />
           </div>
         </div>
@@ -1480,6 +1486,7 @@ export default async function ProductTypePage({
   const isSignsBanners = leaf?.parentSlug === "signs-banners"
   const isBusinessCardsType = leaf?.parentSlug === "business-cards" &&
     category !== "oval-cards" && category !== "fold-over-cards"
+  const isAllInclusiveType = typeSlug.includes("all-inclusive")
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
@@ -1669,12 +1676,17 @@ export default async function ProductTypePage({
                 categorySlug={category}
                 productName={typeLabel}
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
-                hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
+                hiddenGroups={
+                  isSignsBanners ? SIGNS_HIDDEN_GROUPS :
+                  isAllInclusiveType ? ["product orientation", "print method"] :
+                  undefined
+                }
                 sizeProducts={signsSizeProducts}
                 initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
                 initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
                 initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
                 isBusinessCards={isBusinessCardsType}
+                isAllInclusive={isAllInclusiveType}
               />
             </div>
           </div>

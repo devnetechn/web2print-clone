@@ -84,6 +84,7 @@ interface ProductConfiguratorClientProps {
   // applied while stockUuid still equals initialStockUuid.
   initialCoatingUuid?: string
   isBusinessCards?: boolean
+  isAllInclusive?: boolean
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -170,6 +171,8 @@ const BC_GROUP_ORDER = ["spot uv sides", "lamination", "scoring options"]
 const BC_HIDDEN_EXTRA_NAMES = new Set(["majestic type", "product orientation"])
 // BC extra groups that are rendered separately (not via the generic extras loop)
 const BC_SEPARATE_EXTRA_NAMES = /^(radius of corners|job.?sample)/i
+// All-Inclusive: extra groups rendered as checkboxes (not via the generic extras loop)
+const AI_SEPARATE_EXTRA_NAMES = /^(job.?sample|digital.?proof|pdf.?proof)/i
 
 export function ProductConfiguratorClient({
   categoryUuid,
@@ -182,6 +185,7 @@ export function ProductConfiguratorClient({
   initialStockUuid,
   initialCoatingUuid,
   isBusinessCards = false,
+  isAllInclusive = false,
 }: ProductConfiguratorClientProps) {
   const router = useRouter()
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
@@ -245,6 +249,7 @@ export function ProductConfiguratorClient({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [projectName, setProjectName] = useState("")
   const [jobSamplesChecked, setJobSamplesChecked] = useState(false)
+  const [digitalProofsChecked, setDigitalProofsChecked] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isPreviewableImage = uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff"
 
@@ -560,15 +565,16 @@ export function ProductConfiguratorClient({
         // Default each extra to its first option
         const defaults: Record<string, string> = {}
         for (const g of extras) {
-          // Job Samples is opt-in via checkbox — default unchecked (empty = excluded from quote)
-          if (isBusinessCards && /job.?sample/i.test(g.group_name)) {
+          // Job Samples / Digital Proofs are opt-in checkboxes — default unchecked
+          if ((isBusinessCards || isAllInclusive) && /job.?sample|digital.?proof|pdf.?proof/i.test(g.group_name)) {
             defaults[g.group_uuid] = ""
           } else {
             defaults[g.group_uuid] = g.options[0].option_uuid
           }
         }
         setSelectedExtras(defaults)
-        setJobSamplesChecked(false)   // reset checkbox when product changes
+        setJobSamplesChecked(false)
+        setDigitalProofsChecked(false)
       })
       .catch(() => {
         if (active) {
@@ -855,23 +861,40 @@ export function ProductConfiguratorClient({
     [extraGroups, isBusinessCards],
   )
 
-  // BC: "Job Samples" extra group — rendered as a checkbox, not a dropdown
+  // BC + AI: "Job Samples" extra group — rendered as a checkbox, not a dropdown
   const jobSamplesGroup = useMemo(
-    () => isBusinessCards ? extraGroups.find((g) => /job.?sample/i.test(g.group_name)) : undefined,
-    [extraGroups, isBusinessCards],
+    () => (isBusinessCards || isAllInclusive) ? extraGroups.find((g) => /job.?sample/i.test(g.group_name)) : undefined,
+    [extraGroups, isBusinessCards, isAllInclusive],
+  )
+
+  // AI: "Digital Proofs" extra group — rendered as a checkbox
+  const digitalProofsGroup = useMemo(
+    () => isAllInclusive ? extraGroups.find((g) => /digital.?proof|pdf.?proof/i.test(g.group_name)) : undefined,
+    [extraGroups, isAllInclusive],
   )
 
   // Keep selectedExtras in sync with the Job Samples checkbox so the live
   // quote API receives (or excludes) the Job Samples option UUID automatically.
   useEffect(() => {
-    if (!isBusinessCards || !jobSamplesGroup) return
+    if ((!isBusinessCards && !isAllInclusive) || !jobSamplesGroup) return
     setSelectedExtras((prev) => ({
       ...prev,
       [jobSamplesGroup.group_uuid]: jobSamplesChecked
         ? jobSamplesGroup.options[0]?.option_uuid || ""
         : "",
     }))
-  }, [jobSamplesChecked, jobSamplesGroup, isBusinessCards])
+  }, [jobSamplesChecked, jobSamplesGroup, isBusinessCards, isAllInclusive])
+
+  // AI: keep selectedExtras in sync with the Digital Proofs checkbox
+  useEffect(() => {
+    if (!isAllInclusive || !digitalProofsGroup) return
+    setSelectedExtras((prev) => ({
+      ...prev,
+      [digitalProofsGroup.group_uuid]: digitalProofsChecked
+        ? digitalProofsGroup.options[0]?.option_uuid || ""
+        : "",
+    }))
+  }, [digitalProofsChecked, digitalProofsGroup, isAllInclusive])
 
   // BC: the current shape label to determine if Radius of Corners should show
   const currentShapeLabel = useMemo(
@@ -906,6 +929,12 @@ export function ProductConfiguratorClient({
     )
     return [...ordered, ...rest]
   }, [bcVisibleExtras])
+
+  // AI: extra groups excluding separately-rendered (Job Samples, Digital Proofs)
+  const aiVisibleExtras = useMemo(() => {
+    if (!isAllInclusive) return []
+    return visibleExtraGroups.filter((g) => !AI_SEPARATE_EXTRA_NAMES.test(g.group_name))
+  }, [isAllInclusive, visibleExtraGroups])
 
   // ---- renderers ----
   const renderListRow = (
@@ -1092,6 +1121,95 @@ export function ProductConfiguratorClient({
                         <span className="text-sm text-slate-600">
                           Sample of Completed Job (per set){" "}
                           <span className="font-medium text-slate-800">+$9.99</span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </>
+              ) : isAllInclusive ? (
+                <>
+                  {/* ── ALL-INCLUSIVE FIELD ORDER (matches 4over) ── */}
+
+                  {/* PROJECT NAME / P.O. */}
+                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                    <label className="text-sm font-medium text-slate-700">Project Name / P.O.</label>
+                    <input
+                      type="text"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      placeholder="Name Your Project"
+                      className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                    />
+                  </div>
+
+                  {/* SIZE */}
+                  {renderListRow("Size", sizeList, sizeUuid, setSizeUuid)}
+
+                  {/* STOCK */}
+                  {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
+
+                  {/* COLORSPEC */}
+                  {renderListRow(
+                    "Colorspec",
+                    colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    colorspecUuid,
+                    setColorspecUuid,
+                  )}
+
+                  {/* COATING */}
+                  {renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+
+                  {loadingOptions && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                    </div>
+                  )}
+
+                  {/* EXTRA GROUPS (Folding Options etc. — Product Orientation + Print Method hidden via hiddenGroups) */}
+                  {aiVisibleExtras.map((g) => (
+                    <Fragment key={g.group_uuid}>
+                      {renderListRow(
+                        g.group_name,
+                        g.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                        selectedExtras[g.group_uuid] || "",
+                        (v) => setSelectedExtras((prev) => ({ ...prev, [g.group_uuid]: v })),
+                      )}
+                    </Fragment>
+                  ))}
+
+                  {/* JOB SAMPLES checkbox */}
+                  {jobSamplesGroup && (
+                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                      <label className="text-sm font-medium text-slate-700">Job Samples</label>
+                      <label className="flex items-center gap-2 cursor-pointer min-w-[220px]">
+                        <input
+                          type="checkbox"
+                          checked={jobSamplesChecked}
+                          onChange={(e) => setJobSamplesChecked(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 text-[#e07b39] focus:ring-[#e07b39]"
+                        />
+                        <span className="text-sm text-slate-600">
+                          Sample of Completed Job (per set){" "}
+                          <span className="font-medium text-slate-800">+$9.99</span>
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
+                  {/* DIGITAL PROOFS checkbox */}
+                  {digitalProofsGroup && (
+                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                      <label className="text-sm font-medium text-slate-700">Digital Proofs</label>
+                      <label className="flex items-center gap-2 cursor-pointer min-w-[220px]">
+                        <input
+                          type="checkbox"
+                          checked={digitalProofsChecked}
+                          onChange={(e) => setDigitalProofsChecked(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 text-[#e07b39] focus:ring-[#e07b39]"
+                        />
+                        <span className="text-sm text-slate-600">
+                          PDF Proofs (per set){" "}
+                          <span className="font-medium text-slate-800">+$5.00</span>
                         </span>
                       </label>
                     </div>
