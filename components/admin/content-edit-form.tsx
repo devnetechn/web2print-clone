@@ -112,6 +112,7 @@ export function ContentEditForm({ slug, initialContent }: ContentEditFormProps) 
                 size="sm"
                 variant="ghost"
                 onClick={() => removeFaq(i)}
+                aria-label="Remove FAQ"
                 className="absolute top-2 right-2 h-7 w-7 p-0 text-slate-400 hover:text-red-500"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -249,6 +250,7 @@ export function ContentEditForm({ slug, initialContent }: ContentEditFormProps) 
                 size="sm"
                 variant="ghost"
                 onClick={() => removeTemplate(i)}
+                aria-label="Remove template"
                 className="h-9 w-9 p-0 text-slate-400 hover:text-red-500 flex-shrink-0"
               >
                 <Trash2 className="h-3.5 w-3.5" />

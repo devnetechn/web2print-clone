@@ -53,7 +53,7 @@ export function ProductInfoTabs({
   const [openTemplates, setOpenTemplates] = useState<Set<number>>(new Set())
 
   const handleTabChange = (tab: string) => {
-    if (tab === "specs" && specsState.status === "idle") {
+    if (tab === "specs" && (specsState.status === "idle" || specsState.status === "error")) {
       loadSpecs()
     }
   }
@@ -64,6 +64,7 @@ export function ProductInfoTabs({
       const r1 = await fetch(
         `/api/4over/categoryproductslist?category_uuid=${encodeURIComponent(categoryUuid)}`
       )
+      if (!r1.ok) throw new Error("categoryproductslist failed")
       const d1 = await r1.json()
       if (!d1.success) throw new Error("cascade failed")
 
@@ -225,6 +226,7 @@ export function ProductInfoTabs({
               <div key={i}>
                 <button
                   onClick={() => toggleTemplate(i)}
+                  aria-expanded={openTemplates.has(i)}
                   className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
                 >
                   <span className="font-medium text-slate-800">{t.size}</span>
@@ -263,6 +265,7 @@ export function ProductInfoTabs({
               <div key={i}>
                 <button
                   onClick={() => toggleFaq(i)}
+                  aria-expanded={openFaqs.has(i)}
                   className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
                 >
                   <span className="font-medium text-slate-800">{faq.q}</span>
