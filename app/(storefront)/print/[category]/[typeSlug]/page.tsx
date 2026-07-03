@@ -413,9 +413,9 @@ const TYPE_LABELS: Record<string, string> = {
   "door-hangers-tear-off": "Door Hangers with Tear-Off Perforation",
   "flyers-tear-off": "Flyers with Tear-Off Perforation",
   "postcards-tear-off": "Postcards with Tear-Off Perforation",
-  "eddm-postcards": "EDDM Postcards",
   "eddm-sell-sheets": "EDDM Sell Sheets",
   "eddm-flyers": "EDDM Flyers",
+  "trading-cards": "Trading Cards",
   "table-cloths": "Table Cloths",
   "table-runners": "Table Runners",
   "10mm-coroplast-signs": "10mm Coroplast Signs",
@@ -973,6 +973,7 @@ export default async function ProductTypePage({
       (leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
       ((category === "announcement-cards" || category.endsWith("-announcement-cards")) &&
         product.category_uuid !== leaf?.uuid)
+    const isAllInclusive = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures" || category === "trading-cards"
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
@@ -1272,26 +1273,31 @@ export default async function ProductTypePage({
                   className="w-full h-full object-contain"
                 />
               </div>
+              <div className="mt-6">
+                <ProductInfoTabs
+                  categoryUuid={product.category_uuid || leaf?.uuid || ""}
+                  productName={productName}
+                  content={productContent ?? null}
+                  isBusinessCards={isBusinessCards}
+                />
+              </div>
             </div>
             <ProductConfiguratorClient
               categoryUuid={product.category_uuid || leaf?.uuid || ""}
               categorySlug={category}
               productName={productName}
               allowedProductUuids={allowedProductUuidsOverride || [product.product_uuid]}
-              hiddenGroups={leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS : undefined}
+              hiddenGroups={
+                leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS :
+                isAllInclusive ? ["product orientation", "print method"] :
+                undefined
+              }
               sizeProducts={sizeProducts}
               initialSizeUuid={initialSizeUuid}
               initialStockUuid={initialStockUuid}
               initialCoatingUuid={initialCoatingUuid}
               isBusinessCards={isBusinessCards}
-            />
-          </div>
-          <div className="mt-10 pb-12">
-            <ProductInfoTabs
-              categoryUuid={product.category_uuid || leaf?.uuid || ""}
-              productName={productName}
-              content={productContent ?? null}
-              isBusinessCards={isBusinessCards}
+              isAllInclusive={isAllInclusive}
             />
           </div>
         </div>
@@ -1480,9 +1486,11 @@ export default async function ProductTypePage({
   const isSignsBanners = leaf?.parentSlug === "signs-banners"
   const isBusinessCardsType = leaf?.parentSlug === "business-cards" &&
     category !== "oval-cards" && category !== "fold-over-cards"
+  const isAllInclusiveType = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures" || category === "trading-cards"
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
+  let filteredSizeUuids: string[] | undefined
   // Signs-banners uses sizeProducts mode (Size dropdown → direct product_uuid),
   // so the live-cascade anchor (initialSizeUuid/Stock/Coating) is not needed
   // and the expensive 4over API probe calls below can be skipped entirely.
@@ -1507,6 +1515,23 @@ export default async function ProductTypePage({
     const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
     const listResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid })
     if (listResult?.success) {
+      // For non-catch-all TYPE_KEYWORDS types, restrict the SIZE dropdown to
+      // only sizes that the matched products actually use. The live
+      // Stock/Coating cascade still runs normally — only the visible size list
+      // is narrowed (e.g. All-Inclusive Postcards: 4 sizes, not 50+).
+      const currentTypeKws = typeRules.find(([slug]) => slug === typeSlug)?.[1] ?? []
+      if (!isSignsBanners && currentTypeKws.length > 0) {
+        const matchedSizeTexts = new Set(
+          matchedProducts
+            .map((p) => p.product_description.match(SIZE_DIM)?.[0])
+            .filter(Boolean)
+            .map((s) => normalizeSizeText(s!))
+        )
+        filteredSizeUuids = (listResult.data?.size_list || [])
+          .filter((s) => matchedSizeTexts.has(normalizeSizeText(s.name)))
+          .map((s) => s.uuid)
+      }
+
       // startsWith, not exact equality: some size_list entries carry a
       // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
       // 22\"- 4 page" for Half-Fold Brochures' 4-page fold pattern).
@@ -1642,42 +1667,48 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <>
-            <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
-              {/* Left: product image */}
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
+          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+            {/* Left: product image + info tabs */}
+            <div>
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
                 <img
                   src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
                   alt={typeLabel}
                   className="w-full h-full object-contain"
                 />
               </div>
-
-              {/* Right: configurator driven live by categoryproductslist + productquote */}
-              <div>
-                <ProductConfiguratorClient
+              <div className="mt-6">
+                <ProductInfoTabs
                   categoryUuid={effectiveCategoryUuid}
-                  categorySlug={category}
                   productName={typeLabel}
-                  allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
-                  hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
-                  sizeProducts={signsSizeProducts}
-                  initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
-                  initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
-                  initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
+                  content={productContent ?? null}
                   isBusinessCards={isBusinessCardsType}
                 />
               </div>
             </div>
-            <div className="mt-10 pb-12">
-              <ProductInfoTabs
+
+            {/* Right: configurator driven live by categoryproductslist + productquote */}
+            <div>
+              <ProductConfiguratorClient
                 categoryUuid={effectiveCategoryUuid}
+                categorySlug={category}
                 productName={typeLabel}
-                content={productContent ?? null}
+                allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
+                hiddenGroups={
+                  isSignsBanners ? SIGNS_HIDDEN_GROUPS :
+                  isAllInclusiveType ? ["product orientation", "print method"] :
+                  undefined
+                }
+                sizeProducts={signsSizeProducts}
+                filteredSizeUuids={signsSizeProducts ? undefined : filteredSizeUuids}
+                initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
+                initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
+                initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
                 isBusinessCards={isBusinessCardsType}
+                isAllInclusive={isAllInclusiveType}
               />
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
