@@ -83,6 +83,10 @@ interface ProductConfiguratorClientProps {
   // cascade (a stock can have a coating this type doesn't use either). Only
   // applied while stockUuid still equals initialStockUuid.
   initialCoatingUuid?: string
+  // optional: when the category contains many product lines, restrict the SIZE
+  // dropdown to only these size UUIDs (e.g. All-Inclusive Postcards within the
+  // full postcards category). Stock/Coating live cascade still runs normally.
+  filteredSizeUuids?: string[]
   isBusinessCards?: boolean
   isAllInclusive?: boolean
 }
@@ -184,6 +188,7 @@ export function ProductConfiguratorClient({
   initialSizeUuid,
   initialStockUuid,
   initialCoatingUuid,
+  filteredSizeUuids,
   isBusinessCards = false,
   isAllInclusive = false,
 }: ProductConfiguratorClientProps) {
@@ -322,7 +327,10 @@ export function ProductConfiguratorClient({
         setLoadingList(false)
         return
       }
-      const sizes = dedupeList(data.size_list || [])
+      const allSizes = dedupeList(data.size_list || [])
+      const sizes = filteredSizeUuids && filteredSizeUuids.length > 0
+        ? allSizes.filter((s) => filteredSizeUuids!.includes(s.uuid))
+        : allSizes
       setSizeList(sizes)
       if (sizes.length > 0) {
         const anchored = initialSizeUuid && sizes.some((s) => s.uuid === initialSizeUuid)

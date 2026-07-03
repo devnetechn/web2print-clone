@@ -1490,6 +1490,7 @@ export default async function ProductTypePage({
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
+  let filteredSizeUuids: string[] | undefined
   // Signs-banners uses sizeProducts mode (Size dropdown → direct product_uuid),
   // so the live-cascade anchor (initialSizeUuid/Stock/Coating) is not needed
   // and the expensive 4over API probe calls below can be skipped entirely.
@@ -1514,6 +1515,23 @@ export default async function ProductTypePage({
     const sizeText = dimMatch ? normalizeSizeText(dimMatch[0]) : ""
     const listResult = await getCategoryProductsList({ category_uuid: effectiveCategoryUuid })
     if (listResult?.success) {
+      // For non-catch-all TYPE_KEYWORDS types, restrict the SIZE dropdown to
+      // only sizes that the matched products actually use. The live
+      // Stock/Coating cascade still runs normally — only the visible size list
+      // is narrowed (e.g. All-Inclusive Postcards: 4 sizes, not 50+).
+      const currentTypeKws = typeRules.find(([slug]) => slug === typeSlug)?.[1] ?? []
+      if (!isSignsBanners && currentTypeKws.length > 0) {
+        const matchedSizeTexts = new Set(
+          matchedProducts
+            .map((p) => p.product_description.match(SIZE_DIM)?.[0])
+            .filter(Boolean)
+            .map((s) => normalizeSizeText(s!))
+        )
+        filteredSizeUuids = (listResult.data?.size_list || [])
+          .filter((s) => matchedSizeTexts.has(normalizeSizeText(s.name)))
+          .map((s) => s.uuid)
+      }
+
       // startsWith, not exact equality: some size_list entries carry a
       // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
       // 22\"- 4 page" for Half-Fold Brochures' 4-page fold pattern).
@@ -1682,6 +1700,7 @@ export default async function ProductTypePage({
                   undefined
                 }
                 sizeProducts={signsSizeProducts}
+                filteredSizeUuids={signsSizeProducts ? undefined : filteredSizeUuids}
                 initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
                 initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
                 initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}

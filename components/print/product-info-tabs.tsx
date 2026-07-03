@@ -12,11 +12,12 @@ function cleanBCSize(name: string): string {
   return name.replace(BC_SIZE_SUFFIX, "").trim()
 }
 
-// Option group names handled by the configurator (Size/Stock/Coating/Shape come from
-// the cascade response, not product-options; these are the extras we skip in that path)
+// Option group names handled explicitly in the specs render (or irrelevant display-only
+// groups) — excluded from the generic extraGroups list so we don't show them twice
 const CASCADE_HANDLED = new Set([
   "size", "stock", "coating", "shape", "runsize", "sheets per pad",
   "product color", "button shape options", "button backing options",
+  "product type", "product category",
 ])
 
 type SpecGroup = { name: string; options: string[] }
@@ -68,29 +69,10 @@ export function ProductInfoTabs({
       const d1 = await r1.json()
       if (!d1.success) throw new Error("cascade failed")
 
-      const rawSizes: string[] = (d1.data?.size_list ?? []).map((s: any) => s.size_name ?? "")
-      const sizes = isBusinessCards
-        ? [
-            ...new Map(
-              rawSizes.map(s => [cleanBCSize(s).toLowerCase(), cleanBCSize(s)])
-            ).values(),
-          ]
-        : rawSizes
-
-      const stocks: string[] = (d1.data?.stock_list ?? []).map((s: any) => s.stock_name ?? "")
-      const coatings: string[] = (d1.data?.coating_list ?? []).map((c: any) => c.coating_name ?? "")
       const firstProductUuid: string | null = d1.data?.products?.[0]?.product_uuid ?? null
 
       if (!firstProductUuid) {
-        setSpecsState({
-          status: "done",
-          sizes,
-          stocks,
-          coatings,
-          colorspecs: [],
-          turnaround: [],
-          extraGroups: [],
-        })
+        setSpecsState({ status: "done", sizes: [], stocks: [], coatings: [], colorspecs: [], turnaround: [], extraGroups: [] })
         return
       }
 
@@ -100,19 +82,42 @@ export function ProductInfoTabs({
       if (!r2.ok) throw new Error("product-options failed")
       const d2 = await r2.json()
 
+      let sizes: string[] = []
+      let stocks: string[] = []
+      let coatings: string[] = []
       let colorspecs: string[] = []
       let turnaround: string[] = []
       const extraGroups: SpecGroup[] = []
 
       for (const g of (d2.optionGroups ?? []) as any[]) {
-        const nameNorm = (g.product_option_group_name as string).toLowerCase().trim()
-        const opts: string[] = (g.options ?? []).map((o: any) => o.option_name ?? "")
-        if (nameNorm === "colorspec") {
-          colorspecs = opts
-        } else if (nameNorm === "turnaround") {
+        const nameRaw: string = g.product_option_group_name ?? ""
+        const nameNorm = nameRaw.toLowerCase().trim()
+        // Normalize "Turn-Around" / "Turn Around" → "turnaround"
+        const nameKey = nameNorm.replace(/[-\s]+/g, "")
+        const opts: any[] = g.options ?? []
+
+        if (nameNorm === "size") {
+          const raw = opts.map(o => (o.option_name ?? "").trim()).filter(Boolean)
+          sizes = isBusinessCards
+            ? [...new Map(raw.map(s => [cleanBCSize(s).toLowerCase(), cleanBCSize(s)])).values()]
+            : raw
+        } else if (nameNorm === "stock") {
+          stocks = opts.map(o => (o.option_name ?? "").trim()).filter(Boolean)
+        } else if (nameNorm === "coating") {
+          coatings = opts.map(o => (o.option_name ?? "").trim()).filter(Boolean)
+        } else if (nameNorm === "colorspec") {
+          colorspecs = opts.map(o => (o.option_name ?? "").trim()).filter(Boolean)
+        } else if (nameKey === "turnaround") {
+          // option_name is a raw numeric ID; option_description is the human label
+          const seen = new Set<string>()
           turnaround = opts
+            .map(o => ((o.option_description ?? o.option_name ?? "").trim()))
+            .filter(v => { if (!v || seen.has(v)) return false; seen.add(v); return true })
         } else if (!CASCADE_HANDLED.has(nameNorm) && opts.length > 0) {
-          extraGroups.push({ name: g.product_option_group_name as string, options: opts })
+          extraGroups.push({
+            name: nameRaw,
+            options: opts.map(o => (o.option_name ?? "").trim()).filter(Boolean),
+          })
         }
       }
 
