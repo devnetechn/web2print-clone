@@ -1645,7 +1645,7 @@ export default async function ProductTypePage({
           <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image + info tabs */}
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
                 <img
                   src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
                   alt={typeLabel}
