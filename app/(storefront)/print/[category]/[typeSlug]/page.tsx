@@ -1272,6 +1272,14 @@ export default async function ProductTypePage({
                   className="w-full h-full object-contain"
                 />
               </div>
+              <div className="mt-6 max-w-[360px]">
+                <ProductInfoTabs
+                  categoryUuid={product.category_uuid || leaf?.uuid || ""}
+                  productName={productName}
+                  content={productContent ?? null}
+                  isBusinessCards={isBusinessCards}
+                />
+              </div>
             </div>
             <ProductConfiguratorClient
               categoryUuid={product.category_uuid || leaf?.uuid || ""}
@@ -1283,14 +1291,6 @@ export default async function ProductTypePage({
               initialSizeUuid={initialSizeUuid}
               initialStockUuid={initialStockUuid}
               initialCoatingUuid={initialCoatingUuid}
-              isBusinessCards={isBusinessCards}
-            />
-          </div>
-          <div className="mt-10 pb-12">
-            <ProductInfoTabs
-              categoryUuid={product.category_uuid || leaf?.uuid || ""}
-              productName={productName}
-              content={productContent ?? null}
               isBusinessCards={isBusinessCards}
             />
           </div>
@@ -1642,9 +1642,9 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <>
-            <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
-              {/* Left: product image */}
+          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+            {/* Left: product image + info tabs */}
+            <div>
               <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 sticky top-8">
                 <img
                   src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
@@ -1652,32 +1652,32 @@ export default async function ProductTypePage({
                   className="w-full h-full object-contain"
                 />
               </div>
-
-              {/* Right: configurator driven live by categoryproductslist + productquote */}
-              <div>
-                <ProductConfiguratorClient
+              <div className="mt-6 max-w-[360px]">
+                <ProductInfoTabs
                   categoryUuid={effectiveCategoryUuid}
-                  categorySlug={category}
                   productName={typeLabel}
-                  allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
-                  hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
-                  sizeProducts={signsSizeProducts}
-                  initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
-                  initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
-                  initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
+                  content={productContent ?? null}
                   isBusinessCards={isBusinessCardsType}
                 />
               </div>
             </div>
-            <div className="mt-10 pb-12">
-              <ProductInfoTabs
+
+            {/* Right: configurator driven live by categoryproductslist + productquote */}
+            <div>
+              <ProductConfiguratorClient
                 categoryUuid={effectiveCategoryUuid}
+                categorySlug={category}
                 productName={typeLabel}
-                content={productContent ?? null}
+                allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
+                hiddenGroups={isSignsBanners ? SIGNS_HIDDEN_GROUPS : undefined}
+                sizeProducts={signsSizeProducts}
+                initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
+                initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
+                initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
                 isBusinessCards={isBusinessCardsType}
               />
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
