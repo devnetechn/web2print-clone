@@ -1272,7 +1272,7 @@ export default async function ProductTypePage({
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="mt-6 max-w-[360px]">
+              <div className="mt-6">
                 <ProductInfoTabs
                   categoryUuid={product.category_uuid || leaf?.uuid || ""}
                   productName={productName}
@@ -1652,7 +1652,7 @@ export default async function ProductTypePage({
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="mt-6 max-w-[360px]">
+              <div className="mt-6">
                 <ProductInfoTabs
                   categoryUuid={effectiveCategoryUuid}
                   productName={typeLabel}
