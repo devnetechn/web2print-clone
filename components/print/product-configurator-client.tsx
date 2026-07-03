@@ -1217,7 +1217,19 @@ export function ProductConfiguratorClient({
                 </>
               ) : (
                 <>
-                  {/* ── NON-BC FIELD ORDER (unchanged) ── */}
+                  {/* ── NON-BC FIELD ORDER ── */}
+
+                  {/* PROJECT NAME / P.O. */}
+                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                    <label className="text-sm font-medium text-slate-700">Project Name / P.O.</label>
+                    <input
+                      type="text"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      placeholder="Name Your Project"
+                      className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                    />
+                  </div>
 
                   {/* SIZE */}
                   {renderListRow("Size", sizeList, sizeUuid, setSizeUuid)}
@@ -1254,9 +1266,9 @@ export function ProductConfiguratorClient({
                     </div>
                   )}
 
-                  {/* SIDES (colorspec) */}
+                  {/* COLORSPEC */}
                   {renderListRow(
-                    "Sides",
+                    "Colorspec",
                     colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
                     colorspecUuid,
                     setColorspecUuid,
