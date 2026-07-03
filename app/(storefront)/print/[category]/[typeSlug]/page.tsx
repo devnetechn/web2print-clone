@@ -973,7 +973,7 @@ export default async function ProductTypePage({
       (leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
       ((category === "announcement-cards" || category.endsWith("-announcement-cards")) &&
         product.category_uuid !== leaf?.uuid)
-    const isAllInclusive = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures"
+    const isAllInclusive = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures" || category === "trading-cards"
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
     // dropdown switches between them.
@@ -1486,7 +1486,7 @@ export default async function ProductTypePage({
   const isSignsBanners = leaf?.parentSlug === "signs-banners"
   const isBusinessCardsType = leaf?.parentSlug === "business-cards" &&
     category !== "oval-cards" && category !== "fold-over-cards"
-  const isAllInclusiveType = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures"
+  const isAllInclusiveType = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures" || category === "trading-cards"
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
