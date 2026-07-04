@@ -89,6 +89,7 @@ interface ProductConfiguratorClientProps {
   filteredSizeUuids?: string[]
   isBusinessCards?: boolean
   isAllInclusive?: boolean
+  isBanner?: boolean
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -178,6 +179,13 @@ const BC_SEPARATE_EXTRA_NAMES = /^(radius of corners|job.?sample)/i
 // All-Inclusive: extra groups rendered as checkboxes (not via the generic extras loop)
 const AI_SEPARATE_EXTRA_NAMES = /^(job.?sample|digital.?proof|pdf.?proof)/i
 
+// Parse "2' x 3'", '2" x 3"', "2 ft x 3 ft" → { width, height }
+function parseBannerSizeParts(size: string): { width: string; height: string } | null {
+  const match = size.match(/^(.+?)\s+[xX×]\s+(.+)$/)
+  if (!match) return null
+  return { width: match[1].trim(), height: match[2].trim() }
+}
+
 export function ProductConfiguratorClient({
   categoryUuid,
   categorySlug,
@@ -191,6 +199,7 @@ export function ProductConfiguratorClient({
   filteredSizeUuids,
   isBusinessCards = false,
   isAllInclusive = false,
+  isBanner = false,
 }: ProductConfiguratorClientProps) {
   const router = useRouter()
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
@@ -253,10 +262,76 @@ export function ProductConfiguratorClient({
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [projectName, setProjectName] = useState("")
+
+  // Banner-specific: separate Width + Height selectors
+  const [bannerWidth, setBannerWidth] = useState("")
+  const [bannerHeight, setBannerHeight] = useState("")
   const [jobSamplesChecked, setJobSamplesChecked] = useState(false)
   const [digitalProofsChecked, setDigitalProofsChecked] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isPreviewableImage = uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff"
+
+  // Unique widths derived from sizeProducts (banner mode only)
+  const bannerWidthItems = useMemo<ListItem[]>(() => {
+    if (!isBanner) return []
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (const sp of (sizeProducts || [])) {
+      const parsed = parseBannerSizeParts(sp.size)
+      if (!parsed || seen.has(parsed.width)) continue
+      seen.add(parsed.width)
+      out.push(parsed.width)
+    }
+    out.sort((a, b) => parseFloat(a) - parseFloat(b))
+    return out.map((w) => ({ uuid: w, name: w }))
+  }, [isBanner, sizeProducts])
+
+  // Heights available for the currently selected width (banner mode only)
+  const bannerHeightItems = useMemo<ListItem[]>(() => {
+    if (!isBanner || !bannerWidth) return []
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (const sp of (sizeProducts || [])) {
+      const parsed = parseBannerSizeParts(sp.size)
+      if (!parsed || parsed.width !== bannerWidth || seen.has(parsed.height)) continue
+      seen.add(parsed.height)
+      out.push(parsed.height)
+    }
+    out.sort((a, b) => parseFloat(a) - parseFloat(b))
+    return out.map((h) => ({ uuid: h, name: h }))
+  }, [isBanner, bannerWidth, sizeProducts])
+
+  // Initialize banner width/height from first sizeProduct
+  useEffect(() => {
+    if (!isBanner || !sizeProducts?.length) return
+    const parsed = parseBannerSizeParts(sizeProducts[0].size)
+    if (!parsed) return
+    if (!bannerWidth) setBannerWidth(parsed.width)
+    if (!bannerHeight) setBannerHeight(parsed.height)
+  }, [isBanner, sizeProducts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset height when width changes if current height is no longer available
+  useEffect(() => {
+    if (!isBanner || !bannerWidth || !sizeProducts?.length) return
+    const available = (sizeProducts)
+      .map((sp) => parseBannerSizeParts(sp.size))
+      .filter((p): p is { width: string; height: string } => p !== null && p.width === bannerWidth)
+      .map((p) => p.height)
+      .sort((a, b) => parseFloat(a) - parseFloat(b))
+    if (available.length > 0 && !available.includes(bannerHeight)) {
+      setBannerHeight(available[0])
+    }
+  }, [bannerWidth, isBanner, sizeProducts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Resolve product uuid from selected width + height
+  useEffect(() => {
+    if (!isBanner || !bannerWidth || !bannerHeight || !sizeProducts?.length) return
+    const match = sizeProducts.find((sp) => {
+      const parsed = parseBannerSizeParts(sp.size)
+      return parsed && parsed.width === bannerWidth && parsed.height === bannerHeight
+    })
+    if (match) setSizeUuid(match.uuid)
+  }, [isBanner, bannerWidth, bannerHeight, sizeProducts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1239,8 +1314,23 @@ export function ProductConfiguratorClient({
                     />
                   </div>
 
-                  {/* SIZE */}
-                  {renderListRow("Size", sizeList, sizeUuid, setSizeUuid)}
+                  {/* SIZE — or WIDTH + HEIGHT for banners */}
+                  {isBanner ? (
+                    <>
+                      {renderListRow("Width", bannerWidthItems, bannerWidth, setBannerWidth, true)}
+                      {renderListRow("Height", bannerHeightItems, bannerHeight, setBannerHeight, true)}
+                      {bannerWidth && bannerHeight && (
+                        <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                          <label className="text-sm font-medium text-slate-700">Your Dimensions</label>
+                          <span className="text-sm text-slate-600 min-w-[220px] text-center">
+                            {bannerWidth} × {bannerHeight}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    renderListRow("Size", sizeList, sizeUuid, setSizeUuid)
+                  )}
 
                   {/* STOCK */}
                   {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
