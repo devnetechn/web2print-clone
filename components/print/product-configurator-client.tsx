@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { uploadDesignFile } from "@/app/actions/design-upload"
+import { translateCoatingName, translateStockName, translateColorspecName } from "@/lib/4over/option-labels"
 
 interface ListItem {
   name: string
@@ -90,6 +91,10 @@ interface ProductConfiguratorClientProps {
   isBusinessCards?: boolean
   isAllInclusive?: boolean
   isBanner?: boolean
+}
+
+function translateList<T extends { name: string }>(list: T[], translator: (n: string) => string): T[] {
+  return list.map((i) => ({ ...i, name: translator(i.name) }))
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -1157,7 +1162,7 @@ export function ProductConfiguratorClient({
                   )}
 
                   {/* STOCK */}
-                  {renderListRow("Stock", stockList, stockUuid, setStockUuid, true)}
+                  {renderListRow("Stock", translateList(stockList, translateStockName), stockUuid, setStockUuid, true)}
 
                   {loadingOptions && (
                     <div className="flex items-center justify-center py-4">
@@ -1168,14 +1173,14 @@ export function ProductConfiguratorClient({
                   {/* COLORSPEC */}
                   {renderListRow(
                     "Colorspec",
-                    colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    colorspecOptions.map((o) => ({ name: translateColorspecName(o.option_name), uuid: o.option_uuid })),
                     colorspecUuid,
                     setColorspecUuid,
                     true,
                   )}
 
                   {/* COATING */}
-                  {renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid, true)}
+                  {renderListRow("Coating", translateList(coatingList, translateCoatingName), coatingUuid, setCoatingUuid, true)}
 
                   {/* BC ORDERED EXTRAS: SPOT UV SIDES → Lamination → Scoring → remaining */}
                   {bcOrderedExtras.map((g) => (
@@ -1229,18 +1234,18 @@ export function ProductConfiguratorClient({
                   {renderListRow("Size", sizeList, sizeUuid, setSizeUuid)}
 
                   {/* STOCK */}
-                  {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
+                  {renderListRow("Stock", translateList(stockList, translateStockName), stockUuid, setStockUuid)}
 
                   {/* COLORSPEC */}
                   {renderListRow(
                     "Colorspec",
-                    colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    colorspecOptions.map((o) => ({ name: translateColorspecName(o.option_name), uuid: o.option_uuid })),
                     colorspecUuid,
                     setColorspecUuid,
                   )}
 
                   {/* COATING */}
-                  {renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+                  {renderListRow("Coating", translateList(coatingList, translateCoatingName), coatingUuid, setCoatingUuid)}
 
                   {loadingOptions && (
                     <div className="flex items-center justify-center py-4">
@@ -1333,11 +1338,11 @@ export function ProductConfiguratorClient({
                   )}
 
                   {/* STOCK */}
-                  {renderListRow("Stock", stockList, stockUuid, setStockUuid)}
+                  {renderListRow("Stock", translateList(stockList, translateStockName), stockUuid, setStockUuid)}
 
                   {/* COATING */}
                   {(!hiddenSet || !hiddenSet.has("coating")) &&
-                    renderListRow("Coating", coatingList, coatingUuid, setCoatingUuid)}
+                    renderListRow("Coating", translateList(coatingList, translateCoatingName), coatingUuid, setCoatingUuid)}
 
                   {/* SHAPE (Rectangle/Round Corner/Oval/...) — only shown when the
                       resolved Size+Stock+Coating still matches more than one
@@ -1367,7 +1372,7 @@ export function ProductConfiguratorClient({
                   {/* COLORSPEC */}
                   {renderListRow(
                     "Colorspec",
-                    colorspecOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                    colorspecOptions.map((o) => ({ name: translateColorspecName(o.option_name), uuid: o.option_uuid })),
                     colorspecUuid,
                     setColorspecUuid,
                   )}
