@@ -26,9 +26,14 @@ const COATING_LABELS: Record<string, string> = {
   ST: "Soft Touch",
   SUV: "Spot UV",
   SPUV: "Spot UV",
+  SPUVFR: "Spot UV Front Only",
+  SPUVBK: "Spot UV Back Only",
+  NC: "No Coating",
   NONE: "No Coating",
   "N/A": "No Coating",
   "NO COATING": "No Coating",
+  GLM: "Gloss Lamination",
+  VLM: "Velvet Lamination",
 }
 
 // ─── STOCK ────────────────────────────────────────────────────────────────────
@@ -82,6 +87,77 @@ const STOCK_LABELS: Record<string, string> = {
   "AKUAFOIL": "Akuafoil",
   "ENDURANCE": "EndurACE",
   "ENDURANCE ACE": "EndurACE",
+  // ── Specialty Business Card stocks ──
+  "14PTPM": "14PT Pearl Metallic",
+  "14PTNT": "14PT Natural",
+  "32PTUC": "32PT Uncoated",
+  "18PTUCKRAFT": "18PT Uncoated Kraft",
+  "10PT": "10PT",
+  "CNP": "Crack 'N' Peel",
+  // ── Plastic Cards ──
+  "20PTCL": "20PT Clear Plastic",
+  "20PTFR": "20PT Frosted Plastic",
+  "20PTWH": "20PT White Plastic",
+  "20PTPM": "20PT Pearl/Metallic Plastic",
+  // ── Linen/Natural/Pearl text stocks ──
+  "100LB COVER LINEN": "100LB Linen Cover",
+  "60LB UNCOATED TEXT": "60LB Uncoated Text",
+  "70LB LINEN": "70LB Linen",
+  "70LB NATURAL": "70LB Natural",
+  "70LB PEARL": "70LB Pearl",
+  // ── Envelope / NCR / misc paper stocks ──
+  "24LB": "24LB Bond",
+  "20LB2P": "20LB 2-Part NCR",
+  "20LB3P": "20LB 3-Part NCR",
+  // ── Magnetic ──
+  "MAGNET": "Magnetic",
+  "30MIL": "30mil Magnetic",
+  // ── Rigid Signs ──
+  "3PVC": "3mm PVC",
+  "316FC": "3/16 Foam Core",
+  "4CORO": "4mm White Coroplast",
+  "10CORO": "10mm White Coroplast",
+  "15STYRENE": "0.015 inch White Styrene",
+  "316GATORBLACK": '3/16" Black Gator Board',
+  "316GATORWHITE": '3/16" White Gator Board',
+  // ── Banners & Flags ──
+  "8OZMESH": "8oz Mesh",
+  "13OZOUTDOOR": "13oz Outdoor Vinyl",
+  "10MIL": "10mil",
+  "15OZBLOCKOUT": "15oz Blockout",
+  "18OZBLOCKOUT": "18oz Blockout",
+  "17MIL": "17mil",
+  "3OZPOLY": "3oz Polyester",
+  // ── Window Graphics & Decals ──
+  "6MIL": "6mil Vinyl",
+  "6MIL7030": "6mil See Through Vinyl",
+  "7MIL": "7mil White",
+  "8MIL": "8mil Vinyl",
+  "8MILCLEAR": "8mil Clear",
+  "8MILOPAQ": "8mil Opaque Window Graphics",
+  // ── Wall Decals / Floor Graphics ──
+  "4MIL": "4mil Vinyl",
+  "4MILFLOOR": "4mil Floor Vinyl",
+  "4MILPAV": "4mil Pavement Vinyl",
+  "4MILPAVMATT": "4mil Pavement Matte",
+  "20MILALU": "20mil Aluminum",
+  // ── Table Covers / Displays ──
+  "9OZPOLY": "9oz Polyester",
+  "74OZPOLY": "74oz Polyester",
+  // ── Roll Labels ──
+  "BSLR": "Bright Silver",
+  "CLEAR BOPP": "Clear BOPP",
+  "WHITE BOPP": "White BOPP",
+  "EGGSHELL": "Eggshell Felt",
+  "SEMI-GLOSS": "Semi-Gloss",
+  // ── Promo Products ──
+  "T-SHIRT": "T-Shirt",
+  "6OZCTBL": "6oz Cotton Tote (Black)",
+  "6OZCTNU": "6oz Cotton Tote (Natural)",
+  "6OZCTRD": "6oz Cotton Tote (Red)",
+  "CRM11WH": "11oz White Mug",
+  "CRM15WH": "15oz White Mug",
+  "BUTTON": "Button",
 }
 
 // ─── COLORSPEC ────────────────────────────────────────────────────────────────
