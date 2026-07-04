@@ -1287,7 +1287,7 @@ export default async function ProductTypePage({
               categorySlug={category}
               productName={productName}
               allowedProductUuids={allowedProductUuidsOverride || [product.product_uuid]}
-              isBanner={category === "indoor-banners" || category === "outdoor-banners"}
+              isBanner={["indoor-banners","outdoor-banners","rigid-signs","window-graphics","vehicle-magnets"].includes(category)}
               hiddenGroups={
                 leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS :
                 isAllInclusive ? ["product orientation", "print method"] :
@@ -1707,7 +1707,7 @@ export default async function ProductTypePage({
                 initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}
                 isBusinessCards={isBusinessCardsType}
                 isAllInclusive={isAllInclusiveType}
-                isBanner={category === "indoor-banners" || category === "outdoor-banners"}
+                isBanner={["indoor-banners","outdoor-banners","rigid-signs","window-graphics","vehicle-magnets"].includes(category)}
               />
             </div>
           </div>
