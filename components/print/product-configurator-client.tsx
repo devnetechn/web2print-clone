@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { uploadDesignFile } from "@/app/actions/design-upload"
-import { translateCoatingName, translateStockName, translateColorspecName } from "@/lib/4over/option-labels"
+import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName } from "@/lib/4over/option-labels"
 
 interface ListItem {
   name: string
@@ -94,7 +94,15 @@ interface ProductConfiguratorClientProps {
 }
 
 function translateList<T extends { name: string }>(list: T[], translator: (n: string) => string): T[] {
-  return list.map((i) => ({ ...i, name: translator(i.name) }))
+  const seen = new Set<string>()
+  return list
+    .map((i) => ({ ...i, name: translator(i.name) }))
+    .filter((i) => {
+      const key = i.name.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 }
 
 function dedupeList(items: ListItem[]): ListItem[] {
@@ -114,7 +122,10 @@ const BC_SHAPE_SUFFIX = /\s*\((Oval|Fold\s*Over|Round\s*Corners?)\)\s*$/i
 function cleanBCSizeList(items: ListItem[]): ListItem[] {
   const seen = new Set<string>()
   return items
-    .map((item) => ({ ...item, name: item.name.replace(BC_SHAPE_SUFFIX, "").trim() }))
+    .map((item) => {
+      const stripped = item.name.replace(BC_SHAPE_SUFFIX, "").trim()
+      return { ...item, name: translateBCSizeName(stripped) }
+    })
     .filter((item) => {
       const key = item.name.toLowerCase()
       if (seen.has(key)) return false
@@ -653,9 +664,19 @@ export function ProductConfiguratorClient({
         // Default each extra to its first option
         const defaults: Record<string, string> = {}
         for (const g of extras) {
-          // Job Samples / Digital Proofs are opt-in checkboxes — default unchecked
-          if ((isBusinessCards || isAllInclusive) && /job.?sample|digital.?proof|pdf.?proof/i.test(g.group_name)) {
+          const hasPdfProof = /job.?sample|digital.?proof|pdf.?proof/i.test(g.group_name) ||
+            g.options.some((o) => /job.?sample|digital.?proof|pdf.?proof/i.test(o.option_name))
+          if (hasPdfProof) {
+            // Proof add-ons: always opt-in, never auto-selected (adds cost)
             defaults[g.group_uuid] = ""
+          } else if (/mailing.?service|postage.?class/i.test(g.group_name)) {
+            // Mailing/postage services add significant cost — excluded from print-only quotes
+            defaults[g.group_uuid] = ""
+          } else if (/folding.?option|fold.?type/i.test(g.group_name)) {
+            // Prefer "FLAT - No Folding" over alphabetically-first fold type so flat
+            // flyer pages don't default to "Accordion Fold".
+            const flatOpt = g.options.find((o) => /\bflat\b/i.test(o.option_name))
+            defaults[g.group_uuid] = flatOpt ? flatOpt.option_uuid : g.options[0].option_uuid
           } else {
             defaults[g.group_uuid] = g.options[0].option_uuid
           }
@@ -997,6 +1018,7 @@ export function ProductConfiguratorClient({
     return extraGroups.filter((g) => {
       const name = g.group_name.toLowerCase().trim()
       if (BC_HIDDEN_EXTRA_NAMES.has(name)) return false
+      if (hiddenSet && hiddenSet.has(name)) return false
       if (BC_SEPARATE_EXTRA_NAMES.test(g.group_name)) return false
       const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options"]
       if (shapeLikeGroups.includes(name) && shapeList.length > 1) return false
@@ -1005,7 +1027,7 @@ export function ProductConfiguratorClient({
       seen.add(name)
       return true
     })
-  }, [isBusinessCards, extraGroups, shapeList])
+  }, [isBusinessCards, extraGroups, shapeList, hiddenSet])
 
   // BC: ordered extras (SPOT UV SIDES → Lamination → Scoring → remaining)
   const bcOrderedExtras = useMemo(() => {

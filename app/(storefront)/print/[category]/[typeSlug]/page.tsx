@@ -458,6 +458,16 @@ const TYPE_LABELS: Record<string, string> = {
 // to each product (Grommets, Shape, Pole Pockets, Hems, D-Rings, Rope, Velcro,
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
+// Postcards: hide wholesale-only mailing/distribution options not relevant to print-only orders.
+// "Mailing Service" and "Postage Class" are also excluded from the quote via configurator logic.
+const POSTCARDS_HIDDEN_GROUPS = ["mailing service", "postage class", "product orientation", "remainders extras", "additional options"]
+// All other products: hide the same wholesale-only groups that add cost or clutter.
+// These groups are still excluded from the quote via configurator defaults logic, but
+// hiding them prevents confusion for customers who shouldn't see mailing/postage options.
+const GENERAL_HIDDEN_GROUPS = ["mailing service", "postage class", "product orientation", "remainders extras", "additional options"]
+// All-inclusive (flyers/brochures/trading-cards): also hide print method — but still need
+// all of the wholesale-only groups from GENERAL_HIDDEN_GROUPS.
+const ALL_INCLUSIVE_HIDDEN_GROUPS = [...GENERAL_HIDDEN_GROUPS, "print method"]
 
 // Kept in sync with print/[category]/page.tsx's FLAT_SIZE_PAREN.
 const FLAT_SIZE_PAREN = /\(\s*flat\s+size\s*:?[^)]*\)\s*/gi
@@ -1290,8 +1300,9 @@ export default async function ProductTypePage({
               isBanner={["indoor-banners","outdoor-banners","rigid-signs","window-graphics","vehicle-magnets"].includes(category)}
               hiddenGroups={
                 leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS :
-                isAllInclusive ? ["product orientation", "print method"] :
-                undefined
+                isAllInclusive ? ALL_INCLUSIVE_HIDDEN_GROUPS :
+                category === "postcards" ? POSTCARDS_HIDDEN_GROUPS :
+                GENERAL_HIDDEN_GROUPS
               }
               sizeProducts={sizeProducts}
               initialSizeUuid={initialSizeUuid}
@@ -1536,7 +1547,13 @@ export default async function ProductTypePage({
       // startsWith, not exact equality: some size_list entries carry a
       // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
       // 22\"- 4 page" for Half-Fold Brochures' 4-page fold pattern).
-      const sizeMatch = sizeText ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), sizeText)) : undefined
+      // If the category declares a preferredSizeText (e.g. '2" x 3.5"' for
+      // Standard BC), that size wins over the first-alphabetical-product size.
+      const preferredSizeEntry = leaf?.preferredSizeText
+        ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), normalizeSizeText(leaf.preferredSizeText!)))
+        : undefined
+      const sizeMatch = preferredSizeEntry
+        ?? (sizeText ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), sizeText)) : undefined)
       const allowedUuids = new Set(matchedProducts.map((p) => p.product_uuid))
       // Flags' own description states a LINEAR size ("Feather Flag - 10ft -
       // 3oz Polyester") that has ZERO textual correlation to the live
@@ -1697,8 +1714,9 @@ export default async function ProductTypePage({
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
                 hiddenGroups={
                   isSignsBanners ? SIGNS_HIDDEN_GROUPS :
-                  isAllInclusiveType ? ["product orientation", "print method"] :
-                  undefined
+                  isAllInclusiveType ? ALL_INCLUSIVE_HIDDEN_GROUPS :
+                  category === "postcards" ? POSTCARDS_HIDDEN_GROUPS :
+                  GENERAL_HIDDEN_GROUPS
                 }
                 sizeProducts={signsSizeProducts}
                 filteredSizeUuids={signsSizeProducts ? undefined : filteredSizeUuids}

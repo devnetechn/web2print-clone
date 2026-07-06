@@ -4,14 +4,14 @@
 // this table expands them so our storefront matches 4over's retail labels.
 
 // ─── COATING ──────────────────────────────────────────────────────────────────
-// API returns: AQ, SA, UC, UV (and variants)
-// 4over.com shows: Aqueous Coating, Satin Aqueous, No Coating, UV on 4-color side
+// API returns: AQ, SA, UC, UV, GUV (and variants)
+// 4over.com shows: Aqueous Coating, Satin Aqueous, No Coating, UV on 4-color side, UV Coating Front Only
 const COATING_LABELS: Record<string, string> = {
   AQ: "Aqueous Coating",
   SA: "Satin Aqueous",
   SAT: "Satin Aqueous",
   UC: "No Coating",
-  UV: "UV Coating",
+  UV: "UV on 4-color side",
   GUV: "UV on 4-color side",
   UVF: "UV Coating Front Only",
   UVFR: "UV Coating Front Only",
@@ -145,10 +145,10 @@ const STOCK_LABELS: Record<string, string> = {
   "9OZPOLY": "9oz Polyester",
   "74OZPOLY": "74oz Polyester",
   // ── Roll Labels ──
-  "BSLR": "Bright Silver",
+  "BSLR": "Bright Silver Metallic",
   "CLEAR BOPP": "Clear BOPP",
   "WHITE BOPP": "White BOPP",
-  "EGGSHELL": "Eggshell Felt",
+  "EGGSHELL": "70 LB Eggshell",
   "SEMI-GLOSS": "Semi-Gloss",
   // ── Promo Products ──
   "T-SHIRT": "T-Shirt",
@@ -158,6 +158,14 @@ const STOCK_LABELS: Record<string, string> = {
   "CRM11WH": "11oz White Mug",
   "CRM15WH": "15oz White Mug",
   "BUTTON": "Button",
+}
+
+// ─── SIZE (Business Cards only) ──────────────────────────────────────────────
+// API returns bare dimensions; 4over.com retail adds qualifiers for two BC sizes.
+// Only apply via translateBCSizeName() — other categories share these dimensions.
+const BC_SIZE_LABELS: Record<string, string> = {
+  '2" x 3.5"':     '2" x 3.5" (US Standard)',
+  '2.125" x 3.375"': '2.125" x 3.375" (EU Standard)',
 }
 
 // ─── COLORSPEC ────────────────────────────────────────────────────────────────
@@ -186,4 +194,9 @@ export function translateStockName(name: string): string {
 export function translateColorspecName(name: string): string {
   const trimmed = name.trim()
   return COLORSPEC_LABELS[trimmed] ?? name
+}
+
+export function translateBCSizeName(name: string): string {
+  const trimmed = name.trim()
+  return BC_SIZE_LABELS[trimmed] ?? trimmed
 }

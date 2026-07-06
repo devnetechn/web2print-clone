@@ -17,6 +17,9 @@ export interface SubCategory {
   // description matches ALL of these keyword(s) are shown on this
   // subcategory's page. A single string is shorthand for [string].
   keyword?: string | string[]
+  // When set, the product configurator defaults to this size instead of the
+  // first alphabetical size from the API (e.g. "2\" x 3.5\"" for Standard BC).
+  preferredSizeText?: string
 }
 
 // Matches a product description against one keyword: a plain substring match,
@@ -47,7 +50,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       // "Business Cards > Business Cards" as looking like an accidental
       // duplicate. Same naming pattern as Standard Postcards/Presentation
       // Folder/Flat Flyers and Brochures elsewhere in this catalog.
-      { name: "Standard Business Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "business-cards-standard", image: "/images/cat/business-cards/standard.jpg" },
+      { name: "Standard Business Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "business-cards-standard", image: "/images/cat/business-cards/standard.jpg", preferredSizeText: '2" x 3.5"' },
       { name: "Raised Foil", uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", slug: "raised-foil", image: "/images/cat/business-cards/raised-foil.jpg", keyword: "business card" },
       { name: "Silk Cards", uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", slug: "silk-cards", image: "/images/cat/business-cards/silk.jpg", keyword: "business card" },
       { name: "Suede Cards", uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", slug: "suede-cards", image: "/images/cat/business-cards/suede.jpg", keyword: "business card" },
@@ -195,6 +198,7 @@ export interface FlatCategory {
   parentLabel: string
   image: string
   keyword?: string | string[]
+  preferredSizeText?: string
 }
 
 // Flat lookup: subcategory slug -> { uuid, name, parentSlug, parentLabel, image, keyword }
@@ -208,6 +212,7 @@ for (const [groupSlug, group] of Object.entries(GROUPS)) {
       parentLabel: group.label,
       image: sub.image,
       keyword: sub.keyword,
+      preferredSizeText: sub.preferredSizeText,
     }
   }
 }
