@@ -33,11 +33,39 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Tearoff Flyers", slug: "tearoff-flyers", keywords: ["tear", "tearoff", "tear-off"] },
     { label: "Flat Flyers and Brochures", slug: "flat-flyers-and-brochures", keywords: [] }, // catch-all
   ],
+  // 4over.com/marketing-products/postcards lists 25 product types.
+  // Brand-stock materials (Silk/Suede/Pearl/etc.) live in their own shared
+  // UUIDs — pulled in via EXTRA_PRODUCT_SOURCES below. Order is critical:
+  // more specific keywords must come before broader ones (e.g. "rsvp" before
+  // "dual raised", "raised foil" before "foil", "eddm full service" before "eddm").
   "postcards": [
-    { label: "All Inclusive Postcards", slug: "all-inclusive-postcards", keywords: ["all inclusive", "all-inclusive"] },
-    { label: "EDDM Postcards", slug: "eddm-postcards", keywords: ["eddm"] },
-    { label: "Raised Foil Postcards", slug: "raised-foil-postcards", keywords: ["raised foil", "dual raised", "raised spot"] },
-    { label: "Standard Postcards", slug: "standard-postcards", keywords: [] }, // catch-all
+    { label: "All Inclusive Postcards",       slug: "all-inclusive-postcards",       keywords: ["all inclusive", "all-inclusive"] },
+    { label: "EDDM Full Service Postcards",   slug: "eddm-full-service-postcards",   keywords: ["eddm full service", "full service"] },
+    { label: "EDDM Print Only Postcards",     slug: "eddm-print-only-postcards",     keywords: ["eddm print only", "print only"] },
+    { label: "EDDM Postcards",               slug: "eddm-postcards",               keywords: ["eddm"] },
+    { label: "Dual Raised RSVP",             slug: "dual-raised-rsvp-postcards",   keywords: ["rsvp"] },
+    { label: "Dual Raised Postcards",        slug: "dual-raised-postcards",        keywords: ["dual raised"] },
+    { label: "Raised Foil Postcards",        slug: "raised-foil-postcards",        keywords: ["raised foil"] },
+    { label: "Raised Spot UV Postcards",     slug: "raised-spot-uv-postcards",     keywords: ["raised spot"] },
+    { label: "Foil Worx Postcards",          slug: "foil-worx-postcards",          keywords: ["foil worx"] },
+    { label: "Tearoff Postcards",            slug: "tearoff-postcards",            keywords: ["tear"] },
+    { label: "Painted-Edge Postcards",       slug: "painted-edge-postcards",       keywords: ["painted-edge", "painted edge"] },
+    { label: "EndurACE Postcards",           slug: "endurace-postcards",           keywords: ["endurace"] },
+    { label: "Akuafoil Postcards",           slug: "akuafoil-postcards",           keywords: ["akuafoil"] },
+    { label: "Brown Kraft Postcards",        slug: "brown-kraft-postcards",        keywords: ["brown kraft", "kraft"] },
+    { label: "Suede Postcards",              slug: "suede-postcards",              keywords: ["suede"] },
+    { label: "Silk Postcards",               slug: "silk-postcards",               keywords: ["silk"] },
+    { label: "Pearl Postcards",              slug: "pearl-postcards",              keywords: ["pearl"] },
+    { label: "Natural Postcards",            slug: "natural-postcards",            keywords: ["natural"] },
+    { label: "Linen Uncoated Postcards",     slug: "linen-uncoated-postcards",     keywords: ["linen"] },
+    { label: "Plastic Postcards",            slug: "plastic-postcards",            keywords: ["plastic"] },
+    { label: "Magnet Postcards",             slug: "magnet-postcards",             keywords: ["magnet"] },
+    { label: "100LB Gloss Cover Postcards",  slug: "100lb-gloss-cover-postcards",  keywords: ["100lb gloss cover"] },
+    { label: "18pt Postcards",               slug: "18pt-postcards",               keywords: ["18pt"] },
+    { label: "16PT Postcards",               slug: "16pt-postcards",               keywords: ["16pt"] },
+    { label: "14pt Postcards",               slug: "14pt-postcards",               keywords: ["14pt"] },
+    { label: "Direct Mail Postcards",        slug: "direct-mail-postcards",        keywords: ["direct mail"] },
+    { label: "Standard Postcards",           slug: "standard-postcards",           keywords: [] }, // catch-all
   ],
   // Round Corner/Oval/Fold Over used to be separate types here, but per
   // fourprintshop's literal reference (the Standard Business Cards page's own
@@ -466,6 +494,28 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", keyword: "fan cutout" }, // Fan Cutouts
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" }, // Counter Cards
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" }, // Counter Cards
+  ],
+  // Brand-stock materials for postcards live in their own shared category UUIDs
+  // (same pattern as Announcement Cards/Trading Cards/Sell Sheets). Tearoff
+  // Postcards live in the Tear Off Cards UUID; Magnet Postcards in Magnets UUID;
+  // EDDM variants in the EDDM UUID.
+  "postcards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "postcard" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "postcard" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "postcard" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "postcard" }, // Natural
+    { uuid: "b2d0278e-02e6-4861-99ba-951b66f2f1ed", keyword: "postcard" }, // Painted Edge
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "postcard" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "postcard" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "postcard" }, // Dual Raised
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "postcard" }, // Raised Spot UV
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "postcard" }, // Foil Worx
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "postcard" }, // EndurACE
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "postcard" }, // Raised Foil
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "postcard" }, // Plastic
+    { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "postcard" }, // Magnets (Magnet Postcards)
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "postcard" }, // Tear Off Cards (Tearoff Postcards)
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "postcard" }, // EDDM (EDDM variants)
   ],
   "announcement-cards": [
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "announcement" }, // Akuafoil
