@@ -121,6 +121,11 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // (the keyhole slot), fourprintshop has no separate "Die Cut" card, and
   // the word is inconsistently present/absent across otherwise-identical
   // siblings (same 4over data-quality pattern as Calendars' "Saddle Stitch").
+  // 4over.com/marketing-products/catalogs lists 2 product types.
+  catalogs: [
+    { label: "Saddle Stitch Catalogs", slug: "saddle-stitch-catalogs", keywords: ["saddle", "saddle stitch"] },
+    { label: "Perfect Bound Catalogs", slug: "perfect-bound-catalogs", keywords: [] }, // catch-all
+  ],
   // 4over.com/marketing-products/booklets lists 6 product types.
   // "Gloss Cover" must come before "Gloss" to avoid misclassification.
   // "Premium Opaque" covers both 60LB and 70LB opaque stocks.
