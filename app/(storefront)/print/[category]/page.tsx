@@ -93,28 +93,24 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   "business-cards-standard": [
     { label: "Standard Business Cards", slug: "standard-business-cards", keywords: [] }, // catch-all (now the only rule)
   ],
-  // Stock-name rules (Natural/Pearl/Glue-less) MUST come before the size
-  // rules below: classifyProduct() takes the FIRST matching rule, and every
-  // product's description also contains its own size (e.g. "5.25\" x 10.5\"
-  // 14pt Natural Uncoated Presentation Folder") — checking size first would
-  // swallow every Natural/Pearl/Glue-less product into a size bucket before
-  // ever reaching its real type, leaving those cards empty (and hidden).
-  // fourprintshop's reference (4over-stable.fourprintshop.com/marketing-
-  // material/presentation-folders/products/) also lists Silk/Suede/Akuafoil
-  // Presentation Folders — confirmed NOT present anywhere in this sandbox's
-  // single "Presentation Folders" 4over category (28 products, checked all),
-  // a genuine catalog gap rather than a miscategorization.
-  // The 4 plain sizes (9x12/6x9/5.25x10.5/9x14.5) are all the SAME "Standard"
-  // folder, just a different size — like Flat Flyers and Brochures, they
-  // collapse into ONE catch-all card with Size as the calculator dropdown,
-  // not 4 separate cards. Must stay LAST: classifyProduct() is order-
-  // dependent and a catch-all earlier would swallow Natural/Pearl/Glue-less'
-  // products before their keywords are even checked.
+  // 4over.com/marketing-products/presentation-folder lists 10 product types.
+  // Material-specific rules MUST come before size rules: product descriptions
+  // contain both material AND size (e.g. "5.25\" x 10.5\" 14pt Natural Uncoated
+  // Presentation Folder") — checking size first would swallow material cards.
+  // Silk/Suede/Akuafoil live in their own brand-stock UUIDs → EXTRA_PRODUCT_SOURCES.
+  // 4over splits standard folders by SIZE (9x12 / 9x14.5 / 5.25x10.5 / 6x9)
+  // as separate product cards — matched here.
   "presentation-folders": [
-    { label: "Natural Presentation Folder", slug: "natural-presentation-folder", keywords: ["natural"] },
-    { label: "Pearl Presentation Folder", slug: "pearl-presentation-folder", keywords: ["pearl"] },
-    { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
-    { label: "Standard Presentation Folder", slug: "standard-presentation-folder", keywords: [] }, // catch-all
+    { label: "Silk Presentation Folder",         slug: "silk-presentation-folder",        keywords: ["silk"] },
+    { label: "Suede Presentation Folder",        slug: "suede-presentation-folder",       keywords: ["suede"] },
+    { label: "Akuafoil Presentation Folder",     slug: "akuafoil-presentation-folder",    keywords: ["akuafoil"] },
+    { label: "Natural Presentation Folder",      slug: "natural-presentation-folder",     keywords: ["natural"] },
+    { label: "Pearl Presentation Folder",        slug: "pearl-presentation-folder",       keywords: ["pearl"] },
+    { label: "Glue Less 9x12 Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
+    { label: "9x12 Presentation Folder",         slug: "9x12-presentation-folder",        keywords: ['9" x 12"', "9x12"] },
+    { label: "9x14.5 Presentation Folder",       slug: "9x14-presentation-folder",        keywords: ['9" x 14.5"', "9x14"] },
+    { label: "5.25x10.5 Presentation Folder",    slug: "5x10-presentation-folder",        keywords: ['5.25" x 10.5"', "5.25x10"] },
+    { label: "6x9 Presentation Folder",          slug: "6x9-presentation-folder",         keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/door-hangers/products/ lists
   // EndurACE/Standard/Tearoff — confirmed our sandbox has all 3, just split
@@ -510,6 +506,12 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", keyword: "fan cutout" }, // Fan Cutouts
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" }, // Counter Cards
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" }, // Counter Cards
+  ],
+  // Silk/Suede/Akuafoil Presentation Folders live in their own brand-stock UUIDs.
+  "presentation-folders": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "presentation folder" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "presentation folder" }, // Suede
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "presentation folder" }, // Akuafoil
   ],
   // Brand-stock materials for postcards live in their own shared category UUIDs
   // (same pattern as Announcement Cards/Trading Cards/Sell Sheets). Tearoff
