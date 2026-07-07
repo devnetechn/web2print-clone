@@ -337,6 +337,14 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Table Cloths", slug: "table-cloths", keywords: ["tablethrow"] },
     { label: "Table Runners", slug: "table-runners", keywords: [] }, // catch-all
   ],
+  // 4over's /signs-banners/signs-banners-signs/wall-art has 3 products.
+  // Mounted Canvas: UUID b83112e8. Acrylic Signs: UUID 7ad1aae9 (EXTRA).
+  // Aluminum Dye Sub: UUID d157e6f2 (Aluminum) via EXTRA_PRODUCT_SOURCES.
+  "wall-arts": [
+    { label: "Clear Acrylic Signs", slug: "clear-acrylic-signs", keywords: ["acrylic"] },
+    { label: "Aluminum Dye Sub", slug: "aluminum-dye-sub", keywords: ["dye sub", "dye sublimation", "dye-sub"] },
+    { label: "Mounted Canvas", slug: "mounted-canvas", keywords: ["canvas"] },
+  ],
   // fourprintshop's literal /signs-banners/rigid-signs/products/ is a
   // 9-card grid — confirmed live: 7 of these 9 (10mm/4mm/3mm/Rider/Foam
   // Core/Aluminum Heavy Duty/Aluminum Sandwich Board) genuinely exist in
@@ -352,12 +360,12 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // entry is ALSO "4mm White Coroplast" stock.
   "rigid-signs": [
     { label: "10mm Coroplast Signs", slug: "10mm-coroplast-signs", keywords: ["10mm"] },
-    { label: "Coroplast Rider Signs", slug: "coroplast-rider-signs", keywords: ["rider"] },
+    { label: "Rider Signs", slug: "coroplast-rider-signs", keywords: ["rider"] },
     { label: "4mm Coroplast Signs", slug: "4mm-coroplast-signs", keywords: ["4mm white coroplast"] },
     { label: "3mm PVC Signs", slug: "3mm-pvc-signs", keywords: ["3mm white pvc signs"] },
     { label: "Foam Core Signs", slug: "foam-core-signs", keywords: ["foamcore", "foam core"] },
     { label: "Aluminum Heavy Duty", slug: "aluminum-heavy-duty", keywords: ["heavy duty"] },
-    { label: "Aluminum Sandwich Board", slug: "aluminum-sandwich-board", keywords: ["sandwich board"] },
+    { label: "Single and Double Sided Aluminum Sandwich Board", slug: "aluminum-sandwich-board", keywords: ["sandwich board"] },
     { label: "Styrene Signs", slug: "styrene-signs", keywords: ["styrene"] },
     { label: "Gator Board Signs", slug: "gator-board-signs", keywords: [] }, // catch-all
   ],
@@ -585,6 +593,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
   ],
+  "wall-arts": [
+    { uuid: "7ad1aae9-741d-40f5-b3dc-6d75524878ce", keyword: "acrylic" }, // Clear Acrylic Signs
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "dye-sub" }, // Aluminum Dye Sub
+  ],
   // Scoped to JUST Heavy Duty/Sandwich Board, not a bare "aluminum" match —
   // this UUID also has an "Aluminum - Dye-Sublimation" stock fourprintshop's
   // own page doesn't show, which would otherwise fall through to the
@@ -736,6 +748,11 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "table-covers": {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
     "table-runners": "/images/cat/table-covers/table-runners.jpg",
+  },
+  "wall-arts": {
+    "clear-acrylic-signs": "/images/signs/wall-arts.jpg",
+    "aluminum-dye-sub": "/images/signs/wall-arts.jpg",
+    "mounted-canvas": "/images/signs/wall-arts.jpg",
   },
   "rigid-signs": {
     "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
@@ -1376,13 +1393,15 @@ export default async function PrintCategoryPage({
   // (+ cache write-through) if nothing's cached yet.
   const supabase = await createClient()
   async function fetchCategoryProducts(categoryUuid: string, label: string) {
-    // PostgREST's default max-rows caps a single .select() at 1000 — kept
-    // in sync with [typeSlug]/page.tsx's same fix; see that file's comment
-    // (Window Graphics' shared "ae3afb44..." category has 1485 products,
-    // silently dropping its 5 Opaque entries past row 1000).
+    // Paginate by ACTUAL rows returned per page, not by PAGE_SIZE: Supabase's
+    // SSR PostgREST may cap responses well below PAGE_SIZE even when more rows
+    // exist. Stepping by PAGE_SIZE skips the gap, losing products (e.g.
+    // outdoor-banners: 522 total, 200 cap → gap rows 200-521 all dropped).
+    // Break only on an empty page — a partial page may be a server cap, not end.
     let rows: { product_uuid: string; product_description: string; product_code: string }[] = []
     const PAGE_SIZE = 1000
-    for (let from = 0; ; from += PAGE_SIZE) {
+    let from = 0
+    while (true) {
       const { data: page } = await supabase
         .from("fourover_products")
         .select("product_uuid, product_description, product_code")
@@ -1390,7 +1409,7 @@ export default async function PrintCategoryPage({
         .range(from, from + PAGE_SIZE - 1)
       if (!page || page.length === 0) break
       rows = rows.concat(page)
-      if (page.length < PAGE_SIZE) break
+      from += page.length
     }
 
     if (!rows || rows.length === 0) {

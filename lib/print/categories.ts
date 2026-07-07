@@ -122,7 +122,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     subcategories: [
       { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/signs/table-covers.jpg" },
       { name: "Rigid Signs", uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", slug: "rigid-signs", image: "/images/signs/rigid-signs.jpg" },
-      { name: "Wall Arts", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/signs/wall-arts.jpg" },
+      { name: "Wall Art", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/signs/wall-arts.jpg" },
       { name: "Outdoor Banners", uuid: "d9181764-0579-402f-bfc8-4ff65408886e", slug: "outdoor-banners", image: "/images/signs/outdoor-banners.jpg" },
       { name: "Indoor Banners", uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", slug: "indoor-banners", image: "/images/signs/indoor-banners.jpg" },
       { name: "Flags", uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", slug: "flags", image: "/images/signs/flags.jpg" },

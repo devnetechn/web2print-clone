@@ -51,6 +51,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
   ],
+  "wall-arts": [
+    { uuid: "7ad1aae9-741d-40f5-b3dc-6d75524878ce", keyword: "acrylic" }, // Clear Acrylic Signs
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "dye-sub" }, // Aluminum Dye Sub
+  ],
   "rigid-signs": [
     { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "heavy duty" },
     { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "sandwich board" },
@@ -179,6 +183,11 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "table-covers": {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
     "table-runners": "/images/cat/table-covers/table-runners.jpg",
+  },
+  "wall-arts": {
+    "clear-acrylic-signs": "/images/signs/wall-arts.jpg",
+    "aluminum-dye-sub": "/images/signs/wall-arts.jpg",
+    "mounted-canvas": "/images/signs/wall-arts.jpg",
   },
   "rigid-signs": {
     "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
@@ -373,6 +382,11 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   "table-covers": {
     "table-cloths": ["table cloth"],
     "table-runners": [], // catch-all
+  },
+  "wall-arts": {
+    "clear-acrylic-signs": ["acrylic"],
+    "aluminum-dye-sub": ["dye sub", "dye sublimation", "dye-sub"],
+    "mounted-canvas": ["canvas"],
   },
   "rigid-signs": {
     "10mm-coroplast-signs": ["10mm"],
@@ -591,13 +605,16 @@ const TYPE_LABELS: Record<string, string> = {
   "trading-cards": "Trading Cards",
   "table-cloths": "Table Cloths",
   "table-runners": "Table Runners",
+  "clear-acrylic-signs": "Clear Acrylic Signs",
+  "aluminum-dye-sub": "Aluminum Dye Sub",
+  "mounted-canvas": "Mounted Canvas",
   "10mm-coroplast-signs": "10mm Coroplast Signs",
-  "coroplast-rider-signs": "Coroplast Rider Signs",
+  "coroplast-rider-signs": "Rider Signs",
   "4mm-coroplast-signs": "4mm Coroplast Signs",
   "3mm-pvc-signs": "3mm PVC Signs",
   "foam-core-signs": "Foam Core Signs",
   "aluminum-heavy-duty": "Aluminum Heavy Duty",
-  "aluminum-sandwich-board": "Aluminum Sandwich Board",
+  "aluminum-sandwich-board": "Single and Double Sided Aluminum Sandwich Board",
   "styrene-signs": "Styrene Signs",
   "gator-board-signs": "Gator Board Signs",
   "mesh-banners": "Mesh Banners",
@@ -1512,16 +1529,11 @@ export default async function ProductTypePage({
   }
 
   async function fetchCategoryProducts(uuid: string) {
-    // PostgREST's default max-rows caps a single .select() at 1000 — Window
-    // Graphics' shared "ae3afb44..." category has 1485 products, and the 5
-    // Opaque ones silently fell outside that first page, leaving the
-    // Opaque Window Graphics type's matchedProducts empty ("No products
-    // found.") even though the level-3 grid correctly listed it. Page
-    // through with .range() until a partial (or empty) page confirms we've
-    // reached the end.
+    // Paginate by ACTUAL rows returned per page — see [category]/page.tsx comment.
     let rows: { product_uuid: string; product_description: string; product_code: string }[] = []
     const PAGE_SIZE = 1000
-    for (let from = 0; ; from += PAGE_SIZE) {
+    let from = 0
+    while (true) {
       const { data: page } = await supabase
         .from("fourover_products")
         .select("product_uuid, product_description, product_code")
@@ -1529,7 +1541,7 @@ export default async function ProductTypePage({
         .range(from, from + PAGE_SIZE - 1)
       if (!page || page.length === 0) break
       rows = rows.concat(page)
-      if (page.length < PAGE_SIZE) break
+      from += page.length
     }
 
     if (!rows || rows.length === 0) {
