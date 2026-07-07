@@ -24,14 +24,28 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // plain "Flyers"/"Flyer on..." with no fold pattern) so it must be LAST:
   // classifyProduct() is order-dependent and a catch-all earlier in the
   // array would swallow Half-Fold/Tearoff's products before they're checked.
+  // 4over.com/marketing-products/flyers-brochures lists 17 product types.
+  // Order: most specific first. EDDM/Direct Mail variants checked before
+  // their broader fold-type siblings to avoid misclassification.
   "flyers-and-brochures": [
-    { label: "All Inclusive Flyers and Brochures", slug: "all-inclusive-flyers-and-brochures", keywords: ["all inclusive", "all-inclusive"] },
-    // "Folds to WxH" is how this sandbox's only 2 single-fold entries are
-    // worded (4over filed them as "4 Page Booklet", but a 4-page document
-    // folded once IS structurally a half-fold brochure).
-    { label: "Half-Fold Brochures", slug: "half-fold-brochures", keywords: ["half-fold", "half fold", "folds to"] },
-    { label: "Tearoff Flyers", slug: "tearoff-flyers", keywords: ["tear", "tearoff", "tear-off"] },
-    { label: "Flat Flyers and Brochures", slug: "flat-flyers-and-brochures", keywords: [] }, // catch-all
+    { label: "All Inclusive Flyers and Brochures",          slug: "all-inclusive-flyers-and-brochures",          keywords: ["all inclusive", "all-inclusive"] },
+    { label: "EDDM Full Service - Half Folds",              slug: "eddm-full-service-half-folds",               keywords: ["eddm full service", "eddm", "half fold"] },
+    { label: "EDDM Print Only - Half Folds",                slug: "eddm-print-only-half-folds",                keywords: ["eddm print only", "eddm", "half fold"] },
+    { label: "EDDM Full Service - Flyers",                  slug: "eddm-full-service-flyers",                  keywords: ["eddm full service", "eddm"] },
+    { label: "EDDM Flyers - Print Only",                    slug: "eddm-flyers-print-only",                    keywords: ["eddm print only", "eddm"] },
+    { label: "Direct Mail Half Fold Flyers and Brochures",  slug: "direct-mail-half-fold-flyers",              keywords: ["direct mail", "half fold"] },
+    { label: "Direct Mail Tri Fold Flyers and Brochures",   slug: "direct-mail-tri-fold-flyers",               keywords: ["direct mail", "tri fold"] },
+    { label: "Direct Mail Specialty Folds Flyers",          slug: "direct-mail-specialty-folds-flyers",        keywords: ["direct mail", "specialty"] },
+    { label: "Direct Mail Flyers Brochures Coated",         slug: "direct-mail-flyers-coated",                 keywords: ["direct mail", "coated"] },
+    { label: "Direct Mail Flyers Brochures Uncoated",       slug: "direct-mail-flyers-uncoated",               keywords: ["direct mail", "uncoated"] },
+    { label: "Direct Mail Flyers and Brochures",            slug: "direct-mail-flyers",                        keywords: ["direct mail"] },
+    { label: "Specialty Folds Brochures",                   slug: "specialty-folds-brochures",                 keywords: ["specialty fold", "gatefold", "gate fold", "accordion", "french fold"] },
+    { label: "Z Fold Brochures",                            slug: "z-fold-brochures",                          keywords: ["z fold", "z-fold", "zfold"] },
+    { label: "Tri Fold Brochures",                          slug: "tri-fold-brochures",                        keywords: ["tri fold", "tri-fold", "trifold"] },
+    { label: "Half-Fold Brochures",                         slug: "half-fold-brochures",                       keywords: ["half-fold", "half fold", "folds to"] },
+    { label: "EndurACE Flyers and Brochures",               slug: "endurace-flyers-and-brochures",             keywords: ["endurace"] },
+    { label: "Tearoff Flyers",                              slug: "tearoff-flyers",                            keywords: ["tear", "tearoff", "tear-off"] },
+    { label: "Flat Flyers and Brochures",                   slug: "flat-flyers-and-brochures",                 keywords: [] }, // catch-all
   ],
   // 4over.com/marketing-products/postcards lists 25 product types.
   // Brand-stock materials (Silk/Suede/Pearl/etc.) live in their own shared
@@ -421,7 +435,9 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   // categories too: productList is built once, with extra sources merged in,
   // BEFORE classifyProduct() buckets it into type cards.
   "flyers-and-brochures": [
-    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] }, // Tearoff Flyers
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: ["flyer", "brochure", "half fold"] }, // EDDM variants
   ],
   // "Tearoff Door Hangers" (Tear Off Cards UUID) + "EndurACE Door Hangers"
   // (EndurACE UUID, same one used by EndurACE Business Cards/Flyers) — see
