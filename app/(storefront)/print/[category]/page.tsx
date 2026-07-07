@@ -121,6 +121,17 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // (the keyhole slot), fourprintshop has no separate "Die Cut" card, and
   // the word is inconsistently present/absent across otherwise-identical
   // siblings (same 4over data-quality pattern as Calendars' "Saddle Stitch").
+  // 4over.com/marketing-products/booklets lists 6 product types.
+  // "Gloss Cover" must come before "Gloss" to avoid misclassification.
+  // "Premium Opaque" covers both 60LB and 70LB opaque stocks.
+  booklets: [
+    { label: "Matte Book Uncoated Booklets",      slug: "matte-book-uncoated-booklets",    keywords: ["matte"] },
+    { label: "Dull Book with Satin AQ Booklets",  slug: "dull-book-satin-aq-booklets",     keywords: ["dull"] },
+    { label: "Gloss Cover with AQ Booklets",      slug: "gloss-cover-aq-booklets",         keywords: ["gloss cover"] },
+    { label: "Premium Opaque Uncoated Booklets",  slug: "premium-opaque-uncoated-booklets",keywords: ["opaque", "premium opaque", "60lb", "70lb"] },
+    { label: "Direct Mail Booklets",              slug: "direct-mail-booklets",            keywords: ["direct mail"] },
+    { label: "Gloss Booklets",                    slug: "gloss-booklets",                  keywords: [] }, // catch-all (Gloss Book)
+  ],
   "door-hangers": [
     { label: "EndurACE Door Hangers", slug: "endurace-door-hangers", keywords: ["endurace"] },
     { label: "Tearoff Door Hangers", slug: "tearoff-door-hangers", keywords: ["tear"] },
