@@ -181,6 +181,29 @@ const COLORSPEC_LABELS: Record<string, string> = {
   "2/0": "2/0 (two color front)",
 }
 
+// ─── TURNAROUND ───────────────────────────────────────────────────────────────
+// API sometimes returns abbreviated forms like "2 Day" instead of
+// "2 Business Days". Normalize to match 4over.com display labels.
+const TURNAROUND_LABELS: Record<string, string> = {
+  "1 DAY": "Next Business Day",
+  "2 DAY": "2 Business Days",
+  "3 DAY": "3 Business Days",
+  "4 DAY": "4 Business Days",
+  "5 DAY": "5 Business Days",
+  "6 DAY": "6 Business Days",
+  "7 DAY": "7 Business Days",
+  "10 DAY": "10 Business Days",
+}
+
+export function translateTurnaroundName(name: string): string {
+  const upper = name.trim().toUpperCase()
+  if (TURNAROUND_LABELS[upper]) return TURNAROUND_LABELS[upper]
+  // Catch any "N Day" pattern not in the table above
+  const match = name.trim().match(/^(\d+)\s+Day$/i)
+  if (match) return `${match[1]} Business Days`
+  return name
+}
+
 export function translateCoatingName(name: string): string {
   const upper = name.trim().toUpperCase()
   return COATING_LABELS[upper] ?? name

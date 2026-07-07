@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { uploadDesignFile } from "@/app/actions/design-upload"
-import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName } from "@/lib/4over/option-labels"
+import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName, translateTurnaroundName } from "@/lib/4over/option-labels"
 
 interface ListItem {
   name: string
@@ -1426,7 +1426,7 @@ export function ProductConfiguratorClient({
               {/* TURNAROUND TIME — shared */}
               {renderListRow(
                 "Turnaround Time",
-                turnaroundOptions.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
+                turnaroundOptions.map((o) => ({ name: translateTurnaroundName(o.option_name), uuid: o.option_uuid })),
                 turnaroundUuid,
                 setTurnaroundUuid,
               )}
