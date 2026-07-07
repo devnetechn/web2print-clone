@@ -124,6 +124,19 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // 4over.com/marketing-products/booklets lists 6 product types.
   // "Gloss Cover" must come before "Gloss" to avoid misclassification.
   // "Premium Opaque" covers both 60LB and 70LB opaque stocks.
+  // 4over.com/marketing-products/calendars lists 7 product types.
+  // Binding-specific types (Spiral/Hard-Cover) must come before size-based
+  // splits to avoid misclassification. Size-based cards match 4over's layout
+  // (12x12 / 8.5x11 / 11x8.5 / 9x12); Self-Cover is the catch-all.
+  calendars: [
+    { label: "Spiral Bind Calendars",  slug: "spiral-bind-calendars",  keywords: ["spiral"] },
+    { label: "Hard-Cover Calendars",   slug: "hard-cover-calendars",   keywords: ["hard cover", "hard-cover", "hardcover"] },
+    { label: "12x12 Calendars",        slug: "12x12-calendars",        keywords: ['12" x 12"', "12x12"] },
+    { label: "11x8.5 Calendars",       slug: "11x8-5-calendars",       keywords: ['11" x 8.5"', "11x8.5"] },
+    { label: "9x12 Calendars",         slug: "9x12-calendars",         keywords: ['9" x 12"', "9x12"] },
+    { label: "8.5x11 Calendars",       slug: "8-5x11-calendars",       keywords: ['8.5" x 11"', "8.5x11"] },
+    { label: "Self-Cover Calendars",   slug: "self-cover-calendars",   keywords: [] }, // catch-all
+  ],
   booklets: [
     { label: "Matte Book Uncoated Booklets",      slug: "matte-book-uncoated-booklets",    keywords: ["matte"] },
     { label: "Dull Book with Satin AQ Booklets",  slug: "dull-book-satin-aq-booklets",     keywords: ["dull"] },
