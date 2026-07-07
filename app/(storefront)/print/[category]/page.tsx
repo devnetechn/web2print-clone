@@ -28,24 +28,24 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // Order: most specific first. EDDM/Direct Mail variants checked before
   // their broader fold-type siblings to avoid misclassification.
   "flyers-and-brochures": [
-    { label: "All Inclusive Flyers and Brochures",          slug: "all-inclusive-flyers-and-brochures",          keywords: ["all inclusive", "all-inclusive"] },
+    { label: "All Inclusive Flyers Brochures",               slug: "all-inclusive-flyers-brochures",              keywords: ["all inclusive", "all-inclusive"] },
     { label: "EDDM Full Service - Half Folds",              slug: "eddm-full-service-half-folds",               keywords: ["eddm full service", "eddm", "half fold"] },
     { label: "EDDM Print Only - Half Folds",                slug: "eddm-print-only-half-folds",                keywords: ["eddm print only", "eddm", "half fold"] },
     { label: "EDDM Full Service - Flyers",                  slug: "eddm-full-service-flyers",                  keywords: ["eddm full service", "eddm"] },
     { label: "EDDM Flyers - Print Only",                    slug: "eddm-flyers-print-only",                    keywords: ["eddm print only", "eddm"] },
     { label: "Direct Mail Half Fold Flyers and Brochures",  slug: "direct-mail-half-fold-flyers",              keywords: ["direct mail", "half fold"] },
     { label: "Direct Mail Tri Fold Flyers and Brochures",   slug: "direct-mail-tri-fold-flyers",               keywords: ["direct mail", "tri fold"] },
-    { label: "Direct Mail Specialty Folds Flyers",          slug: "direct-mail-specialty-folds-flyers",        keywords: ["direct mail", "specialty"] },
+    { label: "Direct Mail Specialty Folds Flyers and Brochures", slug: "direct-mail-specialty-folds-flyers-and-brochures", keywords: ["direct mail", "specialty"] },
     { label: "Direct Mail Flyers Brochures Coated",         slug: "direct-mail-flyers-coated",                 keywords: ["direct mail", "coated"] },
     { label: "Direct Mail Flyers Brochures Uncoated",       slug: "direct-mail-flyers-uncoated",               keywords: ["direct mail", "uncoated"] },
     { label: "Direct Mail Flyers and Brochures",            slug: "direct-mail-flyers",                        keywords: ["direct mail"] },
     { label: "Specialty Folds Brochures",                   slug: "specialty-folds-brochures",                 keywords: ["specialty fold", "gatefold", "gate fold", "accordion", "french fold"] },
     { label: "Z Fold Brochures",                            slug: "z-fold-brochures",                          keywords: ["z fold", "z-fold", "zfold"] },
     { label: "Tri Fold Brochures",                          slug: "tri-fold-brochures",                        keywords: ["tri fold", "tri-fold", "trifold"] },
-    { label: "Half-Fold Brochures",                         slug: "half-fold-brochures",                       keywords: ["half-fold", "half fold", "folds to"] },
+    { label: "Half Fold Brochures",                          slug: "half-fold-brochures",                       keywords: ["half-fold", "half fold", "folds to"] },
     { label: "EndurACE Flyers and Brochures",               slug: "endurace-flyers-and-brochures",             keywords: ["endurace"] },
     { label: "Tearoff Flyers",                              slug: "tearoff-flyers",                            keywords: ["tear", "tearoff", "tear-off"] },
-    { label: "Flat Flyers and Brochures",                   slug: "flat-flyers-and-brochures",                 keywords: [] }, // catch-all
+    { label: "Flat Flyers Brochures",                        slug: "flat-flyers-brochures",                     keywords: [] }, // catch-all
   ],
   // 4over.com/marketing-products/postcards lists 25 product types.
   // Brand-stock materials (Silk/Suede/Pearl/etc.) live in their own shared
@@ -53,7 +53,7 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // more specific keywords must come before broader ones (e.g. "rsvp" before
   // "dual raised", "raised foil" before "foil", "eddm full service" before "eddm").
   "postcards": [
-    { label: "All Inclusive Postcards",       slug: "all-inclusive-postcards",       keywords: ["all inclusive", "all-inclusive"] },
+    { label: "All-Inclusive Postcards",       slug: "all-inclusive-postcards",       keywords: ["all inclusive", "all-inclusive"] },
     { label: "EDDM Full Service Postcards",   slug: "eddm-full-service-postcards",   keywords: ["eddm full service", "full service"] },
     { label: "EDDM Print Only Postcards",     slug: "eddm-print-only-postcards",     keywords: ["eddm print only", "print only"] },
     { label: "EDDM Postcards",               slug: "eddm-postcards",               keywords: ["eddm"] },
@@ -165,13 +165,38 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // matters: e.g. "Blank ENVELOPE on 70lb Linen..." must hit Blank before
   // the Linen rule gets a chance, and "...Natural...w/Variable Addressing"
   // must hit Variable Addressing before Natural.
+  // 4over.com/marketing-products/greeting-cards lists 13 product types.
+  // Specialty stocks (Silk/Pearl/Natural/etc.) come from EXTRA_PRODUCT_SOURCES.
+  // Specific types must come before the catch-all; Dual Raised/Raised Foil/
+  // Raised Spot UV before plain "raised" so they don't fall into wrong buckets.
+  "greeting-cards": [
+    { label: "Dual Raised Greeting Cards",              slug: "dual-raised-greeting-cards",          keywords: ["dual raised"] },
+    { label: "Cards with Gift Card Holder Greeting Cards", slug: "gift-card-holder-greeting-cards",  keywords: ["gift card", "slit"] },
+    { label: "100lb Cover Linen Greeting Cards",        slug: "linen-greeting-cards",                keywords: ["linen"] },
+    { label: "100lb Gloss Cover Greeting Cards",        slug: "gloss-cover-greeting-cards",          keywords: ["gloss cover"] },
+    { label: "Pearl Greeting Cards",                    slug: "pearl-greeting-cards",                keywords: ["pearl"] },
+    { label: "Silk Greeting Cards",                     slug: "silk-greeting-cards",                 keywords: ["silk"] },
+    { label: "Raised Spot UV Greeting Cards",           slug: "raised-spot-uv-greeting-cards",       keywords: ["raised spot"] },
+    { label: "Natural Greeting Cards",                  slug: "natural-greeting-cards",              keywords: ["natural"] },
+    { label: "Suede Greeting Cards",                    slug: "suede-greeting-cards",                keywords: ["suede"] },
+    { label: "Brown Kraft Greeting Cards",              slug: "brown-kraft-greeting-cards",          keywords: ["brown kraft", "kraft"] },
+    { label: "Raised Foil Greeting Cards",              slug: "raised-foil-greeting-cards",          keywords: ["raised foil"] },
+    { label: "Akuafoil Greeting Cards",                 slug: "akuafoil-greeting-cards",             keywords: ["akuafoil"] },
+    { label: "Standard Greeting Cards",                 slug: "standard-greeting-cards",             keywords: [] }, // catch-all
+  ],
+  // 4over.com/marketing-products/event-tickets lists 2 product types.
+  "event-tickets": [
+    { label: "Variable Numbering Event Tickets", slug: "variable-numbering-event-tickets", keywords: ["variable", "numbered", "numbering"] },
+    { label: "Standard Event Tickets",           slug: "standard-event-tickets",           keywords: [] }, // catch-all
+  ],
   envelopes: [
-    { label: "Blank Envelopes", slug: "blank-envelopes", keywords: ["blank"] },
-    { label: "Digital Envelopes", slug: "digital-envelopes", keywords: ["digital"] },
+    { label: "Remittance Envelopes",          slug: "remittance-envelopes",          keywords: ["remittance"] },
+    { label: "Blank Envelopes",               slug: "blank-envelopes",               keywords: ["blank"] },
+    { label: "Digital Envelopes",             slug: "digital-envelopes",             keywords: ["digital"] },
     { label: "Variable Addressing Envelopes", slug: "variable-addressing-envelopes", keywords: ["variable"] },
-    { label: "Linen Uncoated Envelopes", slug: "linen-uncoated-envelopes", keywords: ["linen"] },
-    { label: "Natural Envelopes", slug: "natural-envelopes", keywords: ["natural"] },
-    { label: "Offset Envelopes", slug: "offset-envelopes", keywords: [] }, // catch-all
+    { label: "Linen Uncoated Envelopes",      slug: "linen-uncoated-envelopes",      keywords: ["linen"] },
+    { label: "Natural Envelopes",             slug: "natural-envelopes",             keywords: ["natural"] },
+    { label: "Offset Envelopes",              slug: "offset-envelopes",              keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/hang-tags/products/ is an
   // 11-card grid — confirmed live: "Regular Hang Tags" merges 14PT/16PT
@@ -183,17 +208,26 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // before "Silk": Foil Worx's own wording is "Silk Laminated Foiled Hang
   // Tags", which would otherwise misclassify as Silk.
   "hang-tags": [
-    { label: "Akuafoil Hang Tags", slug: "akuafoil-hang-tags", keywords: ["akuafoil"] },
-    { label: "Foil Worx Hang Tags", slug: "foil-worx-hang-tags", keywords: ["foiled"] },
-    { label: "Bottleneck Hang Tags", slug: "bottleneck-hang-tags", keywords: ["bottle neck", "bottleneck"] },
-    { label: "Brown Kraft Hang Tags", slug: "brown-kraft-hang-tags", keywords: ["brown kraft"] },
-    { label: "Natural Hang Tags", slug: "natural-hang-tags", keywords: ["natural"] },
-    { label: "Pearl Hang Tags", slug: "pearl-hang-tags", keywords: ["pearl"] },
-    { label: "Plastic Hang Tags", slug: "plastic-hang-tags", keywords: ["plastic"] },
+    { label: "Dual Raised Hang Tags",    slug: "dual-raised-hang-tags",    keywords: ["dual raised"] },
+    { label: "Akuafoil Hang Tags",       slug: "akuafoil-hang-tags",       keywords: ["akuafoil"] },
+    { label: "Foil Worx Hang Tags",      slug: "foil-worx-hang-tags",      keywords: ["foiled"] },
+    { label: "Bottleneck Hang Tags",     slug: "bottleneck-hang-tags",     keywords: ["bottle neck", "bottleneck"] },
+    { label: "Brown Kraft Hang Tags",    slug: "brown-kraft-hang-tags",    keywords: ["brown kraft"] },
+    { label: "Natural Hang Tags",        slug: "natural-hang-tags",        keywords: ["natural"] },
+    { label: "Pearl Hang Tags",          slug: "pearl-hang-tags",          keywords: ["pearl"] },
+    { label: "Plastic Hang Tags",        slug: "plastic-hang-tags",        keywords: ["plastic"] },
     { label: "Raised Spot UV Hang Tags", slug: "raised-spot-uv-hang-tags", keywords: ["raised spot"] },
-    { label: "Silk Hang Tags", slug: "silk-hang-tags", keywords: ["silk"] },
-    { label: "Suede Hang Tags", slug: "suede-hang-tags", keywords: ["suede"] },
-    { label: "Regular Hang Tags", slug: "regular-hang-tags", keywords: [] }, // catch-all
+    { label: "Silk Hang Tags",           slug: "silk-hang-tags",           keywords: ["silk"] },
+    { label: "Suede Hang Tags",          slug: "suede-hang-tags",          keywords: ["suede"] },
+    { label: "Regular Hang Tags",        slug: "regular-hang-tags",        keywords: [] }, // catch-all
+  ],
+  magnets: [
+    { label: "Car Door Magnets",           slug: "car-door-magnets",           keywords: ["car door", "vehicle"] },
+    { label: "Magnet Postcards",           slug: "magnet-postcards",           keywords: ["postcard"] },
+    { label: "Oval Magnets",              slug: "oval-magnets",               keywords: ["oval"] },
+    { label: "Magnet Announcement Cards", slug: "magnet-announcement-cards",  keywords: ["announcement"] },
+    { label: "Magnet Business Cards",     slug: "magnet-business-cards",      keywords: ["business card"] },
+    { label: "Standard Magnets",          slug: "standard-magnets",           keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/posters/products/ is a
   // 6-card grid — confirmed live: "Gloss Book Posters" is 100LB Gloss Book
@@ -210,24 +244,19 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // fine; no reconstruction needed since TYPE_RULES cards are titled from
   // TYPE_LABELS below, never from the raw description.
   posters: [
-    { label: "Backlit Posters", slug: "backlit-posters", keywords: ["backlit"] },
-    { label: "Blockout Posters", slug: "blockout-posters", keywords: ["blockout"] },
+    { label: "Backlit Posters",     slug: "backlit-posters",     keywords: ["backlit"] },
+    { label: "Blockout Posters",    slug: "blockout-posters",    keywords: ["blockout"] },
     { label: "Photo Gloss Posters", slug: "photo-gloss-posters", keywords: ["8mil"] },
     { label: "Matte-Finish Posters", slug: "matte-finish-posters", keywords: ["dull"] },
     { label: "Gloss Cover Posters", slug: "gloss-cover-posters", keywords: ["gloss cover"] },
-    { label: "Gloss Book Posters", slug: "gloss-book-posters", keywords: [] }, // catch-all
+    { label: "Gloss Book Posters",  slug: "gloss-book-posters",  keywords: [] }, // catch-all
   ],
-  // fourprintshop's literal /marketing-material/rack-cards/products/ is a
-  // 3-card grid — confirmed live: SIZE is the top-level split for "Standard"
-  // (3.5x8.5 / 4x9, each merging its own 14PT/16PT/18PT C1S stocks), while
-  // "Akuafoil Rack Cards" is its OWN single card spanning BOTH sizes (its
-  // own Size dropdown covers 3.5x8.5 AND 4x9, Stock fixed at 16PT C2S) — so
-  // Akuafoil must classify FIRST, before the size split, or it'd get
-  // swallowed into whichever Standard size matches.
+  // 4over.com shows 2 cards: "Standard Rack Cards" (both 3.5x8.5 + 4x9) and
+  // "Akuafoil Rack Cards". Akuafoil must classify first so it isn't swallowed
+  // by the Standard catch-all.
   "rack-cards": [
     { label: "Akuafoil Rack Cards", slug: "akuafoil-rack-cards", keywords: ["akuafoil"] },
-    { label: "3.5 x 8.5 Standard Rack Cards", slug: "3-5-x-8-5-standard-rack-cards", keywords: ['3.5" x 8.5"'] },
-    { label: "4 x 9 Standard Rack Cards", slug: "4-x-9-standard-rack-cards", keywords: [] }, // catch-all
+    { label: "Standard Rack Cards", slug: "standard-rack-cards", keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/sell-sheets/products/ is a
   // 6-card grid, ALL brand-stock materials (Akuafoil/Brown Kraft/EndurACE/
@@ -437,6 +466,25 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Foam Core Counter Cards", slug: "foam-core-counter-cards", keywords: ["foam core"] },
     { label: "White PVC Counter Cards", slug: "white-pvc-counter-cards", keywords: ["pvc"] },
   ],
+  // 4over.com shows 11 trading card types. Specialty stocks (Akuafoil, Brown
+  // Kraft, Natural, Pearl, Suede, Foil Worx) come from EXTRA_PRODUCT_SOURCES;
+  // main UUID provides 14pt, 16pt, 18pt, and 100lb Cover Linen. Silk Trading
+  // Cards appears on 4over retail but is absent from the wholesale API (zero
+  // results across all checked UUIDs — same situation as Rally Signs/Posters).
+  // Akuafoil before "16pt": raw desc reads "16PT Trading Cards with Akuafoil".
+  // Brown Kraft before "18pt": raw desc reads "18PT Uncoated Brown Kraft...".
+  "trading-cards": [
+    { label: "Akuafoil Trading Cards",         slug: "akuafoil-trading-cards",          keywords: ["akuafoil"] },
+    { label: "Brown Kraft Trading Cards",       slug: "brown-kraft-trading-cards",       keywords: ["brown kraft", "kraft"] },
+    { label: "Foil Worx Trading Cards",         slug: "foil-worx-trading-cards",         keywords: ["foil worx", "foiled"] },
+    { label: "Natural Trading Cards",           slug: "natural-trading-cards",           keywords: ["natural"] },
+    { label: "Pearl Trading Cards",             slug: "pearl-trading-cards",             keywords: ["pearl"] },
+    { label: "Suede Trading Cards",             slug: "suede-trading-cards",             keywords: ["suede"] },
+    { label: "100lb Cover Linen Trading Cards", slug: "100lb-cover-linen-trading-cards", keywords: ["linen"] },
+    { label: "18pt Trading Cards",              slug: "18pt-trading-cards",              keywords: ["18pt"] },
+    { label: "16pt Trading Cards",              slug: "16pt-trading-cards",              keywords: ["16pt"] },
+    { label: "14pt Trading Cards",              slug: "14pt-trading-cards",              keywords: [] }, // catch-all
+  ],
 }
 
 // Some subcategories' product-type cards span MULTIPLE 4over categories, not
@@ -471,6 +519,19 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "door hanger" },
     { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "door hanger" },
   ],
+  // Greeting Cards specialty stocks live in shared brand-stock UUIDs
+  // (same pattern as Announcement Cards / Postcards / Hang Tags).
+  "greeting-cards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "greeting card" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "greeting card" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "greeting card" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "greeting card" }, // Natural
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "greeting card" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "greeting card" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "greeting card" }, // Dual Raised
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "greeting card" }, // Raised Foil
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "greeting card" }, // Raised Spot UV
+  ],
   // "Variable Addressing Envelopes" data lives in the dedicated "Variable
   // Data" category (f5e2f7e8) — envelopes' own UUID has zero "variable"
   // matches.
@@ -479,6 +540,7 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   // Cards/Announcement Cards) plus Plastic/Raised Spot UV (same shared
   // categories as their Business Cards counterparts).
   "hang-tags": [
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "hang tag" }, // Dual Raised
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "hang tag" }, // Akuafoil
     { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "hang tag" }, // Brown Kraft
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "hang tag" }, // Natural
@@ -488,6 +550,11 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "hang tag" }, // Foil Worx
     { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "hang tag" }, // Plastic
     { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "hang tag" }, // Raised Spot UV
+  ],
+  // Car Door Magnets live under Signs & Banners (vehicle-magnets UUID) but
+  // 4over.com lists them under Marketing Products > Magnets too.
+  magnets: [
+    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car door" }, // Car Door Magnets
   ],
   // "Backlit Posters" (dedicated UUID, raw product_code descriptions — see
   // the matching comment on posters' TYPE_RULES entry) + "Blockout"/"Photo
@@ -597,10 +664,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
 // pattern, not by a distinct photo per type.
 const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "flyers-and-brochures": {
-    "all-inclusive-flyers-and-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
+    "all-inclusive-flyers-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
-    "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+    "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
   },
   envelopes: {
     "blank-envelopes": "/images/cat/envelopes/blank.jpg",
@@ -1108,6 +1175,13 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
   // the non-Round-Corner half of e.g. Natural's products gets the word
   // stripped, leaving 2 near-duplicate "Natural Announcement Cards" cards.
   "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  // Same Foil Worx naming pattern as Trading Cards: Foil Worx UUID has
+  // "14PT Uncoated Foiled Postcards" etc. — strip the stock prefix so all
+  // foiled stocks merge into one card, then rename to match 4over's label.
+  "postcards": [
+    [/\b\d+pt\s+(?:uncoated\s+|silk\s+laminated\s+)?(?=foiled\s+postcards?)/gi, ""],
+    [/\bfoiled\s+postcards?\b/gi, "Foil Worx Postcards"],
+  ],
   // fourprintshop's literal page (confirmed live) merges paper WEIGHT into a
   // Stock dropdown for Gloss Book/Gloss Cover/Matte Book specifically —
   // "Gloss Booklets" page's own Stock dropdown lists BOTH "80LB Gloss Book"

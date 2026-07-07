@@ -100,18 +100,18 @@ const STOCK_LABELS: Record<string, string> = {
   "20PTWH": "20PT White Plastic",
   "20PTPM": "20PT Pearl/Metallic Plastic",
   // ── Linen/Natural/Pearl text stocks ──
-  "100LB COVER LINEN": "100LB Linen Cover",
+  "100LB COVER LINEN": "100LB Cover Linen",
   "60LB UNCOATED TEXT": "60LB Uncoated Text",
   "70LB LINEN": "70LB Linen",
   "70LB NATURAL": "70LB Natural",
   "70LB PEARL": "70LB Pearl",
   // ── Envelope / NCR / misc paper stocks ──
   "24LB": "24LB Bond",
-  "20LB2P": "20LB 2-Part NCR",
-  "20LB3P": "20LB 3-Part NCR",
+  "20LB2P": "20LB-2 Part",
+  "20LB3P": "20LB-3 Part",
   // ── Magnetic ──
-  "MAGNET": "Magnetic",
-  "30MIL": "30mil Magnetic",
+  "MAGNET": "17PT Magnet",
+  "30MIL": "30mil Magnet",
   // ── Rigid Signs ──
   "3PVC": "3mm PVC",
   "316FC": "3/16 Foam Core",

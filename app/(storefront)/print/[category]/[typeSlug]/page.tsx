@@ -65,15 +65,58 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" },
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" },
   ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // specialty stocks for presentation folders live in shared brand-stock UUIDs.
+  "presentation-folders": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "presentation folder" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "presentation folder" }, // Suede
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "presentation folder" }, // Akuafoil
+  ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // brand-stock materials for postcards live in shared category UUIDs.
+  "postcards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "postcard" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "postcard" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "postcard" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "postcard" }, // Natural
+    { uuid: "b2d0278e-02e6-4861-99ba-951b66f2f1ed", keyword: "postcard" }, // Painted Edge
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "postcard" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "postcard" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "postcard" }, // Dual Raised
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "postcard" }, // Raised Spot UV
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "postcard" }, // Foil Worx
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "postcard" }, // EndurACE
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "postcard" }, // Raised Foil
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "postcard" }, // Plastic
+    { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "postcard" }, // Magnets (Magnet Postcards)
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "postcard" }, // Tear Off Cards (Tearoff Postcards)
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "postcard" }, // EDDM (EDDM variants)
+  ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // specialty stocks for trading cards live in shared brand-stock UUIDs.
+  "trading-cards": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "trading card" }, // Akuafoil
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "trading card" }, // Brown Kraft
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "trading card" }, // Natural
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "trading card" }, // Pearl
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "trading card" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "trading card" }, // Suede
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "trading card" }, // Foil Worx
+  ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // Car Door Magnets live under vehicle-magnets UUID.
+  magnets: [
+    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car door" }, // Car Door Magnets
+  ],
 }
 
 // Kept in sync with TYPE_IMAGES in print/[category]/page.tsx.
 const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "flyers-and-brochures": {
-    "all-inclusive-flyers-and-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
+    "all-inclusive-flyers-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
-    "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+    "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
   },
   envelopes: {
     "blank-envelopes": "/images/cat/envelopes/blank.jpg",
@@ -106,8 +149,7 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   },
   "rack-cards": {
     "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
-    "3-5-x-8-5-standard-rack-cards": "/images/cat/rack-cards/standard-3.5x8.5.jpg",
-    "4-x-9-standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
+    "standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
   },
   "sell-sheets": {
     "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
@@ -194,15 +236,41 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // removed (confirmed zero matches anywhere) and Flat moved to last (the
   // true catch-all).
   "flyers-and-brochures": {
-    "all-inclusive-flyers-and-brochures": ["all inclusive", "all-inclusive"],
+    "all-inclusive-flyers-brochures": ["all inclusive", "all-inclusive"],
     "half-fold-brochures": ["half-fold", "half fold", "folds to"],
     "tearoff-flyers": ["tear", "tearoff", "tear-off"],
-    "flat-flyers-and-brochures": [], // catch-all
+    "direct-mail-specialty-folds-flyers-and-brochures": ["direct mail", "specialty"],
+    "flat-flyers-brochures": [], // catch-all
   },
+  // Kept in sync with print/[category]/page.tsx TYPE_RULES for postcards —
+  // order is critical: more specific keywords before broader ones.
   "postcards": {
     "all-inclusive-postcards": ["all inclusive", "all-inclusive"],
+    "eddm-full-service-postcards": ["eddm full service", "full service"],
+    "eddm-print-only-postcards": ["eddm print only", "print only"],
     "eddm-postcards": ["eddm"],
-    "raised-foil-postcards": ["raised foil", "dual raised", "raised spot"],
+    "dual-raised-rsvp-postcards": ["rsvp"],
+    "dual-raised-postcards": ["dual raised"],
+    "raised-foil-postcards": ["raised foil"],
+    "raised-spot-uv-postcards": ["raised spot"],
+    "foil-worx-postcards": ["foil worx"],
+    "tearoff-postcards": ["tear"],
+    "painted-edge-postcards": ["painted-edge", "painted edge"],
+    "endurace-postcards": ["endurace"],
+    "akuafoil-postcards": ["akuafoil"],
+    "brown-kraft-postcards": ["brown kraft", "kraft"],
+    "suede-postcards": ["suede"],
+    "silk-postcards": ["silk"],
+    "pearl-postcards": ["pearl"],
+    "natural-postcards": ["natural"],
+    "linen-uncoated-postcards": ["linen"],
+    "plastic-postcards": ["plastic"],
+    "magnet-postcards": ["magnet"],
+    "100lb-gloss-cover-postcards": ["100lb gloss cover"],
+    "18pt-postcards": ["18pt"],
+    "16pt-postcards": ["16pt"],
+    "14pt-postcards": ["14pt"],
+    "direct-mail-postcards": ["direct mail"],
     "standard-postcards": [], // catch-all
   },
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
@@ -211,14 +279,19 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   "business-cards-standard": {
     "standard-business-cards": [], // catch-all (now the only rule)
   },
-  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
-  // file's comment for why the 4 plain sizes collapse into one Standard
-  // catch-all (Size becomes the calculator dropdown) instead of 4 cards.
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for presentation-folders —
+  // specialty stocks first, then size-based splits, catch-all last.
   "presentation-folders": {
+    "silk-presentation-folder": ["silk"],
+    "suede-presentation-folder": ["suede"],
+    "akuafoil-presentation-folder": ["akuafoil"],
     "natural-presentation-folder": ["natural"],
     "pearl-presentation-folder": ["pearl"],
     "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
-    "standard-presentation-folder": [], // catch-all
+    "9x12-presentation-folder": ['9" x 12"', "9x12"],
+    "9x14-presentation-folder": ['9" x 14.5"', "9x14"],
+    "5x10-presentation-folder": ['5.25" x 10.5"', "5.25x10"],
+    "6x9-presentation-folder": [], // catch-all
   },
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
   // file's comment for why "Die Cut" isn't a 4th type here.
@@ -265,8 +338,7 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   },
   "rack-cards": {
     "akuafoil-rack-cards": ["akuafoil"],
-    "3-5-x-8-5-standard-rack-cards": ['3.5" x 8.5"'],
-    "4-x-9-standard-rack-cards": [], // catch-all
+    "standard-rack-cards": [], // catch-all (was previously split into 3.5x8.5 and 4x9)
   },
   "sell-sheets": {
     "akuafoil-sell-sheets": ["akuafoil"],
@@ -353,23 +425,97 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "foam-core-counter-cards": ["foam core"],
     "white-pvc-counter-cards": ["pvc"],
   },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for booklets —
+  // "Gloss Cover" before "Gloss" to avoid misclassification.
+  booklets: {
+    "matte-book-uncoated-booklets": ["matte"],
+    "dull-book-satin-aq-booklets": ["dull"],
+    "gloss-cover-aq-booklets": ["gloss cover"],
+    "premium-opaque-uncoated-booklets": ["opaque", "premium opaque", "60lb", "70lb"],
+    "direct-mail-booklets": ["direct mail"],
+    "gloss-booklets": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for calendars —
+  // binding types (Spiral/Hard-Cover) before size-based splits.
+  calendars: {
+    "spiral-bind-calendars": ["spiral"],
+    "hard-cover-calendars": ["hard cover", "hard-cover", "hardcover"],
+    "12x12-calendars": ['12" x 12"', "12x12"],
+    "11x8-5-calendars": ['11" x 8.5"', "11x8.5"],
+    "9x12-calendars": ['9" x 12"', "9x12"],
+    "8-5x11-calendars": ['8.5" x 11"', "8.5x11"],
+    "self-cover-calendars": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for trading-cards —
+  // Akuafoil/Brown Kraft before 16pt/18pt to avoid misclassification.
+  "trading-cards": {
+    "akuafoil-trading-cards": ["akuafoil"],
+    "brown-kraft-trading-cards": ["brown kraft", "kraft"],
+    "foil-worx-trading-cards": ["foil worx", "foiled"],
+    "natural-trading-cards": ["natural"],
+    "pearl-trading-cards": ["pearl"],
+    "suede-trading-cards": ["suede"],
+    "100lb-cover-linen-trading-cards": ["linen"],
+    "18pt-trading-cards": ["18pt"],
+    "16pt-trading-cards": ["16pt"],
+    "14pt-trading-cards": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for magnets.
+  magnets: {
+    "car-door-magnets": ["car door", "vehicle"],
+    "magnet-postcards": ["postcard"],
+    "oval-magnets": ["oval"],
+    "magnet-announcement-cards": ["announcement"],
+    "magnet-business-cards": ["business card"],
+    "standard-magnets": [], // catch-all
+  },
 }
 
 // Type slug -> display label
 const TYPE_LABELS: Record<string, string> = {
-  "all-inclusive-flyers-and-brochures": "All Inclusive Flyers and Brochures",
-  "flat-flyers-and-brochures": "Flat Flyers and Brochures",
-  "half-fold-brochures": "Half-Fold Brochures",
+  "all-inclusive-flyers-brochures": "All Inclusive Flyers Brochures",
+  "flat-flyers-brochures": "Flat Flyers Brochures",
+  "half-fold-brochures": "Half Fold Brochures",
   "tearoff-flyers": "Tearoff Flyers",
-  "all-inclusive-postcards": "All Inclusive Postcards",
+  "direct-mail-specialty-folds-flyers-and-brochures": "Direct Mail Specialty Folds Flyers and Brochures",
+  "all-inclusive-postcards": "All-Inclusive Postcards",
+  "eddm-full-service-postcards": "EDDM Full Service Postcards",
+  "eddm-print-only-postcards": "EDDM Print Only Postcards",
   "eddm-postcards": "EDDM Postcards",
+  "dual-raised-rsvp-postcards": "Dual Raised RSVP",
+  "dual-raised-postcards": "Dual Raised Postcards",
   "raised-foil-postcards": "Raised Foil Postcards",
+  "raised-spot-uv-postcards": "Raised Spot UV Postcards",
+  "foil-worx-postcards": "Foil Worx Postcards",
+  "tearoff-postcards": "Tearoff Postcards",
+  "painted-edge-postcards": "Painted-Edge Postcards",
+  "endurace-postcards": "EndurACE Postcards",
+  "akuafoil-postcards": "Akuafoil Postcards",
+  "brown-kraft-postcards": "Brown Kraft Postcards",
+  "suede-postcards": "Suede Postcards",
+  "silk-postcards": "Silk Postcards",
+  "pearl-postcards": "Pearl Postcards",
+  "natural-postcards": "Natural Postcards",
+  "linen-uncoated-postcards": "Linen Uncoated Postcards",
+  "plastic-postcards": "Plastic Postcards",
+  "magnet-postcards": "Magnet Postcards",
+  "100lb-gloss-cover-postcards": "100LB Gloss Cover Postcards",
+  "18pt-postcards": "18pt Postcards",
+  "16pt-postcards": "16PT Postcards",
+  "14pt-postcards": "14pt Postcards",
+  "direct-mail-postcards": "Direct Mail Postcards",
   "standard-postcards": "Standard Postcards",
   "standard-business-cards": "Standard Business Cards",
+  "silk-presentation-folder": "Silk Presentation Folder",
+  "suede-presentation-folder": "Suede Presentation Folder",
+  "akuafoil-presentation-folder": "Akuafoil Presentation Folder",
   "natural-presentation-folder": "Natural Presentation Folder",
   "pearl-presentation-folder": "Pearl Presentation Folder",
-  "glueless-presentation-folder": "Glue-less Presentation Folder",
-  "standard-presentation-folder": "Standard Presentation Folder",
+  "glueless-presentation-folder": "Glue Less 9x12 Presentation Folder",
+  "9x12-presentation-folder": "9x12 Presentation Folder",
+  "9x14-presentation-folder": "9x14.5 Presentation Folder",
+  "5x10-presentation-folder": "5.25x10.5 Presentation Folder",
+  "6x9-presentation-folder": "6x9 Presentation Folder",
   "endurace-door-hangers": "EndurACE Door Hangers",
   "tearoff-door-hangers": "Tearoff Door Hangers",
   "standard-door-hangers": "Standard Door Hangers",
@@ -396,9 +542,36 @@ const TYPE_LABELS: Record<string, string> = {
   "matte-finish-posters": "Matte-Finish Posters",
   "gloss-cover-posters": "Gloss Cover Posters",
   "gloss-book-posters": "Gloss Book Posters",
+  "matte-book-uncoated-booklets": "Matte Book Uncoated Booklets",
+  "dull-book-satin-aq-booklets": "Dull Book with Satin AQ Booklets",
+  "gloss-cover-aq-booklets": "Gloss Cover with AQ Booklets",
+  "premium-opaque-uncoated-booklets": "Premium Opaque Uncoated Booklets",
+  "direct-mail-booklets": "Direct Mail Booklets",
+  "gloss-booklets": "Gloss Booklets",
+  "spiral-bind-calendars": "Spiral Bind Calendars",
+  "hard-cover-calendars": "Hard-Cover Calendars",
+  "12x12-calendars": "12x12 Calendars",
+  "11x8-5-calendars": "11x8.5 Calendars",
+  "9x12-calendars": "9x12 Calendars",
+  "8-5x11-calendars": "8.5x11 Calendars",
+  "self-cover-calendars": "Self-Cover Calendars",
+  "akuafoil-trading-cards": "Akuafoil Trading Cards",
+  "brown-kraft-trading-cards": "Brown Kraft Trading Cards",
+  "foil-worx-trading-cards": "Foil Worx Trading Cards",
+  "natural-trading-cards": "Natural Trading Cards",
+  "pearl-trading-cards": "Pearl Trading Cards",
+  "suede-trading-cards": "Suede Trading Cards",
+  "100lb-cover-linen-trading-cards": "100lb Cover Linen Trading Cards",
+  "18pt-trading-cards": "18pt Trading Cards",
+  "16pt-trading-cards": "16pt Trading Cards",
+  "14pt-trading-cards": "14pt Trading Cards",
+  "car-door-magnets": "Car Door Magnets",
+  "oval-magnets": "Oval Magnets",
+  "magnet-announcement-cards": "Magnet Announcement Cards",
+  "magnet-business-cards": "Magnet Business Cards",
+  "standard-magnets": "Standard Magnets",
   "akuafoil-rack-cards": "Akuafoil Rack Cards",
-  "3-5-x-8-5-standard-rack-cards": "3.5 x 8.5 Standard Rack Cards",
-  "4-x-9-standard-rack-cards": "4 x 9 Standard Rack Cards",
+  "standard-rack-cards": "Standard Rack Cards",
   "akuafoil-sell-sheets": "Akuafoil Sell Sheets",
   "brown-kraft-sell-sheets": "Brown Kraft Sell Sheets",
   "endurace-sell-sheets": "EndurACE Sell Sheets",
@@ -840,6 +1013,13 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
     [/\buncoated\s+(?=trading\s+cards)/gi, ""],
   ],
   "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  // Same Foil Worx naming pattern as Trading Cards — Foil Worx UUID has
+  // "14PT Uncoated Foiled Postcards"; strip the stock prefix so all foiled
+  // stocks merge into one card, then rename to match 4over's label.
+  "postcards": [
+    [/\b\d+pt\s+(?:uncoated\s+|silk\s+laminated\s+)?(?=foiled\s+postcards?)/gi, ""],
+    [/\bfoiled\s+postcards?\b/gi, "Foil Worx Postcards"],
+  ],
   "booklets": [[/\b(?:60lb|70lb|80lb|100lb)\s+(?=(?:gloss\s*book|gloss\s*cover|matte\s*book)\b)/gi, ""]],
   "greeting-cards": [
     [/\buncoated\s+(?=greeting\s+cards)/gi, ""],
