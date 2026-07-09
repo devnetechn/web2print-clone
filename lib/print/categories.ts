@@ -149,14 +149,33 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     label: "Boxes & Packaging",
     subcategories: [
       { name: "Packaging", uuid: "c11d8936-67ad-4b59-a48d-1683f42f055c", slug: "packaging", image: "/images/cat/packaging.jpg" },
-      // 4over's own product_description for every entry here is literally
-      // its product_code ("18PTC1S-CPBXNC-10X10", no clean sibling
-      // anywhere to reconstruct from) — confirmed via exact stock_uuid
-      // match that this is fourprintshop's "Print & Trim Boxes" (under
-      // Standard Boxes), not a genuinely separate "Custom Boxes" product.
-      // Renamed to match; slug kept as "custom-boxes" since it's just the
-      // URL, not user-facing.
-      { name: "Print & Trim Boxes", uuid: "776a6fc9-b3fe-4ede-82e9-bbfccd51c293", slug: "custom-boxes", image: "/images/cat/custom-boxes.jpg" },
+      // Akuafoil box variants were briefly split into a separate "Majestic
+      // Boxes" subcategory (2026-07-08 same day) after confirming 4over.com's
+      // own Cube Boxes product page shows no Akuafoil option — but the user
+      // decided (2026-07-08, later same day) to merge them back: one card
+      // per box type, Akuafoil selectable inside that card's calculator
+      // instead of a separate subcategory. Akuafoil variants differ from
+      // plain by Stock (e.g. "18PT C1S" vs "14PT Uncoated") AND Colorspec
+      // ("5/0 (4/0 with Foil on Front)" vs "4/0 (4 color front)") at the
+      // SAME physical Size — the normal generic Stock/Colorspec cascade
+      // dropdowns handle this natively once both uuids are in the same
+      // card's sibling set (see CATEGORY_WORD_OVERRIDES["packaging"]'s
+      // Akuafoil-strip rule) — no shapeList/extractShape mechanism needed,
+      // unlike Wine Boxes' Handle merge.
+      // CORRECTED (2026-07-08): this category's OWN official 4over name
+      // (confirmed via GET /printproducts/categories/776a6fc9...) is
+      // literally "Custom Boxes" — a genuinely different, fully-custom
+      // product (option groups: Custom Box Style Four Panel/Tray Style/
+      // Other, Custom Box Closure Tuck End/Beers Tray, Custom Box Die
+      // Options, Custom Box Glue Options) from the real "Print & Trim
+      // Boxes" (6 standard sizes 11x17/12x18/13x19/19x27/8.5x11/8.5x14,
+      // just Stock/Coating/Colorspec — confirmed live on 4over.com's own
+      // /print-and-trim-boxes page, which matches our SEPARATE "packaging"
+      // > "Print and Trim Flat Sheets" card exactly, not this one). A prior
+      // session's rename to "Print & Trim Boxes" here was based on
+      // fourprintshop matching, not 4over.com — wrong product. Reverted to
+      // 4over's own name; slug kept as "custom-boxes" (URL-only).
+      { name: "Custom Boxes", uuid: "776a6fc9-b3fe-4ede-82e9-bbfccd51c293", slug: "custom-boxes", image: "/images/cat/custom-boxes.jpg" },
       // fourprintshop nests this under "Standard Packaging Tags & Cards"
       // alongside Bottleneck/Regular Hang Tags (and "Majestic Packaging
       // Tags & Cards" alongside the rest of Hang Tags' own materials) — per
@@ -171,6 +190,14 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     subcategories: [
       { name: "Roll Labels", uuid: "a2b13bce-0643-41ce-9a03-e21f9a92d7d4", slug: "roll-labels", image: "/images/cat/roll-labels.jpg" },
       { name: "Stickers", uuid: "7381a85e-5e48-4673-aa67-862dd6553ef0", slug: "stickers", image: "/images/cat/stickers.jpg" },
+      // 4over.com's own /rolls-labels-stickers page (2026-07-08) lists
+      // Bumper Stickers as its OWN 3rd subcategory (1 item), separate from
+      // Stickers (6 items) — "4mil Bumper Stickers" shares the SAME
+      // "Stickers" UUID, split out here via keyword; the "stickers" leaf
+      // excludes "bumper" matches (see the `category === "stickers"`
+      // filter in print/[category]/page.tsx and [typeSlug]/page.tsx) so the
+      // two don't double-list.
+      { name: "Bumper Stickers", uuid: "7381a85e-5e48-4673-aa67-862dd6553ef0", slug: "bumper-stickers", image: "/images/cat/stickers.jpg", keyword: "bumper" },
       // Removed "Adhesive Vinyl" — it pointed at the SAME UUID as Signs &
       // Banners' Floor Graphics/Wall Decals ("4bf65303..."), an unrelated
       // category misplaced here; fourprintshop's own Roll Labels & Stickers

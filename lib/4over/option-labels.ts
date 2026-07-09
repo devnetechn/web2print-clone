@@ -49,6 +49,9 @@ const STOCK_LABELS: Record<string, string> = {
   "16PTC2S": "16PT C2S",
   "18PT": "18PT C1S",
   "18PTC1S": "18PT C1S",
+  "12PTC1S": "12PT C1S",
+  "12PTC2S": "12PT C2S",
+  "24PTC1S": "24PT C1S",
   // ── Flyer / Brochure stocks ──
   // Gloss
   "100GLB": "100LB Gloss Book",
@@ -57,6 +60,7 @@ const STOCK_LABELS: Record<string, string> = {
   "80GLB": "80LB Gloss Book",
   "80GLC": "80LB Gloss Cover",
   "70GLB": "70LB Gloss Book",
+  "70LBGLC": "70LB Gloss Cover",
   // Matte / Dull
   "100DB": "100LB Dull Book",
   "100MTTB": "100LB Matte Book",
@@ -115,19 +119,45 @@ const STOCK_LABELS: Record<string, string> = {
   // ── Rigid Signs ──
   "3PVC": "3mm PVC",
   "316FC": "3/16 Foam Core",
+  "38FC": "3/8 Foam Core",
   "4CORO": "4mm White Coroplast",
+  "4KORO": "4mm White Coroplast",
+  "4MMCORO": "4mm White Coroplast",
   "10CORO": "10mm White Coroplast",
   "15STYRENE": "0.015 inch White Styrene",
   "316GATORBLACK": '3/16" Black Gator Board',
   "316GATORWHITE": '3/16" White Gator Board',
+  "025ACRYLIC": "0.025 inch Acrylic",
+  "040AL": "0.040 inch Aluminum",
+  "045AL": "0.045 inch Aluminum",
+  "080ALUHVYDTYWHT": "0.080 inch Aluminum Heavy Duty White",
+  "3MMALUBRDWHT": "3mm Aluminum Board White",
+  "3MMALUBRDBRSLVR": "3mm Aluminum Board Brushed Silver",
+  "3MMALUPANELBRSLVR": "3mm Aluminum Panel Brushed Silver",
+  "24PTPOLYBOARD": "24PT Poly Board",
+  "10H-STAKE": "10 inch H-Stake",
+  "4H-STAKE": "4 inch H-Stake",
+  "24DOUBLEWINGEASEL": "24in Double Wing Easel",
   // ── Banners & Flags ──
   "8OZMESH": "8oz Mesh",
   "13OZOUTDOOR": "13oz Outdoor Vinyl",
+  "13OZ-OUTDOOR": "13oz Outdoor Vinyl",
+  "13OZ-BANNER": "13oz Outdoor Vinyl",
   "10MIL": "10mil",
+  "10MILINDOOR": "10mil Indoor Vinyl",
   "15OZBLOCKOUT": "15oz Blockout",
   "18OZBLOCKOUT": "18oz Blockout",
   "17MIL": "17mil",
   "3OZPOLY": "3oz Polyester",
+  "5OZPOLY": "5oz Polyester",
+  "7OZPOLY": "7oz Polyester",
+  "79OZPOLY": "79oz Polyester",
+  // ── Posters ──
+  // 4over's own data has NO descriptive text for this stock at all (raw
+  // product_code style even in the option name, not just the description —
+  // see posters' TYPE_RULES comment in print/[category]/page.tsx).
+  "9MILBACKLIT": "9mil Backlit",
+  "2MILGLOSS": "2mil Gloss",
   // ── Window Graphics & Decals ──
   "6MIL": "6mil Vinyl",
   "6MIL7030": "6mil See Through Vinyl",
@@ -158,6 +188,7 @@ const STOCK_LABELS: Record<string, string> = {
   "CRM11WH": "11oz White Mug",
   "CRM15WH": "15oz White Mug",
   "BUTTON": "Button",
+  "MGBUTTON": "Button",
 }
 
 // ─── SIZE (Business Cards only) ──────────────────────────────────────────────

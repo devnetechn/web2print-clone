@@ -84,10 +84,29 @@ interface ProductConfiguratorClientProps {
   // cascade (a stock can have a coating this type doesn't use either). Only
   // applied while stockUuid still equals initialStockUuid.
   initialCoatingUuid?: string
-  // optional: when the category contains many product lines, restrict the SIZE
-  // dropdown to only these size UUIDs (e.g. All-Inclusive Postcards within the
-  // full postcards category). Stock/Coating live cascade still runs normally.
+  // optional: when the category contains many product lines, restrict the
+  // Size dropdown to only these UUIDs (e.g. All-Inclusive Postcards within
+  // the full postcards category, which otherwise showed every size from ALL
+  // postcard types).
   filteredSizeUuids?: string[]
+  // Raw lowercased descriptions of every product classified into THIS type
+  // — used to filter Stock/Coating options FRESH every time a new list
+  // comes back from the live cascade (whichever Size/Stock the user
+  // currently has selected), by checking whether each option's raw code OR
+  // translated display name appears in any of these descriptions. Recomputed
+  // client-side rather than passed as a pre-filtered name list because a
+  // filter built server-side from just ONE anchor size's own stock_list can
+  // never include a stock/coating that only exists at a DIFFERENT (still
+  // valid) size — confirmed 2026-07-09, Foil Worx Business Cards: "32PT
+  // Uncoated" only appears in the raw stock_list at Size='2" x 3.5"', so a
+  // filter computed while anchoring on a different size silently excluded
+  // it even though the user could still pick that size from an already-
+  // correctly-scoped Size dropdown. Without this at all, picking an out-of-
+  // scope option used to silently resolve to a completely different product
+  // — the true type has zero matches at that combo, so
+  // getAllowedProducts()'s fallback returns the full unfiltered list instead
+  // — confirmed wrong-price bug (2026-07-08, All-Inclusive Postcards).
+  matchedProductTexts?: string[]
   isBusinessCards?: boolean
   isAllInclusive?: boolean
   isBanner?: boolean
@@ -114,6 +133,18 @@ function dedupeList(items: ListItem[]): ListItem[] {
   })
 }
 
+// Checks a raw option name against a set of matched-product descriptions,
+// trying BOTH the bare code ("14PTUC") and its translated display name
+// ("14PT Uncoated") — some raw codes appear literally in descriptions
+// ("16PT" in "...16PT C2S..."), others are concatenated abbreviations that
+// never do (confirmed 2026-07-09, Foil Worx Business Cards: "14PTUC" never
+// matches the description's spaced-out "14PT Uncoated").
+function matchesAnyText(rawName: string, translated: string, texts: string[]): boolean {
+  const bare = rawName.toLowerCase()
+  const label = translated.toLowerCase()
+  return texts.some((t) => t.includes(bare) || t.includes(label))
+}
+
 // Shape suffixes baked into size names by the 4over API (e.g. "2\" X 3.5\" (Oval)").
 // For BC, Oval/FoldOver/RoundCorner are Shape options, not size variants — strip them
 // and deduplicate so the Size dropdown shows clean dimensions matching 4over's UI.
@@ -138,12 +169,87 @@ function cleanBCSizeList(items: ListItem[]): ListItem[] {
 // product_uuids at the same Size+Stock+Coating, distinguished only by this
 // wording in the description — used to label the Shape dropdown options.
 function extractShape(desc: string): string {
+  return extractShapeCore(desc)
+}
+
+// Silk/Suede/Foil Worx-style Business Cards sell each Spot UV side
+// (front/back/both) as its own product_uuid at the same Size+Stock+
+// Coating+Shape, exactly matching 4over.com's own separate "Spot UV Sides"
+// dropdown (Spot UV Front / Spot UV Both Sides / Spot UV Back Full UV on
+// the Front) — kept as its own axis rather than folded into Shape so the
+// UI matches 4over.com's literal 2-field layout. See where this is used
+// (spotUvSideList effect) for how it combines with Shape to resolve the
+// final product_uuid.
+function extractSpotUvSide(desc: string): string | null {
+  const m = desc.match(/spot\s*uv\s*on\s*(both\s*sides|the\s*back|the\s*front)/i)
+  if (!m) return null
+  const side = m[1].toLowerCase()
+  return side.includes("both") ? "Spot UV Both Sides" : side.includes("back") ? "Spot UV Back" : "Spot UV Front"
+}
+
+function extractShapeCore(desc: string): string {
   // Notepads' "25 Sheet"/"50 Sheet Notepad..." pair resolves to 2 distinct
   // product_uuids at the same Size+Stock+Coating, the exact same ambiguity
   // pattern as Round Corner/Oval/Fold Over — just a sheet count instead of
   // a shape. Checked first since it's mutually exclusive with the others.
   const sheetMatch = desc.match(/\b(\d+)\s*sheets?\b/i)
   if (sheetMatch) return `${sheetMatch[1]} Sheets`
+  // Wine Boxes: "with Handle" resolves to a genuinely separate product_uuid
+  // at the SAME Size+Stock+Coating (confirmed live: 4over.com's own "Handle
+  // Options" dropdown, "No Handle (Tuck Top)" / "With Handle") — checked
+  // before the generic shape checks since "Wine Box" text never matches any
+  // of them anyway, but this keeps the pairing explicit rather than falling
+  // through to the "Rectangle" default.
+  // Boxes & Packaging's Akuafoil variants (Cube/Wine/Sales/Tuck/Golf Ball/
+  // Business Card/Pillow/Print & Trim Boxes) resolve to a genuinely
+  // separate product_uuid at the same Size — sometimes also at the same
+  // Stock+Coating (e.g. "18PT Cube Box Uncoated" vs "...with Akuafoil
+  // uncoated" both land on Stock=18PT C1S/Coating=No Coating), which is
+  // exactly this ambiguity pattern. User decided (2026-07-08) to merge
+  // these into one card with Akuafoil as a calculator pick rather than a
+  // separate "Majestic Boxes" subcategory. Wine Box is checked first and
+  // combines with Handle since it has BOTH dimensions independently (4
+  // real combos exist: plain, Handle, Akuafoil, Handle+Akuafoil).
+  if (/wine\s*box/i.test(desc)) {
+    const handle = /with\s+handle/i.test(desc) ? "With Handle" : "No Handle (Tuck Top)"
+    return /akuafoil/i.test(desc) ? `${handle} + Akuafoil` : handle
+  }
+  // Boxes & Packaging's Akuafoil variants have no OTHER shape distinction
+  // (Cube/Sales/Golf Ball/etc. box types never say "Round Corner"/"Oval"),
+  // so "Akuafoil" itself is the real differentiator there — matches the
+  // merge decision above. Akuafoil BUSINESS CARDS are different: that
+  // subcategory's own product-options data has a genuine Shape group
+  // (Rectangle/Round Corner/Square, confirmed via productsfeed — same real
+  // shapes as every other Business Card material) with Akuafoil already
+  // shown separately via its own "Foil" extra-options field, so returning
+  // "Akuafoil" here for a "Round Corner Business Cards w/ Akuafoil..."
+  // description would wrongly swallow the Round Corner distinction (2026-
+  // 07-08 bug: Akuafoil BC's Shape dropdown got stuck on "Akuafoil" for
+  // every combo, hiding 70 real Round Corner siblings). Scoped to box
+  // context (mirrors the "box(es)" check further below) so this still
+  // fires correctly for Cube/Sales/etc + Akuafoil, but Business Cards fall
+  // through to the real Round Corner/Square/Rectangle checks below instead.
+  if (/akuafoil/i.test(desc) && /\bbox(es)?\b|flat sheets/i.test(desc)) return "Akuafoil"
+  // Dual Raised Business Cards: only 2 raw products, same Size/Stock, same
+  // "Business Card" wording — differ only in whether the second raised
+  // element is another Foil or a Raised Spot UV (matches 4over.com's own
+  // unified Dual Raised calculator, which exposes this as part of its
+  // Colorspec choices + a separate Raised Spot UV Side field).
+  if (/dual\s*raised/i.test(desc)) {
+    return /raised\s*spot\s*uv/i.test(desc) ? "Raised Spot UV + Foil" : "Two Raised Foils"
+  }
+  // Raised Spot UV Business Cards: 2 raw products, same Size/Stock/Coating,
+  // differ only in "Raised Spot UV Front" vs "...on both sides" — 4over.com's
+  // own "Raised Spot UV Side" field. Confirmed bug (2026-07-09): this text
+  // never matched any earlier check, so both variants fell through to the
+  // generic "Rectangle" default, collapsing to ONE indistinguishable Shape
+  // entry — the "Raised Spot UV Side" extra-options group (sourced from
+  // whichever ONE sibling happened to resolve first, same architecture flaw
+  // as the old "Spot UV Sides" bug on Silk/Suede) then only ever showed a
+  // single static value instead of a real switcher between the two.
+  if (/raised\s*spot\s*uv/i.test(desc)) {
+    return /both\s*sides/i.test(desc) ? "Raised Spot UV Both Sides" : "Raised Spot UV Front"
+  }
   if (/round\s*corner/i.test(desc)) return "Round Corner"
   if (/\boval\b/i.test(desc)) return "Oval"
   if (/fold\s*over/i.test(desc)) return "Fold Over"
@@ -158,12 +264,37 @@ function extractShape(desc: string): string {
   if (/\bsquare\b/i.test(desc)) return "Square"
   if (/\brectangle\b/i.test(desc)) return "Rectangle"
   if (/\bround\b/i.test(desc)) return "Round"
+  // Business Cards at square dimensions (e.g. "2\" X 2\"", "2.5\" X 2.5\"")
+  // never say "Square" in the description text at all — confirmed via
+  // productsfeed, 4over's OWN per-product "Shape" option group says
+  // "Square" for these, but that's only available per-uuid (an extra fetch
+  // per sibling), not in bulk from categoryproductslist. Detecting it from
+  // the leading WxH dimension instead keeps this in sync with 4over's real
+  // classification without that extra cost — without this, e.g. Silk at
+  // 2"x2" fell through to the generic "Rectangle" default below, which
+  // disagreed with the product's own real Shape metadata.
+  // Excludes box(es)/flat sheets context: a box's leading dimensions are
+  // WxHxD (e.g. Cube Boxes' "2.75\" x 2.75\" x 2.75\""), and a cube's first
+  // two numbers being equal doesn't mean "Square" in the Business-Card
+  // sense — confirmed regression (2026-07-08): Cube Boxes' Material field
+  // briefly showed "Square" instead of "Standard" until this exclusion was
+  // added, since the WxH-equality check alone can't tell a business-card
+  // shape from a box's plan dimensions.
+  const dimMatch = !/\bbox(es)?\b|flat sheets/i.test(desc)
+    ? desc.match(/^(\d+(?:\.\d+)?)\s*["”']?\s*[Xx]\s*(\d+(?:\.\d+)?)\s*["”']?/)
+    : null
+  if (dimMatch && Math.abs(parseFloat(dimMatch[1]) - parseFloat(dimMatch[2])) < 0.001) return "Square"
   // T-Shirts' garment types (e.g. "Men Short Sleeve Tee") resolve to 2-5
   // distinct product_uuids at the same Size+Stock+Coating, distinguished
   // only by a color word right before "with"/"w/" Print Area — the exact
   // same ambiguity pattern, just Color instead of Shape.
   const colorMatch = desc.match(/\b(black|blue|gray|grey|red|white)\b\s*(?=w\/|with)/i)
   if (colorMatch) return colorMatch[1].charAt(0).toUpperCase() + colorMatch[1].slice(1).toLowerCase()
+  // Non-Akuafoil Boxes & Packaging products would otherwise fall through to
+  // the generic "Rectangle" default below — clearer paired with "Akuafoil"
+  // as "Standard" (matches 4over's own "Product Type: Standard" vs
+  // "Product Type: Majestic" distinction, confirmed via productsfeed).
+  if (/\bbox(es)?\b|flat sheets/i.test(desc)) return "Standard"
   return "Rectangle"
 }
 
@@ -213,6 +344,7 @@ export function ProductConfiguratorClient({
   initialStockUuid,
   initialCoatingUuid,
   filteredSizeUuids,
+  matchedProductTexts,
   isBusinessCards = false,
   isAllInclusive = false,
   isBanner = false,
@@ -244,6 +376,14 @@ export function ProductConfiguratorClient({
   // hiding the rest. See the "coating changed" effect below.
   const [shapeList, setShapeList] = useState<{ uuid: string; shape: string }[]>([])
   const [shapeUuid, setShapeUuid] = useState("")
+  // Raw sibling pool behind shapeList (uuid+description), kept so the Spot
+  // UV Sides effect below can re-filter to "siblings matching the CURRENTLY
+  // selected shape" and build its own independent switchable list — see
+  // extractSpotUvSide()'s comment for why this is a second axis rather than
+  // folded into Shape.
+  const [rawShapeProducts, setRawShapeProducts] = useState<{ uuid: string; description: string }[]>([])
+  const [spotUvSideList, setSpotUvSideList] = useState<{ uuid: string; side: string }[]>([])
+  const [spotUvSideUuid, setSpotUvSideUuid] = useState("")
 
   // Valid combinations (colorspec/runsize/turnaround + price) from baseprices
   const [combinations, setCombinations] = useState<Combination[]>([])
@@ -492,7 +632,10 @@ export function ProductConfiguratorClient({
 
     fetchList({ size_uuid: sizeUuid }).then((data) => {
       if (reqIdRef.current !== myReq || !data) return
-      const stocks = dedupeList(data.stock_list || [])
+      const allStocks = dedupeList(data.stock_list || [])
+      const stocks = matchedProductTexts && matchedProductTexts.length > 0
+        ? allStocks.filter((s) => matchesAnyText(s.name, translateStockName(s.name), matchedProductTexts!))
+        : allStocks
       setStockList(stocks)
       if (stocks.length > 0) {
         const anchored =
@@ -506,7 +649,7 @@ export function ProductConfiguratorClient({
         setProductUuid(resolveProduct(data.products))
       }
     })
-  }, [sizeUuid, fetchList, sizeVariantMode, resolveProduct, initialSizeUuid, initialStockUuid])
+  }, [sizeUuid, fetchList, sizeVariantMode, resolveProduct, initialSizeUuid, initialStockUuid, matchedProductTexts])
 
   // When stock changes -> reset coating/product IMMEDIATELY, then load coatings.
   // Reads sizeUuid via ref rather than as a dependency: sizeUuid is ALSO in
@@ -525,9 +668,29 @@ export function ProductConfiguratorClient({
     setCoatingUuid("")
     setProductUuid("")
 
-    fetchList({ size_uuid: sUuid, stock_uuid: stockUuid }).then((data) => {
+    fetchList({ size_uuid: sUuid, stock_uuid: stockUuid }).then(async (data) => {
       if (reqIdRef.current !== myReq || !data) return
-      const coatings = dedupeList(data.coating_list || [])
+      const allCoatings = dedupeList(data.coating_list || [])
+      // API-verified, NOT text-matched: coating_list names are abbreviated
+      // 4over codes ("AQ", "UVFR", "MATT"...) that don't reliably appear in
+      // product descriptions even once translated to their display name
+      // (confirmed: "UV Coating Front Only" never matches a description
+      // phrased "...with Full UV on the front only..."), unlike Stock codes
+      // which usually do. Verifying by actually resolving each candidate
+      // coating and checking the result against allowedProductUuids is
+      // slower (one extra request per coating) but correct regardless of
+      // how a coating's raw code or label happens to be worded.
+      let coatings = allCoatings
+      if (allowedProductUuids && allowedProductUuids.length > 0 && allCoatings.length > 0) {
+        const verifications = await Promise.all(
+          allCoatings.map((c) => fetchList({ size_uuid: sUuid, stock_uuid: stockUuid, coating_uuid: c.uuid })),
+        )
+        if (reqIdRef.current !== myReq) return
+        coatings = allCoatings.filter((_, i) =>
+          (verifications[i]?.products || []).some((p) => allowedProductUuids!.includes(p.product_uuid)),
+        )
+        if (coatings.length === 0) coatings = allCoatings
+      }
       setCoatingList(coatings)
       if (coatings.length > 0) {
         const anchored =
@@ -540,7 +703,7 @@ export function ProductConfiguratorClient({
         setProductUuid(resolveProduct(data.products))
       }
     })
-  }, [stockUuid, fetchList, resolveProduct, initialSizeUuid, initialStockUuid, initialCoatingUuid])
+  }, [stockUuid, fetchList, resolveProduct, initialSizeUuid, initialStockUuid, initialCoatingUuid, allowedProductUuids])
 
   // When coating changes -> resolve product_uuid for the full valid triple.
   // Reads size/stock via refs rather than as dependencies: stockUuid (and
@@ -559,17 +722,59 @@ export function ProductConfiguratorClient({
       if (reqIdRef.current !== myReq || !data) return
       const allowed = getAllowedProducts(data.products)
       if (allowed.length > 1) {
-        const shapes = allowed.map((p) => ({ uuid: p.product_uuid, shape: extractShape(p.product_description) }))
+        setRawShapeProducts(allowed.map((p) => ({ uuid: p.product_uuid, description: p.product_description })))
+        const seen = new Set<string>()
+        const shapes: { uuid: string; shape: string }[] = []
+        for (const p of allowed) {
+          const shape = extractShape(p.product_description)
+          if (seen.has(shape)) continue
+          seen.add(shape)
+          shapes.push({ uuid: p.product_uuid, shape })
+        }
         setShapeList(shapes)
         setShapeUuid(shapes[0].uuid)
-        setProductUuid(shapes[0].uuid)
+        // productUuid + spotUvSideList get resolved by the effect below,
+        // keyed off shapeUuid — not set here, since the first sibling for a
+        // shape isn't necessarily the right one once Spot UV Side also varies.
       } else {
         setShapeList([])
         setShapeUuid("")
+        setRawShapeProducts([])
+        setSpotUvSideList([])
+        setSpotUvSideUuid("")
         setProductUuid(allowed[0]?.product_uuid || "")
       }
     })
   }, [coatingUuid, fetchList, getAllowedProducts])
+
+  // Second axis: once a Shape is picked, find its siblings (same Shape,
+  // different Spot UV Side) and expose them as their own switchable
+  // dropdown, matching 4over.com's separate Shape / Spot UV Sides fields
+  // instead of collapsing both into one. Resolves the final productUuid
+  // from whichever (shape, side) pair is currently selected.
+  useEffect(() => {
+    if (!shapeUuid || rawShapeProducts.length === 0) return
+    const currentShape = shapeList.find((s) => s.uuid === shapeUuid)?.shape
+    if (!currentShape) return
+    const siblings = rawShapeProducts.filter((p) => extractShape(p.description) === currentShape)
+    const seen = new Set<string>()
+    const sides: { uuid: string; side: string }[] = []
+    for (const p of siblings) {
+      const side = extractSpotUvSide(p.description)
+      if (!side || seen.has(side)) continue
+      seen.add(side)
+      sides.push({ uuid: p.uuid, side })
+    }
+    if (sides.length > 1) {
+      setSpotUvSideList(sides)
+      setSpotUvSideUuid(sides[0].uuid)
+      setProductUuid(sides[0].uuid)
+    } else {
+      setSpotUvSideList([])
+      setSpotUvSideUuid("")
+      setProductUuid(siblings[0]?.uuid || shapeUuid)
+    }
+  }, [shapeUuid, rawShapeProducts, shapeList])
 
   // When product_uuid resolved -> load valid combination matrix from baseprices
   useEffect(() => {
@@ -956,7 +1161,7 @@ export function ProductConfiguratorClient({
       // Color" group, and Buttons' "Button Shape Options"/"Button Backing
       // Options" groups, which extractShape() repurposes for the exact same
       // Round-Corner-style ambiguity.
-      const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options"]
+      const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options", "handle options"]
       if (shapeLikeGroups.includes(name) && shapeList.length > 1) return false
       if (seen.has(name)) return false
       seen.add(name)
@@ -1020,14 +1225,37 @@ export function ProductConfiguratorClient({
       if (BC_HIDDEN_EXTRA_NAMES.has(name)) return false
       if (hiddenSet && hiddenSet.has(name)) return false
       if (BC_SEPARATE_EXTRA_NAMES.test(g.group_name)) return false
-      const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options"]
-      if (shapeLikeGroups.includes(name) && shapeList.length > 1) return false
+      const shapeLikeGroups = ["shape", "sheets per pad", "product color", "button shape options", "button backing options", "handle options"]
+      // >0, not >1: the dedicated Shape row below always renders as a real
+      // dropdown once shapeList is non-empty (forceDropdown=true), even
+      // with just 1 entry (e.g. Silk at a Square-only combo) — so the raw
+      // extra-options group with the same name is redundant either way,
+      // not just when there's more than one to switch between.
+      if (shapeLikeGroups.includes(name) && shapeList.length > 0) return false
+      // Silk/Suede/etc: the dedicated Spot UV Sides dropdown (built from
+      // spotUvSideList, rendered right after Shape/Radius) replaces this
+      // group once it's active — this "Spot UV Sides" extra-options group
+      // is otherwise just a static single value belonging to whichever
+      // sibling happens to be resolved, not an actual switcher.
+      if (name === "spot uv sides" && spotUvSideList.length > 0) return false
+      // Raised Spot UV Business Cards specifically: Shape now carries the
+      // real Front/Both-Sides switch (see extractShapeCore()), so THIS
+      // group is redundant — but ONLY when Shape is genuinely playing that
+      // role. Deliberately NOT a blanket "raised spot uv side" name check:
+      // Dual Raised Business Cards has its OWN separate "Raised Spot UV
+      // Side" group (confirmed present on 4over.com's real calculator too,
+      // alongside "Raised Foil Side") that describes something Shape
+      // DOESN'T cover there (Shape instead switches between "Two Raised
+      // Foils"/"Raised Spot UV + Foil") — hiding it unconditionally for
+      // every category with this group name was a regression caught during
+      // this same fix's own verification.
+      if (name === "raised spot uv side" && shapeList.some((s) => /^raised spot uv (front|both sides)$/i.test(s.shape))) return false
       if (g.options.length === 0) return false
       if (seen.has(name)) return false
       seen.add(name)
       return true
     })
-  }, [isBusinessCards, extraGroups, shapeList, hiddenSet])
+  }, [isBusinessCards, extraGroups, shapeList, spotUvSideList, hiddenSet])
 
   // BC: ordered extras (SPOT UV SIDES → Lamination → Scoring → remaining)
   const bcOrderedExtras = useMemo(() => {
@@ -1167,10 +1395,14 @@ export function ProductConfiguratorClient({
 
                   {/* SHAPE — shown before Stock for BC (same data as non-BC shapeList) */}
                   {renderListRow(
-                    "Shape",
+                    shapeList.some((s) => /^raised spot uv (front|both sides)$/i.test(s.shape))
+                      ? "Raised Spot UV Side"
+                      : shapeList.some((s) => /raised\s*(foil|spot)/i.test(s.shape))
+                        ? "Foil / Spot UV"
+                        : "Shape",
                     shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
                     shapeUuid,
-                    (uuid) => { setShapeUuid(uuid); setProductUuid(uuid) },
+                    (uuid) => setShapeUuid(uuid),
                     true,
                   )}
 
@@ -1180,6 +1412,16 @@ export function ProductConfiguratorClient({
                     radiusGroup.options.map((o) => ({ name: o.option_name, uuid: o.option_uuid })),
                     selectedExtras[radiusGroup.group_uuid] || "",
                     (v) => setSelectedExtras((prev) => ({ ...prev, [radiusGroup.group_uuid]: v })),
+                    true,
+                  )}
+
+                  {/* SPOT UV SIDES — second axis alongside Shape (Silk/Suede/etc.),
+                      matches 4over.com's own separate Front/Back/Both Sides dropdown. */}
+                  {spotUvSideList.length > 0 && renderListRow(
+                    "Spot UV Sides",
+                    spotUvSideList.map((s) => ({ name: s.side, uuid: s.uuid })),
+                    spotUvSideUuid,
+                    (uuid) => { setSpotUvSideUuid(uuid); setProductUuid(uuid) },
                     true,
                   )}
 
@@ -1376,7 +1618,11 @@ export function ProductConfiguratorClient({
                       ? "Sheets Per Pad"
                       : /^(black|blue|gray|grey|red|white)$/i.test(shapeList[0]?.shape || "")
                         ? "Color"
-                        : "Shape",
+                        : shapeList.some((s) => /akuafoil/i.test(s.shape))
+                          ? "Material"
+                          : /handle/i.test(shapeList[0]?.shape || "")
+                            ? "Handle Options"
+                            : "Shape",
                     shapeList.map((s) => ({ name: s.shape, uuid: s.uuid })),
                     shapeUuid,
                     (uuid) => {
