@@ -24,20 +24,62 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // plain "Flyers"/"Flyer on..." with no fold pattern) so it must be LAST:
   // classifyProduct() is order-dependent and a catch-all earlier in the
   // array would swallow Half-Fold/Tearoff's products before they're checked.
+  // 4over.com/marketing-products/flyers-brochures lists 17 product types.
+  // Order: most specific first. EDDM/Direct Mail variants checked before
+  // their broader fold-type siblings to avoid misclassification.
   "flyers-and-brochures": [
-    { label: "All Inclusive Flyers and Brochures", slug: "all-inclusive-flyers-and-brochures", keywords: ["all inclusive", "all-inclusive"] },
-    // "Folds to WxH" is how this sandbox's only 2 single-fold entries are
-    // worded (4over filed them as "4 Page Booklet", but a 4-page document
-    // folded once IS structurally a half-fold brochure).
-    { label: "Half-Fold Brochures", slug: "half-fold-brochures", keywords: ["half-fold", "half fold", "folds to"] },
-    { label: "Tearoff Flyers", slug: "tearoff-flyers", keywords: ["tear", "tearoff", "tear-off"] },
-    { label: "Flat Flyers and Brochures", slug: "flat-flyers-and-brochures", keywords: [] }, // catch-all
+    { label: "All Inclusive Flyers Brochures",               slug: "all-inclusive-flyers-brochures",              keywords: ["all inclusive", "all-inclusive"] },
+    { label: "EDDM Full Service - Half Folds",              slug: "eddm-full-service-half-folds",               keywords: ["eddm full service", "eddm", "half fold"] },
+    { label: "EDDM Print Only - Half Folds",                slug: "eddm-print-only-half-folds",                keywords: ["eddm print only", "eddm", "half fold"] },
+    { label: "EDDM Full Service - Flyers",                  slug: "eddm-full-service-flyers",                  keywords: ["eddm full service", "eddm"] },
+    { label: "EDDM Flyers - Print Only",                    slug: "eddm-flyers-print-only",                    keywords: ["eddm print only", "eddm"] },
+    { label: "Direct Mail Half Fold Flyers and Brochures",  slug: "direct-mail-half-fold-flyers",              keywords: ["direct mail", "half fold"] },
+    { label: "Direct Mail Tri Fold Flyers and Brochures",   slug: "direct-mail-tri-fold-flyers",               keywords: ["direct mail", "tri fold"] },
+    { label: "Direct Mail Specialty Folds Flyers and Brochures", slug: "direct-mail-specialty-folds-flyers-and-brochures", keywords: ["direct mail", "specialty"] },
+    { label: "Direct Mail Flyers Brochures Coated",         slug: "direct-mail-flyers-coated",                 keywords: ["direct mail", "coated"] },
+    { label: "Direct Mail Flyers Brochures Uncoated",       slug: "direct-mail-flyers-uncoated",               keywords: ["direct mail", "uncoated"] },
+    { label: "Direct Mail Flyers and Brochures",            slug: "direct-mail-flyers",                        keywords: ["direct mail"] },
+    { label: "Specialty Folds Brochures",                   slug: "specialty-folds-brochures",                 keywords: ["specialty fold", "gatefold", "gate fold", "accordion", "french fold"] },
+    { label: "Z Fold Brochures",                            slug: "z-fold-brochures",                          keywords: ["z fold", "z-fold", "zfold"] },
+    { label: "Tri Fold Brochures",                          slug: "tri-fold-brochures",                        keywords: ["tri fold", "tri-fold", "trifold"] },
+    { label: "Half Fold Brochures",                          slug: "half-fold-brochures",                       keywords: ["half-fold", "half fold", "folds to"] },
+    { label: "EndurACE Flyers and Brochures",               slug: "endurace-flyers-and-brochures",             keywords: ["endurace"] },
+    { label: "Tearoff Flyers",                              slug: "tearoff-flyers",                            keywords: ["tear", "tearoff", "tear-off"] },
+    { label: "Flat Flyers Brochures",                        slug: "flat-flyers-brochures",                     keywords: [] }, // catch-all
   ],
+  // 4over.com/marketing-products/postcards lists 25 product types.
+  // Brand-stock materials (Silk/Suede/Pearl/etc.) live in their own shared
+  // UUIDs — pulled in via EXTRA_PRODUCT_SOURCES below. Order is critical:
+  // more specific keywords must come before broader ones (e.g. "rsvp" before
+  // "dual raised", "raised foil" before "foil", "eddm full service" before "eddm").
   "postcards": [
-    { label: "All Inclusive Postcards", slug: "all-inclusive-postcards", keywords: ["all inclusive", "all-inclusive"] },
-    { label: "EDDM Postcards", slug: "eddm-postcards", keywords: ["eddm"] },
-    { label: "Raised Foil Postcards", slug: "raised-foil-postcards", keywords: ["raised foil", "dual raised", "raised spot"] },
-    { label: "Standard Postcards", slug: "standard-postcards", keywords: [] }, // catch-all
+    { label: "All-Inclusive Postcards",       slug: "all-inclusive-postcards",       keywords: ["all inclusive", "all-inclusive"] },
+    { label: "EDDM Full Service Postcards",   slug: "eddm-full-service-postcards",   keywords: ["eddm full service", "full service"] },
+    { label: "EDDM Print Only Postcards",     slug: "eddm-print-only-postcards",     keywords: ["eddm print only", "print only"] },
+    { label: "EDDM Postcards",               slug: "eddm-postcards",               keywords: ["eddm"] },
+    { label: "Dual Raised RSVP",             slug: "dual-raised-rsvp-postcards",   keywords: ["rsvp"] },
+    { label: "Dual Raised Postcards",        slug: "dual-raised-postcards",        keywords: ["dual raised"] },
+    { label: "Raised Foil Postcards",        slug: "raised-foil-postcards",        keywords: ["raised foil"] },
+    { label: "Raised Spot UV Postcards",     slug: "raised-spot-uv-postcards",     keywords: ["raised spot"] },
+    { label: "Foil Worx Postcards",          slug: "foil-worx-postcards",          keywords: ["foil worx"] },
+    { label: "Tearoff Postcards",            slug: "tearoff-postcards",            keywords: ["tear"] },
+    { label: "Painted-Edge Postcards",       slug: "painted-edge-postcards",       keywords: ["painted-edge", "painted edge"] },
+    { label: "EndurACE Postcards",           slug: "endurace-postcards",           keywords: ["endurace"] },
+    { label: "Akuafoil Postcards",           slug: "akuafoil-postcards",           keywords: ["akuafoil"] },
+    { label: "Brown Kraft Postcards",        slug: "brown-kraft-postcards",        keywords: ["brown kraft", "kraft"] },
+    { label: "Suede Postcards",              slug: "suede-postcards",              keywords: ["suede"] },
+    { label: "Silk Postcards",               slug: "silk-postcards",               keywords: ["silk"] },
+    { label: "Pearl Postcards",              slug: "pearl-postcards",              keywords: ["pearl"] },
+    { label: "Natural Postcards",            slug: "natural-postcards",            keywords: ["natural"] },
+    { label: "Linen Uncoated Postcards",     slug: "linen-uncoated-postcards",     keywords: ["linen"] },
+    { label: "Plastic Postcards",            slug: "plastic-postcards",            keywords: ["plastic"] },
+    { label: "Magnet Postcards",             slug: "magnet-postcards",             keywords: ["magnet"] },
+    { label: "100LB Gloss Cover Postcards",  slug: "100lb-gloss-cover-postcards",  keywords: ["100lb gloss cover"] },
+    { label: "18pt Postcards",               slug: "18pt-postcards",               keywords: ["18pt"] },
+    { label: "16PT Postcards",               slug: "16pt-postcards",               keywords: ["16pt"] },
+    { label: "14pt Postcards",               slug: "14pt-postcards",               keywords: ["14pt"] },
+    { label: "Direct Mail Postcards",        slug: "direct-mail-postcards",        keywords: ["direct mail"] },
+    { label: "Standard Postcards",           slug: "standard-postcards",           keywords: [] }, // catch-all
   ],
   // Round Corner/Oval/Fold Over used to be separate types here, but per
   // fourprintshop's literal reference (the Standard Business Cards page's own
@@ -51,28 +93,93 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   "business-cards-standard": [
     { label: "Standard Business Cards", slug: "standard-business-cards", keywords: [] }, // catch-all (now the only rule)
   ],
-  // Stock-name rules (Natural/Pearl/Glue-less) MUST come before the size
-  // rules below: classifyProduct() takes the FIRST matching rule, and every
-  // product's description also contains its own size (e.g. "5.25\" x 10.5\"
-  // 14pt Natural Uncoated Presentation Folder") — checking size first would
-  // swallow every Natural/Pearl/Glue-less product into a size bucket before
-  // ever reaching its real type, leaving those cards empty (and hidden).
-  // fourprintshop's reference (4over-stable.fourprintshop.com/marketing-
-  // material/presentation-folders/products/) also lists Silk/Suede/Akuafoil
-  // Presentation Folders — confirmed NOT present anywhere in this sandbox's
-  // single "Presentation Folders" 4over category (28 products, checked all),
-  // a genuine catalog gap rather than a miscategorization.
-  // The 4 plain sizes (9x12/6x9/5.25x10.5/9x14.5) are all the SAME "Standard"
-  // folder, just a different size — like Flat Flyers and Brochures, they
-  // collapse into ONE catch-all card with Size as the calculator dropdown,
-  // not 4 separate cards. Must stay LAST: classifyProduct() is order-
-  // dependent and a catch-all earlier would swallow Natural/Pearl/Glue-less'
-  // products before their keywords are even checked.
+  // CRITICAL FIX (2026-07-08): these 11 brand-material Business Card
+  // subcategories (Suede/Silk/Pearl/Natural/Painted Edge/Brown Kraft/
+  // Akuafoil/Linen Uncoated/Raised Spot UV/Raised Foil/EndurACE) had NO
+  // TYPE_RULES entry at all — unlike "business-cards-standard" above (whose
+  // single catch-all entry is what routes it through the hasTypeRules
+  // branch with the real Size→Stock→Coating→Shape live cascade). Without
+  // one, [typeSlug]/page.tsx's `typeRules.length > 0` check was false, so
+  // these fell through to the generic SIZE_GROUPED_PARENTS branch instead —
+  // which (correctly, for OTHER categories like Hang Tags where every size
+  // really is a standalone product) treats different sizes as directly-
+  // switchable uuids via `sizeProducts`/`sizeVariantMode`, entirely
+  // bypassing the categoryproductslist cascade. Confirmed live (Playwright
+  // network trace): these pages made zero `/api/4over/categoryproductslist`
+  // calls, so Stock/Coating never populated and Shape (e.g. Suede's
+  // Rectangle/Square/Rounded 2/Rounded 4 Corners, Painted Edge's Square/
+  // Rectangle — both genuinely selectable per 4over.com) was NOT
+  // selectable at all, unlike Standard Business Cards which already worked
+  // correctly.
+  //
+  // IMPORTANT: unlike "business-cards-standard" (whose 08a9625a uuid is
+  // ALSO shared with Leaf/Oval/Fold-over — all genuinely business cards, so
+  // a catch-all is safe there), most of these 10 brand-material uuids are
+  // ALSO the exact same uuid used by the matching Greeting Cards material
+  // (see greeting-cards' EXTRA_PRODUCT_SOURCES: Silk/Suede/Pearl/Natural/
+  // Brown Kraft/Akuafoil/Raised Foil/Raised Spot UV all reuse these same
+  // uuids). A first attempt using an empty catch-all keywords:[] here
+  // caused every Greeting Card sharing the uuid to leak into the Business
+  // Card listing/Size dropdown too (confirmed live: Suede's Size dropdown
+  // showed irrelevant sizes like 11"x17", 8.5"x11" — Greeting Card/Postcard
+  // dimensions). Fixed by requiring "business card" in the description,
+  // same as these GROUPS entries' own `keyword: "business card"` prop.
+  // "linen-uncoated" shares 08a9625a instead (with Standard/Leaf/Oval/
+  // Fold-over, which ALSO say "business card") so it needs "linen" instead
+  // to actually discriminate within that shared uuid.
+  "raised-foil": [{ label: "Raised Foil Business Cards", slug: "raised-foil-business-cards", keywords: ["business card"] }],
+  "silk-cards": [{ label: "Silk Business Cards", slug: "silk-business-cards", keywords: ["business card"] }],
+  "suede-cards": [{ label: "Suede Business Cards", slug: "suede-business-cards", keywords: ["business card"] }],
+  "pearl-cards": [{ label: "Pearl Business Cards", slug: "pearl-business-cards", keywords: ["business card"] }],
+  "natural-cards": [{ label: "Natural Business Cards", slug: "natural-business-cards", keywords: ["business card"] }],
+  "painted-edge-cards": [{ label: "Painted Edge Business Cards", slug: "painted-edge-business-cards", keywords: ["business card"] }],
+  "brown-kraft-cards": [{ label: "Brown Kraft Business Cards", slug: "brown-kraft-business-cards", keywords: ["business card"] }],
+  akuafoil: [{ label: "Akuafoil Business Cards", slug: "akuafoil-business-cards", keywords: ["business card"] }],
+  "linen-uncoated": [{ label: "Linen Uncoated Business Cards", slug: "linen-uncoated-business-cards", keywords: ["linen"] }],
+  "raised-spot-uv": [{ label: "Raised Spot UV Business Cards", slug: "raised-spot-uv-business-cards", keywords: ["business card"] }],
+  "endurace-cards": [{ label: "EndurACE Business Cards", slug: "endurace-business-cards", keywords: ["business card"] }],
+  // Same fix, same reason — "dual-raised" had no TYPE_RULES entry either,
+  // and its uuid's 2 raw products ("...with Two Raised Foils on Front
+  // only" vs "...with Raised Spot UV and Raised Foil on Front only") were
+  // each producing their OWN level-3 card via the generic stripSize/
+  // groupKey title-grouping (2 distinct titles = 2 distinct cards).
+  // 4over.com's own /dual-raised-business-cards is ONE unified calculator
+  // (single Size/Stock, one Colorspec list spanning both foil-only and
+  // foil+spot-UV combos, "Raised Spot UV Side" only relevant for one of
+  // them) — so this needs the SAME single-catch-all merge, with the
+  // Foil-only vs Spot-UV+Foil distinction becoming a selectable option via
+  // extractShape() (see product-configurator-client.tsx), the same pattern
+  // used for Wine Box Handle / Akuafoil Material.
+  "dual-raised": [{ label: "Dual Raised Business Cards", slug: "dual-raised-business-cards", keywords: ["business card"] }],
+  // Same fix again — Foil Worx/Plastic/Leaf/Fold-over also had no
+  // TYPE_RULES entry, so their siblings (differing only by Stock, or by a
+  // Round-Corner/Spot-UV/Gold-Foil variant handled via extractShape) each
+  // produced their OWN level-3 card instead of ONE calculator, unlike
+  // 4over.com's own single unified page for each of these.
+  "foil-worx": [{ label: "Foil Worx Business Cards", slug: "foil-worx-business-cards", keywords: ["business card"] }],
+  "plastic-cards": [{ label: "Plastic Business Cards", slug: "plastic-business-cards", keywords: ["business card"] }],
+  // Leaf/Fold-over share 08a9625a with Standard Business Cards (which ALSO
+  // says "business card") — need "leaf"/"fold over" to actually discriminate.
+  "leaf-cards": [{ label: "Leaf Business Cards", slug: "leaf-business-cards", keywords: ["leaf"] }],
+  "fold-over-cards": [{ label: "Fold-over Business Cards", slug: "fold-over-business-cards", keywords: ["fold over"] }],
+  // 4over.com/marketing-products/presentation-folder lists 10 product types.
+  // Material-specific rules MUST come before size rules: product descriptions
+  // contain both material AND size (e.g. "5.25\" x 10.5\" 14pt Natural Uncoated
+  // Presentation Folder") — checking size first would swallow material cards.
+  // Silk/Suede/Akuafoil live in their own brand-stock UUIDs → EXTRA_PRODUCT_SOURCES.
+  // 4over splits standard folders by SIZE (9x12 / 9x14.5 / 5.25x10.5 / 6x9)
+  // as separate product cards — matched here.
   "presentation-folders": [
-    { label: "Natural Presentation Folder", slug: "natural-presentation-folder", keywords: ["natural"] },
-    { label: "Pearl Presentation Folder", slug: "pearl-presentation-folder", keywords: ["pearl"] },
-    { label: "Glue-less Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
-    { label: "Standard Presentation Folder", slug: "standard-presentation-folder", keywords: [] }, // catch-all
+    { label: "Silk Presentation Folder",         slug: "silk-presentation-folder",        keywords: ["silk"] },
+    { label: "Suede Presentation Folder",        slug: "suede-presentation-folder",       keywords: ["suede"] },
+    { label: "Akuafoil Presentation Folder",     slug: "akuafoil-presentation-folder",    keywords: ["akuafoil"] },
+    { label: "Natural Presentation Folder",      slug: "natural-presentation-folder",     keywords: ["natural"] },
+    { label: "Pearl Presentation Folder",        slug: "pearl-presentation-folder",       keywords: ["pearl"] },
+    { label: "Glue Less 9x12 Presentation Folder", slug: "glueless-presentation-folder", keywords: ["glue-less", "glueless", "glue less"] },
+    { label: "9x12 Presentation Folder",         slug: "9x12-presentation-folder",        keywords: ['9" x 12"', "9x12"] },
+    { label: "9x14.5 Presentation Folder",       slug: "9x14-presentation-folder",        keywords: ['9" x 14.5"', "9x14"] },
+    { label: "5.25x10.5 Presentation Folder",    slug: "5x10-presentation-folder",        keywords: ['5.25" x 10.5"', "5.25x10"] },
+    { label: "6x9 Presentation Folder",          slug: "6x9-presentation-folder",         keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/door-hangers/products/ lists
   // EndurACE/Standard/Tearoff — confirmed our sandbox has all 3, just split
@@ -83,6 +190,35 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // (the keyhole slot), fourprintshop has no separate "Die Cut" card, and
   // the word is inconsistently present/absent across otherwise-identical
   // siblings (same 4over data-quality pattern as Calendars' "Saddle Stitch").
+  // 4over.com/marketing-products/catalogs lists 2 product types.
+  catalogs: [
+    { label: "Saddle Stitch Catalogs", slug: "saddle-stitch-catalogs", keywords: ["saddle", "saddle stitch"] },
+    { label: "Perfect Bound Catalogs", slug: "perfect-bound-catalogs", keywords: [] }, // catch-all
+  ],
+  // 4over.com/marketing-products/booklets lists 6 product types.
+  // "Gloss Cover" must come before "Gloss" to avoid misclassification.
+  // "Premium Opaque" covers both 60LB and 70LB opaque stocks.
+  // 4over.com/marketing-products/calendars lists 7 product types.
+  // Binding-specific types (Spiral/Hard-Cover) must come before size-based
+  // splits to avoid misclassification. Size-based cards match 4over's layout
+  // (12x12 / 8.5x11 / 11x8.5 / 9x12); Self-Cover is the catch-all.
+  calendars: [
+    { label: "Spiral Bind Calendars",  slug: "spiral-bind-calendars",  keywords: ["spiral"] },
+    { label: "Hard-Cover Calendars",   slug: "hard-cover-calendars",   keywords: ["hard cover", "hard-cover", "hardcover"] },
+    { label: "12x12 Calendars",        slug: "12x12-calendars",        keywords: ['12" x 12"', "12x12"] },
+    { label: "11x8.5 Calendars",       slug: "11x8-5-calendars",       keywords: ['11" x 8.5"', "11x8.5"] },
+    { label: "9x12 Calendars",         slug: "9x12-calendars",         keywords: ['9" x 12"', "9x12"] },
+    { label: "8.5x11 Calendars",       slug: "8-5x11-calendars",       keywords: ['8.5" x 11"', "8.5x11"] },
+    { label: "Self-Cover Calendars",   slug: "self-cover-calendars",   keywords: [] }, // catch-all
+  ],
+  booklets: [
+    { label: "Matte Book Uncoated Booklets",      slug: "matte-book-uncoated-booklets",    keywords: ["matte"] },
+    { label: "Dull Book with Satin AQ Booklets",  slug: "dull-book-satin-aq-booklets",     keywords: ["dull"] },
+    { label: "Gloss Cover with AQ Booklets",      slug: "gloss-cover-aq-booklets",         keywords: ["gloss cover"] },
+    { label: "Premium Opaque Uncoated Booklets",  slug: "premium-opaque-uncoated-booklets",keywords: ["opaque", "premium opaque", "60lb", "70lb"] },
+    { label: "Direct Mail Booklets",              slug: "direct-mail-booklets",            keywords: ["direct mail"] },
+    { label: "Gloss Booklets",                    slug: "gloss-booklets",                  keywords: [] }, // catch-all (Gloss Book)
+  ],
   "door-hangers": [
     { label: "EndurACE Door Hangers", slug: "endurace-door-hangers", keywords: ["endurace"] },
     { label: "Tearoff Door Hangers", slug: "tearoff-door-hangers", keywords: ["tear"] },
@@ -98,13 +234,49 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // matters: e.g. "Blank ENVELOPE on 70lb Linen..." must hit Blank before
   // the Linen rule gets a chance, and "...Natural...w/Variable Addressing"
   // must hit Variable Addressing before Natural.
+  // 4over.com/marketing-products/greeting-cards lists 13 product types.
+  // Specialty stocks (Silk/Pearl/Natural/etc.) come from EXTRA_PRODUCT_SOURCES.
+  // Specific types must come before the catch-all; Dual Raised/Raised Foil/
+  // Raised Spot UV before plain "raised" so they don't fall into wrong buckets.
+  // ORDER MATTERS: "Raised Foil"/"Raised Spot UV"/"Dual Raised" must all be
+  // checked BEFORE the plain material names (Suede/Silk/Pearl/etc.) — 4over
+  // genuinely has combo products like "16PT Suede Greeting Cards w/ Raised
+  // Foil on Front only" that contain BOTH a material word AND a raised-
+  // finish word. classifyProduct() returns on the FIRST keyword match, so
+  // with "suede" checked before "raised foil" this combo silently landed on
+  // the "Suede Greeting Cards" card instead of its own "Raised Foil
+  // Greeting Cards" card (confirmed 2026-07-08: made Raised Foil Greeting
+  // Cards' only real product — 1 total, at 7"x10" — invisible, since its
+  // level-3 card never appeared at all despite the product genuinely
+  // existing and being correctly pulled via EXTRA_PRODUCT_SOURCES).
+  "greeting-cards": [
+    { label: "Dual Raised Greeting Cards",              slug: "dual-raised-greeting-cards",          keywords: ["dual raised"] },
+    { label: "Raised Foil Greeting Cards",              slug: "raised-foil-greeting-cards",          keywords: ["raised foil"] },
+    { label: "Raised Spot UV Greeting Cards",           slug: "raised-spot-uv-greeting-cards",       keywords: ["raised spot"] },
+    { label: "Cards with Gift Card Holder Greeting Cards", slug: "gift-card-holder-greeting-cards",  keywords: ["gift card", "slit"] },
+    { label: "100lb Cover Linen Greeting Cards",        slug: "linen-greeting-cards",                keywords: ["linen"] },
+    { label: "100lb Gloss Cover Greeting Cards",        slug: "gloss-cover-greeting-cards",          keywords: ["gloss cover"] },
+    { label: "Pearl Greeting Cards",                    slug: "pearl-greeting-cards",                keywords: ["pearl"] },
+    { label: "Silk Greeting Cards",                     slug: "silk-greeting-cards",                 keywords: ["silk"] },
+    { label: "Natural Greeting Cards",                  slug: "natural-greeting-cards",              keywords: ["natural"] },
+    { label: "Suede Greeting Cards",                    slug: "suede-greeting-cards",                keywords: ["suede"] },
+    { label: "Brown Kraft Greeting Cards",              slug: "brown-kraft-greeting-cards",          keywords: ["brown kraft", "kraft"] },
+    { label: "Akuafoil Greeting Cards",                 slug: "akuafoil-greeting-cards",             keywords: ["akuafoil"] },
+    { label: "Standard Greeting Cards",                 slug: "standard-greeting-cards",             keywords: [] }, // catch-all
+  ],
+  // 4over.com/marketing-products/event-tickets lists 2 product types.
+  "event-tickets": [
+    { label: "Variable Numbering Event Tickets", slug: "variable-numbering-event-tickets", keywords: ["variable", "numbered", "numbering"] },
+    { label: "Standard Event Tickets",           slug: "standard-event-tickets",           keywords: [] }, // catch-all
+  ],
   envelopes: [
-    { label: "Blank Envelopes", slug: "blank-envelopes", keywords: ["blank"] },
-    { label: "Digital Envelopes", slug: "digital-envelopes", keywords: ["digital"] },
+    { label: "Remittance Envelopes",          slug: "remittance-envelopes",          keywords: ["remittance"] },
+    { label: "Blank Envelopes",               slug: "blank-envelopes",               keywords: ["blank"] },
+    { label: "Digital Envelopes",             slug: "digital-envelopes",             keywords: ["digital"] },
     { label: "Variable Addressing Envelopes", slug: "variable-addressing-envelopes", keywords: ["variable"] },
-    { label: "Linen Uncoated Envelopes", slug: "linen-uncoated-envelopes", keywords: ["linen"] },
-    { label: "Natural Envelopes", slug: "natural-envelopes", keywords: ["natural"] },
-    { label: "Offset Envelopes", slug: "offset-envelopes", keywords: [] }, // catch-all
+    { label: "Linen Uncoated Envelopes",      slug: "linen-uncoated-envelopes",      keywords: ["linen"] },
+    { label: "Natural Envelopes",             slug: "natural-envelopes",             keywords: ["natural"] },
+    { label: "Offset Envelopes",              slug: "offset-envelopes",              keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/hang-tags/products/ is an
   // 11-card grid — confirmed live: "Regular Hang Tags" merges 14PT/16PT
@@ -116,17 +288,26 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // before "Silk": Foil Worx's own wording is "Silk Laminated Foiled Hang
   // Tags", which would otherwise misclassify as Silk.
   "hang-tags": [
-    { label: "Akuafoil Hang Tags", slug: "akuafoil-hang-tags", keywords: ["akuafoil"] },
-    { label: "Foil Worx Hang Tags", slug: "foil-worx-hang-tags", keywords: ["foiled"] },
-    { label: "Bottleneck Hang Tags", slug: "bottleneck-hang-tags", keywords: ["bottle neck", "bottleneck"] },
-    { label: "Brown Kraft Hang Tags", slug: "brown-kraft-hang-tags", keywords: ["brown kraft"] },
-    { label: "Natural Hang Tags", slug: "natural-hang-tags", keywords: ["natural"] },
-    { label: "Pearl Hang Tags", slug: "pearl-hang-tags", keywords: ["pearl"] },
-    { label: "Plastic Hang Tags", slug: "plastic-hang-tags", keywords: ["plastic"] },
+    { label: "Dual Raised Hang Tags",    slug: "dual-raised-hang-tags",    keywords: ["dual raised"] },
+    { label: "Akuafoil Hang Tags",       slug: "akuafoil-hang-tags",       keywords: ["akuafoil"] },
+    { label: "Foil Worx Hang Tags",      slug: "foil-worx-hang-tags",      keywords: ["foiled"] },
+    { label: "Bottleneck Hang Tags",     slug: "bottleneck-hang-tags",     keywords: ["bottle neck", "bottleneck"] },
+    { label: "Brown Kraft Hang Tags",    slug: "brown-kraft-hang-tags",    keywords: ["brown kraft"] },
+    { label: "Natural Hang Tags",        slug: "natural-hang-tags",        keywords: ["natural"] },
+    { label: "Pearl Hang Tags",          slug: "pearl-hang-tags",          keywords: ["pearl"] },
+    { label: "Plastic Hang Tags",        slug: "plastic-hang-tags",        keywords: ["plastic"] },
     { label: "Raised Spot UV Hang Tags", slug: "raised-spot-uv-hang-tags", keywords: ["raised spot"] },
-    { label: "Silk Hang Tags", slug: "silk-hang-tags", keywords: ["silk"] },
-    { label: "Suede Hang Tags", slug: "suede-hang-tags", keywords: ["suede"] },
-    { label: "Regular Hang Tags", slug: "regular-hang-tags", keywords: [] }, // catch-all
+    { label: "Silk Hang Tags",           slug: "silk-hang-tags",           keywords: ["silk"] },
+    { label: "Suede Hang Tags",          slug: "suede-hang-tags",          keywords: ["suede"] },
+    { label: "Regular Hang Tags",        slug: "regular-hang-tags",        keywords: [] }, // catch-all
+  ],
+  magnets: [
+    { label: "Car Door Magnets",           slug: "car-door-magnets",           keywords: ["car door", "vehicle"] },
+    { label: "Magnet Postcards",           slug: "magnet-postcards",           keywords: ["postcard"] },
+    { label: "Oval Magnets",              slug: "oval-magnets",               keywords: ["oval"] },
+    { label: "Magnet Announcement Cards", slug: "magnet-announcement-cards",  keywords: ["announcement"] },
+    { label: "Magnet Business Cards",     slug: "magnet-business-cards",      keywords: ["business card"] },
+    { label: "Standard Magnets",          slug: "standard-magnets",           keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/posters/products/ is a
   // 6-card grid — confirmed live: "Gloss Book Posters" is 100LB Gloss Book
@@ -143,24 +324,19 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // fine; no reconstruction needed since TYPE_RULES cards are titled from
   // TYPE_LABELS below, never from the raw description.
   posters: [
-    { label: "Backlit Posters", slug: "backlit-posters", keywords: ["backlit"] },
-    { label: "Blockout Posters", slug: "blockout-posters", keywords: ["blockout"] },
+    { label: "Backlit Posters",     slug: "backlit-posters",     keywords: ["backlit"] },
+    { label: "Blockout Posters",    slug: "blockout-posters",    keywords: ["blockout"] },
     { label: "Photo Gloss Posters", slug: "photo-gloss-posters", keywords: ["8mil"] },
     { label: "Matte-Finish Posters", slug: "matte-finish-posters", keywords: ["dull"] },
     { label: "Gloss Cover Posters", slug: "gloss-cover-posters", keywords: ["gloss cover"] },
-    { label: "Gloss Book Posters", slug: "gloss-book-posters", keywords: [] }, // catch-all
+    { label: "Gloss Book Posters",  slug: "gloss-book-posters",  keywords: [] }, // catch-all
   ],
-  // fourprintshop's literal /marketing-material/rack-cards/products/ is a
-  // 3-card grid — confirmed live: SIZE is the top-level split for "Standard"
-  // (3.5x8.5 / 4x9, each merging its own 14PT/16PT/18PT C1S stocks), while
-  // "Akuafoil Rack Cards" is its OWN single card spanning BOTH sizes (its
-  // own Size dropdown covers 3.5x8.5 AND 4x9, Stock fixed at 16PT C2S) — so
-  // Akuafoil must classify FIRST, before the size split, or it'd get
-  // swallowed into whichever Standard size matches.
+  // 4over.com shows 2 cards: "Standard Rack Cards" (both 3.5x8.5 + 4x9) and
+  // "Akuafoil Rack Cards". Akuafoil must classify first so it isn't swallowed
+  // by the Standard catch-all.
   "rack-cards": [
     { label: "Akuafoil Rack Cards", slug: "akuafoil-rack-cards", keywords: ["akuafoil"] },
-    { label: "3.5 x 8.5 Standard Rack Cards", slug: "3-5-x-8-5-standard-rack-cards", keywords: ['3.5" x 8.5"'] },
-    { label: "4 x 9 Standard Rack Cards", slug: "4-x-9-standard-rack-cards", keywords: [] }, // catch-all
+    { label: "Standard Rack Cards", slug: "standard-rack-cards", keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /marketing-material/sell-sheets/products/ is a
   // 6-card grid, ALL brand-stock materials (Akuafoil/Brown Kraft/EndurACE/
@@ -225,11 +401,11 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets", keywords: ["sell sheets"] },
     { label: "EDDM Flyers", slug: "eddm-flyers", keywords: [] }, // catch-all
   ],
-  // fourprintshop's literal /signs-banners/table-covers/products/ is a
-  // 2-card grid — confirmed live: "Table cloths" (4over's own internal
-  // productcategory label is "Table Throws") covers all 4 sizes (68x132,
-  // 68x156, 90x132, 90x156), "Table Runners" covers all 5 widths. All 4
-  // Table Cloth entries in this sandbox have pure product_code
+  // 4over.com's /signs-banners/display-events/table-covers page (the
+  // canonical reference) is a 2-card grid: "Tablecloths", "Table Runners" —
+  // label renamed from "Table Cloths" to match (2026-07-08). Covers all 4
+  // sizes (68x132, 68x156, 90x132, 90x156); "Table Runners" covers all 5
+  // widths. All 4 Tablecloth entries in this account have pure product_code
   // descriptions ("9OZPOLY-TABLETHROW-68X132") with NO clean sibling to
   // reconstruct from (every one of them is equally code-like) — handled in
   // [typeSlug]/page.tsx with a targeted regex instead of the generic
@@ -238,8 +414,16 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // page's card title comes from the static label, never the raw
   // description.
   "table-covers": [
-    { label: "Table Cloths", slug: "table-cloths", keywords: ["tablethrow"] },
+    { label: "Tablecloths", slug: "table-cloths", keywords: ["tablethrow"] },
     { label: "Table Runners", slug: "table-runners", keywords: [] }, // catch-all
+  ],
+  // 4over's /signs-banners/signs-banners-signs/wall-art has 3 products.
+  // Mounted Canvas: UUID b83112e8. Acrylic Signs: UUID 7ad1aae9 (EXTRA).
+  // Aluminum Dye Sub: UUID d157e6f2 (Aluminum) via EXTRA_PRODUCT_SOURCES.
+  "wall-arts": [
+    { label: "Clear Acrylic Signs", slug: "clear-acrylic-signs", keywords: ["acrylic"] },
+    { label: "Aluminum Dye Sub", slug: "aluminum-dye-sub", keywords: ["dye sub", "dye sublimation", "dye-sub"] },
+    { label: "Mounted Canvas", slug: "mounted-canvas", keywords: ["canvas"] },
   ],
   // fourprintshop's literal /signs-banners/rigid-signs/products/ is a
   // 9-card grid — confirmed live: 7 of these 9 (10mm/4mm/3mm/Rider/Foam
@@ -256,50 +440,61 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // entry is ALSO "4mm White Coroplast" stock.
   "rigid-signs": [
     { label: "10mm Coroplast Signs", slug: "10mm-coroplast-signs", keywords: ["10mm"] },
-    { label: "Coroplast Rider Signs", slug: "coroplast-rider-signs", keywords: ["rider"] },
+    { label: "Rider Signs", slug: "coroplast-rider-signs", keywords: ["rider"] },
     { label: "4mm Coroplast Signs", slug: "4mm-coroplast-signs", keywords: ["4mm white coroplast"] },
     { label: "3mm PVC Signs", slug: "3mm-pvc-signs", keywords: ["3mm white pvc signs"] },
     { label: "Foam Core Signs", slug: "foam-core-signs", keywords: ["foamcore", "foam core"] },
     { label: "Aluminum Heavy Duty", slug: "aluminum-heavy-duty", keywords: ["heavy duty"] },
-    { label: "Aluminum Sandwich Board", slug: "aluminum-sandwich-board", keywords: ["sandwich board"] },
+    { label: "Single and Double Sided Aluminum Sandwich Board", slug: "aluminum-sandwich-board", keywords: ["sandwich board"] },
     { label: "Styrene Signs", slug: "styrene-signs", keywords: ["styrene"] },
     { label: "Gator Board Signs", slug: "gator-board-signs", keywords: [] }, // catch-all
   ],
-  // fourprintshop's literal /signs-banners/outdoor-banners/products/ is a
-  // 2-card grid (Mesh Banners, Scrim Vinyl Banners — confirmed live, stock
-  // "13oz Scrim Vinyl - Outdoor" matches our own "13oz Outdoor Vinyl
-  // Banner" wording) — confirmed clean 3-way split across all 522 raw
-  // entries (139 Mesh / 382 Scrim Vinyl / 1 Banner Stand Kit, zero
-  // leftover). The single "13oz Scrim Vinyl with Telescopic Backdrop
-  // Banner Stand" entry is a genuinely different bundled product (banner +
-  // stand hardware, not just a material variant) that fourprintshop's own
-  // page doesn't show — kept as a 3rd card rather than discarded, same as
-  // every other genuine-extra decision this session.
+  // 4over.com's own /signs-banners/banners-flags/outdoor-banners page (the
+  // canonical reference per client 2026-07-07 — "just look at what 4 over
+  // had... name same way", NOT fourprintshop) is a 4-card grid: Scrim Vinyl
+  // Banners, 18oz Single Sided Blockout Banner, 18oz Double Sided Blockout
+  // Banner, Mesh Banners. Live API investigation (2026-07-08) confirmed
+  // this account's own "Outdoor Banner" category UUID has ZERO blockout
+  // entries (522 raw: 139 Mesh / 382 Scrim / 1 Banner Stand, verified via
+  // direct API call, not just cache) — the 18oz Blockout line actually
+  // lives inside the "Indoor Banner" category UUID (its raw descriptions
+  // say "...18oz Blockout Indoor Vinyl Banner" even though 4over.com's own
+  // site lists it under OUTDOOR, not indoor — a mislabeled/cross-listed
+  // 4over data quirk, not a sync gap). Single vs Double Sided is NOT a
+  // separate product — confirmed via productsfeed: both are just the
+  // existing Colorspec option (4/0 vs 4/4) on the SAME product_uuid, so one
+  // merged card is correct per the duplicate-variants-belong-in-calculator
+  // rule. Pulled in via EXTRA_PRODUCT_SOURCES below; simulated in Node
+  // against live data first — clean 4-way split, 580 total, zero leftover
+  // (139 Mesh / 382 Scrim / 58 Blockout / 1 Stand).
   "outdoor-banners": [
     { label: "Mesh Banners", slug: "mesh-banners", keywords: ["mesh"] },
     { label: "Scrim Vinyl Banners", slug: "scrim-vinyl-banners", keywords: ["13oz outdoor vinyl banner"] },
+    { label: "18oz Blockout Banner", slug: "18oz-blockout-banner", keywords: ["18oz"] },
     { label: "Banner Stand Kit", slug: "banner-stand-kit", keywords: [] }, // catch-all
   ],
   // fourprintshop's literal /signs-banners/indoor-banners/products/ is a
-  // 5-card grid. Only 3 of these (Premium Vinyl/15oz Blockout/18oz
-  // Blockout) live in this category's own UUID — "Artist Canvas" and
-  // "Premium Polyester Banners" were INITIALLY assumed absent (this
+  // 5-card grid. Only 2 of these (Premium Vinyl/15oz Blockout) live in this
+  // category's own UUID once the 18oz Blockout entries are excluded (moved
+  // to outdoor-banners above — see that entry's comment). "Artist Canvas"
+  // and "Premium Polyester Banners" were INITIALLY assumed absent (this
   // sandbox's own UUID has zero matches for either), but checking each
   // fourprintshop product page's live Stock dropdown value+uuid revealed
   // both actually live in the SAME shared "Fabric Banners" category
   // (stock_uuid "a33cb149..." for Artist Canvas / "cc846f34..." for
   // Premium Polyester — exact matches, confirmed via direct stock_uuid
   // comparison, not just wording) — merged in via EXTRA_PRODUCT_SOURCES
-  // below. Confirmed clean 5-way split across all 508 combined raw entries
-  // (160 Canvas / 140 Polyester / 87 10mil / 63 15oz / 58 18oz, zero
-  // leftover) — Canvas/Polyester checked first since they're the more
-  // specific keywords.
+  // below. Canvas/Polyester checked first since they're the more specific
+  // keywords. 18oz Blockout entries are EXCLUDED from this category's own
+  // productList (see the `category === "indoor-banners"` filter below) and
+  // reassigned to outdoor-banners instead — see that entry's comment for
+  // why. Confirmed clean 4-way split across 450 combined raw entries (160
+  // Canvas / 140 Polyester / 87 10mil / 63 15oz, zero leftover).
   "indoor-banners": [
     { label: "Artist Canvas", slug: "artist-canvas", keywords: ["artist canvas"] },
     { label: "Premium Polyester Banners", slug: "premium-polyester-banners", keywords: ["premium polyester banner"] },
     { label: "Premium Vinyl Banners", slug: "premium-vinyl-banners", keywords: ["10mil"] },
-    { label: "15oz Blockout Indoor Vinyl Banner", slug: "15oz-blockout-indoor-vinyl-banner", keywords: ["15oz"] },
-    { label: "18oz Blockout Indoor Vinyl Banner", slug: "18oz-blockout-indoor-vinyl-banner", keywords: [] }, // catch-all
+    { label: "15oz Blockout Indoor Vinyl Banner", slug: "15oz-blockout-indoor-vinyl-banner", keywords: [] }, // catch-all (18oz already excluded)
   ],
   // fourprintshop's literal /signs-banners/flags/products/ is a 3-card grid
   // (Feather/Pole/Teardrop Flags) — confirmed live: this sandbox's own
@@ -315,18 +510,33 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Pole Flags", slug: "pole-flags", keywords: ["pole"] },
     { label: "Teardrop Flags", slug: "teardrop-flags", keywords: [] }, // catch-all
   ],
-  // fourprintshop's literal /signs-banners/window-graphics/products/ is a
-  // 4-card grid (Opaque/See-Through Perforated/Standard Clings Clear/White)
-  // — confirmed clean 4-way split across all 1485 raw entries (414 White /
-  // 240 Clear / 826 Perforated / 5 Opaque, zero leftover). One stray "8.5\"
-  // X 11\" 7mil Window Cling" entry is missing the word "White" entirely
-  // (4over data gap, product_code confirms it's the same "7MIL" stock) —
-  // "white" classification also checks the bare "7mil" keyword to catch it.
+  // 4over.com's own /signs-banners/graphics/window-graphics page (the
+  // canonical reference, not fourprintshop) is a 5-card grid: Digital Clear
+  // Window Clings, See-Through Perforated Window Vinyl Graphic, Opaque
+  // Window Graphics, Standard White Window Clings, Clear Window Clings.
+  // This category's own UUID (ae3afb44) has a clean 4-way split across all
+  // 1485 raw entries (414 White / 240 Clear / 826 Perforated / 5 Opaque,
+  // zero leftover) — but the 5th, "Digital Clear Window Clings", was
+  // MISSING (2026-07-08 fix): it lives in a SEPARATE "Window Clings"
+  // category UUID (2d084783, 18 raw "8 mil Digital Clear Window Cling"
+  // entries, genuinely distinct from the 240 plain "8mil Clear Window
+  // Cling" entries in ae3afb44 — confirmed via live API, not a duplicate).
+  // An earlier session dismissed 2d084783 as a "near-empty redundant
+  // subset" and dropped it entirely — that was wrong; it's a real 5th
+  // product 4over.com lists separately. Pulled in via EXTRA_PRODUCT_SOURCES
+  // below, checked BEFORE the "clear" rule since its own description also
+  // contains the word "clear". One stray "8.5\" X 11\" 7mil Window Cling"
+  // entry (in ae3afb44) is missing the word "White" entirely (4over data
+  // gap, product_code confirms it's the same "7MIL" stock) — "white"
+  // classification also checks the bare "7mil" keyword to catch it. Labels
+  // renamed to match 4over.com's exact wording (was "Standard Clings:
+  // Clear/White").
   "window-graphics": [
+    { label: "Digital Clear Window Clings", slug: "digital-clear-window-clings", keywords: ["digital"] },
     { label: "See-Through Perforated Window Vinyl Graphic", slug: "see-through-perforated-window-vinyl-graphic", keywords: ["perforated"] },
     { label: "Opaque Window Graphics", slug: "opaque-window-graphics", keywords: ["opaque"] },
-    { label: "Standard Clings: Clear", slug: "standard-clings-clear", keywords: ["clear"] },
-    { label: "Standard Clings: White", slug: "standard-clings-white", keywords: [] }, // catch-all (White + the "7mil" gap entry)
+    { label: "Clear Window Clings", slug: "clear-window-clings", keywords: ["clear"] },
+    { label: "Standard White Window Clings", slug: "standard-white-window-clings", keywords: [] }, // catch-all (White + the "7mil" gap entry)
   ],
   // fourprintshop's literal /signs-banners/wall-decals/products/ is a
   // 2-card grid (High Tack Adhesive Vinyl, Low Tack Vinyl Wall Decals).
@@ -370,6 +580,25 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Foam Core Counter Cards", slug: "foam-core-counter-cards", keywords: ["foam core"] },
     { label: "White PVC Counter Cards", slug: "white-pvc-counter-cards", keywords: ["pvc"] },
   ],
+  // 4over.com shows 11 trading card types. Specialty stocks (Akuafoil, Brown
+  // Kraft, Natural, Pearl, Suede, Foil Worx) come from EXTRA_PRODUCT_SOURCES;
+  // main UUID provides 14pt, 16pt, 18pt, and 100lb Cover Linen. Silk Trading
+  // Cards appears on 4over retail but is absent from the wholesale API (zero
+  // results across all checked UUIDs — same situation as Rally Signs/Posters).
+  // Akuafoil before "16pt": raw desc reads "16PT Trading Cards with Akuafoil".
+  // Brown Kraft before "18pt": raw desc reads "18PT Uncoated Brown Kraft...".
+  "trading-cards": [
+    { label: "Akuafoil Trading Cards",         slug: "akuafoil-trading-cards",          keywords: ["akuafoil"] },
+    { label: "Brown Kraft Trading Cards",       slug: "brown-kraft-trading-cards",       keywords: ["brown kraft", "kraft"] },
+    { label: "Foil Worx Trading Cards",         slug: "foil-worx-trading-cards",         keywords: ["foil worx", "foiled"] },
+    { label: "Natural Trading Cards",           slug: "natural-trading-cards",           keywords: ["natural"] },
+    { label: "Pearl Trading Cards",             slug: "pearl-trading-cards",             keywords: ["pearl"] },
+    { label: "Suede Trading Cards",             slug: "suede-trading-cards",             keywords: ["suede"] },
+    { label: "100lb Cover Linen Trading Cards", slug: "100lb-cover-linen-trading-cards", keywords: ["linen"] },
+    { label: "18pt Trading Cards",              slug: "18pt-trading-cards",              keywords: ["18pt"] },
+    { label: "16pt Trading Cards",              slug: "16pt-trading-cards",              keywords: ["16pt"] },
+    { label: "14pt Trading Cards",              slug: "14pt-trading-cards",              keywords: [] }, // catch-all
+  ],
 }
 
 // Some subcategories' product-type cards span MULTIPLE 4over categories, not
@@ -393,7 +622,9 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   // categories too: productList is built once, with extra sources merged in,
   // BEFORE classifyProduct() buckets it into type cards.
   "flyers-and-brochures": [
-    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] }, // Tearoff Flyers
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: ["flyer", "brochure", "half fold"] }, // EDDM variants
   ],
   // "Tearoff Door Hangers" (Tear Off Cards UUID) + "EndurACE Door Hangers"
   // (EndurACE UUID, same one used by EndurACE Business Cards/Flyers) — see
@@ -401,6 +632,19 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   "door-hangers": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "door hanger" },
     { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "door hanger" },
+  ],
+  // Greeting Cards specialty stocks live in shared brand-stock UUIDs
+  // (same pattern as Announcement Cards / Postcards / Hang Tags).
+  "greeting-cards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "greeting card" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "greeting card" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "greeting card" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "greeting card" }, // Natural
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "greeting card" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "greeting card" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "greeting card" }, // Dual Raised
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "greeting card" }, // Raised Foil
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "greeting card" }, // Raised Spot UV
   ],
   // "Variable Addressing Envelopes" data lives in the dedicated "Variable
   // Data" category (f5e2f7e8) — envelopes' own UUID has zero "variable"
@@ -410,6 +654,7 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   // Cards/Announcement Cards) plus Plastic/Raised Spot UV (same shared
   // categories as their Business Cards counterparts).
   "hang-tags": [
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "hang tag" }, // Dual Raised
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "hang tag" }, // Akuafoil
     { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "hang tag" }, // Brown Kraft
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "hang tag" }, // Natural
@@ -419,6 +664,11 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "hang tag" }, // Foil Worx
     { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "hang tag" }, // Plastic
     { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "hang tag" }, // Raised Spot UV
+  ],
+  // Car Door Magnets live under Signs & Banners (vehicle-magnets UUID) but
+  // 4over.com lists them under Marketing Products > Magnets too.
+  magnets: [
+    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car door" }, // Car Door Magnets
   ],
   // "Backlit Posters" (dedicated UUID, raw product_code descriptions — see
   // the matching comment on posters' TYPE_RULES entry) + "Blockout"/"Photo
@@ -449,6 +699,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
   ],
+  "wall-arts": [
+    { uuid: "7ad1aae9-741d-40f5-b3dc-6d75524878ce", keyword: "acrylic" }, // Clear Acrylic Signs
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "dye-sub" }, // Aluminum Dye Sub
+  ],
   // Scoped to JUST Heavy Duty/Sandwich Board, not a bare "aluminum" match —
   // this UUID also has an "Aluminum - Dye-Sublimation" stock fourprintshop's
   // own page doesn't show, which would otherwise fall through to the
@@ -461,11 +715,51 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "artist canvas" },
     { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "premium polyester banner" },
   ],
+  // 18oz Blockout lives in the "Indoor Banner" category UUID's raw data
+  // (mislabeled — see outdoor-banners' TYPE_RULES comment) but 4over.com
+  // displays it under Outdoor Banners, not Indoor.
+  "outdoor-banners": [
+    { uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", keyword: "18oz" },
+  ],
+  // "Digital Clear Window Clings" lives in a separate "Window Clings"
+  // category UUID, not window-graphics' own — see that TYPE_RULES entry's
+  // comment.
+  "window-graphics": [
+    { uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", keyword: "digital" },
+  ],
   displays: [
     { uuid: "de3d843a-b802-4ec5-826f-1b230a17ce3a", keyword: "event tent" }, // Event Tents
     { uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", keyword: "fan cutout" }, // Fan Cutouts
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" }, // Counter Cards
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" }, // Counter Cards
+  ],
+  // Silk/Suede/Akuafoil Presentation Folders live in their own brand-stock UUIDs.
+  "presentation-folders": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "presentation folder" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "presentation folder" }, // Suede
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "presentation folder" }, // Akuafoil
+  ],
+  // Brand-stock materials for postcards live in their own shared category UUIDs
+  // (same pattern as Announcement Cards/Trading Cards/Sell Sheets). Tearoff
+  // Postcards live in the Tear Off Cards UUID; Magnet Postcards in Magnets UUID;
+  // EDDM variants in the EDDM UUID.
+  "postcards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "postcard" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "postcard" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "postcard" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "postcard" }, // Natural
+    { uuid: "b2d0278e-02e6-4861-99ba-951b66f2f1ed", keyword: "postcard" }, // Painted Edge
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "postcard" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "postcard" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "postcard" }, // Dual Raised
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "postcard" }, // Raised Spot UV
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "postcard" }, // Foil Worx
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "postcard" }, // EndurACE
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "postcard" }, // Raised Foil
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "postcard" }, // Plastic
+    { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "postcard" }, // Magnets (Magnet Postcards)
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "postcard" }, // Tear Off Cards (Tearoff Postcards)
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "postcard" }, // EDDM (EDDM variants)
   ],
   "announcement-cards": [
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "announcement" }, // Akuafoil
@@ -500,10 +794,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
 // pattern, not by a distinct photo per type.
 const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "flyers-and-brochures": {
-    "all-inclusive-flyers-and-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
+    "all-inclusive-flyers-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
-    "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+    "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
   },
   envelopes: {
     "blank-envelopes": "/images/cat/envelopes/blank.jpg",
@@ -573,6 +867,11 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
     "table-runners": "/images/cat/table-covers/table-runners.jpg",
   },
+  "wall-arts": {
+    "clear-acrylic-signs": "/images/signs/wall-arts.jpg",
+    "aluminum-dye-sub": "/images/signs/wall-arts.jpg",
+    "mounted-canvas": "/images/signs/wall-arts.jpg",
+  },
   "rigid-signs": {
     "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
     "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.jpg",
@@ -587,6 +886,7 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "outdoor-banners": {
     "mesh-banners": "/images/cat/outdoor-banners/mesh.jpg",
     "scrim-vinyl-banners": "/images/cat/outdoor-banners/scrim-vinyl.jpg",
+    "18oz-blockout-banner": "/images/cat/indoor-banners/blockout.jpg",
     "banner-stand-kit": "/images/signs/banner-stands.jpg",
   },
   "indoor-banners": {
@@ -594,7 +894,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "premium-polyester-banners": "/images/cat/indoor-banners/premium-polyester.jpg",
     "premium-vinyl-banners": "/images/cat/indoor-banners/premium-vinyl.jpg",
     "15oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
-    "18oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
   },
   flags: {
     "feather-flags": "/images/cat/flags/feather.jpg",
@@ -602,10 +901,11 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "teardrop-flags": "/images/cat/flags/teardrop.jpg",
   },
   "window-graphics": {
+    "digital-clear-window-clings": "/images/cat/window-graphics/clear.jpg",
     "see-through-perforated-window-vinyl-graphic": "/images/cat/window-graphics/perforated.jpg",
     "opaque-window-graphics": "/images/cat/window-graphics/opaque.jpg",
-    "standard-clings-clear": "/images/cat/window-graphics/clear.jpg",
-    "standard-clings-white": "/images/cat/window-graphics/white.jpg",
+    "clear-window-clings": "/images/cat/window-graphics/clear.jpg",
+    "standard-white-window-clings": "/images/cat/window-graphics/white.jpg",
   },
   "wall-decals": {
     "high-tack-adhesive-vinyl": "/images/cat/wall-decals/high-tack.jpg",
@@ -947,10 +1247,50 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
   // category's own product_description field drops the trailing "FR" that
   // product_code still has for that one variant (a 4over data
   // inconsistency between the two fields, not a typo on this end).
+  // Renamed from "Print and Trim Boxes" (2026-07-08) — see this category's
+  // GROUPS comment in lib/print/categories.ts for why: 4over's own official
+  // category name is "Custom Boxes", a different product.
   "custom-boxes": [
-    [/^18PTC1S-CPBXNC-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with No Coating'],
-    [/^18PTC1S-CPBXSPUVFR-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Spot UV on the front only, No UV Coating on the back'],
-    [/^18PTC1S-CPBXUV-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Full UV on the front only, No UV Coating on the back'],
+    [/^18PTC1S-CPBXNC-([\d.]+)X([\d.]+)$/i, '$1" X $2" Custom Boxes with No Coating'],
+    [/^18PTC1S-CPBXSPUVFR-([\d.]+)X([\d.]+)$/i, '$1" X $2" Custom Boxes with Spot UV on the front only, No UV Coating on the back'],
+    [/^18PTC1S-CPBXUV-([\d.]+)X([\d.]+)$/i, '$1" X $2" Custom Boxes with Full UV on the front only, No UV Coating on the back'],
+  ],
+  // "Packaging" (Standard Boxes). Renames confirmed against 4over's own
+  // internal "Product Category" field per product (via productsfeed,
+  // 2026-07-08) — the raw product_description uses shorter/singular
+  // wording than what 4over.com's retail site (and their own API category
+  // field) actually calls each product.
+  //   Business Card Boxes: 250BC/500BC x 14/16/18PT are 6 distinct
+  //   product_uuids at genuinely different physical box dimensions (not a
+  //   coating variant) — 4over's own Product Category field returns
+  //   "Business Card Boxes" for ALL of them. Stripped here so they collapse
+  //   to ONE groupKey/card; extractShape() in product-configurator-client
+  //   reads the ORIGINAL raw description (not this rewritten title) to
+  //   expose the 250-vs-500 + thickness choice as a selector, matching
+  //   4over.com's own "Business Card Box Size" dropdown.
+  //   Wine Boxes: "with Handle" is a genuinely separate product_uuid at the
+  //   SAME size/stock (confirmed live: 4over.com's own "Handle Options"
+  //   dropdown, "No Handle (Tuck Top)" / "With Handle") — stripped here so
+  //   both merge into one card; extractShape() again reads the raw
+  //   description to expose Handle as a selector.
+  //   Akuafoil ("...with Akuafoil uncoated" etc., 2026-07-08): user decided
+  //   to merge these into the SAME card as the plain box (not a separate
+  //   "Majestic Boxes" subcategory) — differs from plain by Stock (e.g.
+  //   "18PT C1S" vs "14PT Uncoated") AND Colorspec ("5/0 (4/0 with Foil on
+  //   Front)" vs "4/0") at the SAME Size, so the normal generic Stock/
+  //   Colorspec cascade dropdowns handle it natively once both uuids share
+  //   this card's groupKey — no shapeList/extractShape needed. Stripped
+  //   FIRST so later box-type renames below match cleanly regardless of
+  //   whether "with Akuafoil" was present.
+  packaging: [
+    [/\s+with\s+Akuafoil\b/gi, " "],
+    [/\b\d+BC\s+Box\b/gi, "Business Card Boxes"],
+    [/\s+with\s+Handle,?\s*/gi, " "],
+    [/\bWine\s+Box\b/gi, "Wine Boxes"],
+    [/\bTuck\s+Box\b/gi, "Roll End Tuck Top Boxes"],
+    [/\bSales\s+Box\b/gi, "Sales Presentation Boxes"],
+    [/\bCube\s+Box\b/gi, "Cube Boxes"],
+    [/\bGolf\s+Ball\s+Box\b/gi, "Golf Ball Boxes"],
   ],
   // 21 raw entries, all just 14PT — 3 coating variants ("with Full UV",
   // "Matte/Dull Finish", "Uncoated") merge into one "14PT Header Cards"
@@ -1011,6 +1351,13 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
   // the non-Round-Corner half of e.g. Natural's products gets the word
   // stripped, leaving 2 near-duplicate "Natural Announcement Cards" cards.
   "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  // Same Foil Worx naming pattern as Trading Cards: Foil Worx UUID has
+  // "14PT Uncoated Foiled Postcards" etc. — strip the stock prefix so all
+  // foiled stocks merge into one card, then rename to match 4over's label.
+  "postcards": [
+    [/\b\d+pt\s+(?:uncoated\s+|silk\s+laminated\s+)?(?=foiled\s+postcards?)/gi, ""],
+    [/\bfoiled\s+postcards?\b/gi, "Foil Worx Postcards"],
+  ],
   // fourprintshop's literal page (confirmed live) merges paper WEIGHT into a
   // Stock dropdown for Gloss Book/Gloss Cover/Matte Book specifically —
   // "Gloss Booklets" page's own Stock dropdown lists BOTH "80LB Gloss Book"
@@ -1205,13 +1552,15 @@ export default async function PrintCategoryPage({
   // (+ cache write-through) if nothing's cached yet.
   const supabase = await createClient()
   async function fetchCategoryProducts(categoryUuid: string, label: string) {
-    // PostgREST's default max-rows caps a single .select() at 1000 — kept
-    // in sync with [typeSlug]/page.tsx's same fix; see that file's comment
-    // (Window Graphics' shared "ae3afb44..." category has 1485 products,
-    // silently dropping its 5 Opaque entries past row 1000).
+    // Paginate by ACTUAL rows returned per page, not by PAGE_SIZE: Supabase's
+    // SSR PostgREST may cap responses well below PAGE_SIZE even when more rows
+    // exist. Stepping by PAGE_SIZE skips the gap, losing products (e.g.
+    // outdoor-banners: 522 total, 200 cap → gap rows 200-521 all dropped).
+    // Break only on an empty page — a partial page may be a server cap, not end.
     let rows: { product_uuid: string; product_description: string; product_code: string }[] = []
     const PAGE_SIZE = 1000
-    for (let from = 0; ; from += PAGE_SIZE) {
+    let from = 0
+    while (true) {
       const { data: page } = await supabase
         .from("fourover_products")
         .select("product_uuid, product_description, product_code")
@@ -1219,7 +1568,7 @@ export default async function PrintCategoryPage({
         .range(from, from + PAGE_SIZE - 1)
       if (!page || page.length === 0) break
       rows = rows.concat(page)
-      if (page.length < PAGE_SIZE) break
+      from += page.length
     }
 
     if (!rows || rows.length === 0) {
@@ -1262,6 +1611,22 @@ export default async function PrintCategoryPage({
   // absorbed into) a rigid-signs card.
   if (category === "rigid-signs") {
     productList = productList.filter((p) => !matchesAllKeywords(p.product_description, "counter card"))
+  }
+
+  // indoor-banners' own "Indoor Banner" UUID contains 18oz Blockout entries
+  // that 4over.com actually displays under Outdoor Banners (see
+  // outdoor-banners' TYPE_RULES comment) — exclude here so they don't also
+  // surface as (or get absorbed into) an indoor-banners card; they're
+  // re-added to outdoor-banners via EXTRA_PRODUCT_SOURCES instead.
+  if (category === "indoor-banners") {
+    productList = productList.filter((p) => !matchesAllKeywords(p.product_description, "18oz"))
+  }
+
+  // "Stickers" and "Bumper Stickers" share the SAME "Stickers" UUID — 4over.com
+  // lists Bumper Stickers as its own subcategory (see that GROUPS entry's
+  // comment in lib/print/categories.ts).
+  if (category === "stickers") {
+    productList = productList.filter((p) => !matchesAllKeywords(p.product_description, "bumper"))
   }
 
   const extraSources = EXTRA_PRODUCT_SOURCES[category]

@@ -20,7 +20,29 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "door hanger" },
   ],
   envelopes: [{ uuid: "f5e2f7e8-0ba8-47a6-964d-3ec6dddef2cb", keyword: "envelope" }],
+  // 2026-07-08: was missing here entirely (present in print/[category]/
+  // page.tsx) — every "greeting-cards" typeSlug silently showed the SAME
+  // unfiltered product list (TYPE_KEYWORDS also missing — see that fix)
+  // since none of these brand-stock sources were even fetched.
+  "greeting-cards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "greeting card" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "greeting card" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "greeting card" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "greeting card" }, // Natural
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "greeting card" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "greeting card" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "greeting card" }, // Dual Raised
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "greeting card" }, // Raised Foil
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "greeting card" }, // Raised Spot UV
+  ],
   "hang-tags": [
+    // 2026-07-08: "Dual Raised" was missing here (present in print/[category]/
+    // page.tsx's own EXTRA_PRODUCT_SOURCES) — caused "Dual Raised Hang Tags"
+    // to show correctly as a card on the level-3 listing but resolve to "No
+    // products found" when clicked, since THIS page's own product-fetch never
+    // queried that UUID at all. Duplicate-list-sync hazard already flagged in
+    // lib/print/categories.ts's own top comment — kept in sync now.
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "hang tag" },
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "hang tag" },
     { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "hang tag" },
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "hang tag" },
@@ -51,6 +73,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "table tent"] },
   ],
+  "wall-arts": [
+    { uuid: "7ad1aae9-741d-40f5-b3dc-6d75524878ce", keyword: "acrylic" }, // Clear Acrylic Signs
+    { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "dye-sub" }, // Aluminum Dye Sub
+  ],
   "rigid-signs": [
     { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "heavy duty" },
     { uuid: "d157e6f2-ee47-4373-a1b4-8ebc18b40561", keyword: "sandwich board" },
@@ -59,21 +85,75 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "artist canvas" },
     { uuid: "a8e3e0a3-695d-4a34-8143-ba363bd0dc97", keyword: "premium polyester banner" },
   ],
+  // Kept in sync with print/[category]/page.tsx — 18oz Blockout lives in
+  // the "Indoor Banner" category UUID's raw data but 4over.com displays it
+  // under Outdoor Banners.
+  "outdoor-banners": [
+    { uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", keyword: "18oz" },
+  ],
+  // Kept in sync with print/[category]/page.tsx — Digital Clear Window
+  // Clings lives in a separate "Window Clings" category UUID.
+  "window-graphics": [
+    { uuid: "2d084783-38ef-4a1c-a5fb-7ec8e78700cd", keyword: "digital" },
+  ],
   displays: [
     { uuid: "de3d843a-b802-4ec5-826f-1b230a17ce3a", keyword: "event tent" },
     { uuid: "fa7e5e9e-6985-41f9-b29d-aedd771b94e7", keyword: "fan cutout" },
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "foam core" },
     { uuid: "eb56fa2f-3aa7-4479-82d5-80449018a9a3", keyword: "pvc" },
   ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // specialty stocks for presentation folders live in shared brand-stock UUIDs.
+  "presentation-folders": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "presentation folder" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "presentation folder" }, // Suede
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "presentation folder" }, // Akuafoil
+  ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // brand-stock materials for postcards live in shared category UUIDs.
+  "postcards": [
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "postcard" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "postcard" }, // Suede
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "postcard" }, // Pearl
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "postcard" }, // Natural
+    { uuid: "b2d0278e-02e6-4861-99ba-951b66f2f1ed", keyword: "postcard" }, // Painted Edge
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "postcard" }, // Brown Kraft
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "postcard" }, // Akuafoil
+    { uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", keyword: "postcard" }, // Dual Raised
+    { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "postcard" }, // Raised Spot UV
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "postcard" }, // Foil Worx
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "postcard" }, // EndurACE
+    { uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", keyword: "postcard" }, // Raised Foil
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "postcard" }, // Plastic
+    { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "postcard" }, // Magnets (Magnet Postcards)
+    { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "postcard" }, // Tear Off Cards (Tearoff Postcards)
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "postcard" }, // EDDM (EDDM variants)
+  ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // specialty stocks for trading cards live in shared brand-stock UUIDs.
+  "trading-cards": [
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "trading card" }, // Akuafoil
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "trading card" }, // Brown Kraft
+    { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: "trading card" }, // Natural
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "trading card" }, // Pearl
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "trading card" }, // Silk
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "trading card" }, // Suede
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "trading card" }, // Foil Worx
+  ],
+  // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
+  // Car Door Magnets live under vehicle-magnets UUID.
+  magnets: [
+    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car door" }, // Car Door Magnets
+  ],
 }
 
 // Kept in sync with TYPE_IMAGES in print/[category]/page.tsx.
 const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "flyers-and-brochures": {
-    "all-inclusive-flyers-and-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
+    "all-inclusive-flyers-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
-    "flat-flyers-and-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+    "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
   },
   envelopes: {
     "blank-envelopes": "/images/cat/envelopes/blank.jpg",
@@ -106,8 +186,7 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   },
   "rack-cards": {
     "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
-    "3-5-x-8-5-standard-rack-cards": "/images/cat/rack-cards/standard-3.5x8.5.jpg",
-    "4-x-9-standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
+    "standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
   },
   "sell-sheets": {
     "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
@@ -138,6 +217,11 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
     "table-runners": "/images/cat/table-covers/table-runners.jpg",
   },
+  "wall-arts": {
+    "clear-acrylic-signs": "/images/signs/wall-arts.jpg",
+    "aluminum-dye-sub": "/images/signs/wall-arts.jpg",
+    "mounted-canvas": "/images/signs/wall-arts.jpg",
+  },
   "rigid-signs": {
     "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
     "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.jpg",
@@ -152,6 +236,7 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "outdoor-banners": {
     "mesh-banners": "/images/cat/outdoor-banners/mesh.jpg",
     "scrim-vinyl-banners": "/images/cat/outdoor-banners/scrim-vinyl.jpg",
+    "18oz-blockout-banner": "/images/cat/indoor-banners/blockout.jpg",
     "banner-stand-kit": "/images/signs/banner-stands.jpg",
   },
   "indoor-banners": {
@@ -159,7 +244,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "premium-polyester-banners": "/images/cat/indoor-banners/premium-polyester.jpg",
     "premium-vinyl-banners": "/images/cat/indoor-banners/premium-vinyl.jpg",
     "15oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
-    "18oz-blockout-indoor-vinyl-banner": "/images/cat/indoor-banners/blockout.jpg",
   },
   flags: {
     "feather-flags": "/images/cat/flags/feather.jpg",
@@ -167,10 +251,11 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "teardrop-flags": "/images/cat/flags/teardrop.jpg",
   },
   "window-graphics": {
+    "digital-clear-window-clings": "/images/cat/window-graphics/clear.jpg",
     "see-through-perforated-window-vinyl-graphic": "/images/cat/window-graphics/perforated.jpg",
     "opaque-window-graphics": "/images/cat/window-graphics/opaque.jpg",
-    "standard-clings-clear": "/images/cat/window-graphics/clear.jpg",
-    "standard-clings-white": "/images/cat/window-graphics/white.jpg",
+    "clear-window-clings": "/images/cat/window-graphics/clear.jpg",
+    "standard-white-window-clings": "/images/cat/window-graphics/white.jpg",
   },
   "wall-decals": {
     "high-tack-adhesive-vinyl": "/images/cat/wall-decals/high-tack.jpg",
@@ -189,20 +274,93 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
 
 // Type rules — keywords that identify a product type within a category
 const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
+  // 2026-07-08 CRITICAL FIX: "catalogs", "event-tickets", and "greeting-cards"
+  // were missing from this map ENTIRELY. classifyType()'s caller treats a
+  // missing/empty entry as "no type rules" and skips filtering altogether
+  // (`typeRules.length === 0 ? true : ...`) — every type-slug under these 3
+  // categories silently showed the SAME unfiltered product list (whichever
+  // sorted first alphabetically), not an error, just the WRONG product/price
+  // with no visible sign anything was wrong. Kept in sync with
+  // print/[category]/page.tsx's TYPE_RULES now.
+  catalogs: {
+    "saddle-stitch-catalogs": ["saddle", "saddle stitch"],
+    "perfect-bound-catalogs": [], // catch-all
+  },
+  "event-tickets": {
+    "variable-numbering-event-tickets": ["variable", "numbered", "numbering"],
+    "standard-event-tickets": [], // catch-all
+  },
+  // ORDER MATTERS: kept in sync with print/[category]/page.tsx's TYPE_RULES
+  // — see that file's comment for why Raised Foil/Raised Spot UV must be
+  // checked before the plain material names (Suede/Silk/Pearl/etc).
+  "greeting-cards": {
+    "dual-raised-greeting-cards": ["dual raised"],
+    "raised-foil-greeting-cards": ["raised foil"],
+    "raised-spot-uv-greeting-cards": ["raised spot"],
+    "gift-card-holder-greeting-cards": ["gift card", "slit"],
+    "linen-greeting-cards": ["linen"],
+    "gloss-cover-greeting-cards": ["gloss cover"],
+    "pearl-greeting-cards": ["pearl"],
+    "silk-greeting-cards": ["silk"],
+    "natural-greeting-cards": ["natural"],
+    "suede-greeting-cards": ["suede"],
+    "brown-kraft-greeting-cards": ["brown kraft", "kraft"],
+    "akuafoil-greeting-cards": ["akuafoil"],
+    "standard-greeting-cards": [], // catch-all
+  },
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
   // file's comment for why EndurACE/Specialty Folds/Tri-Fold/Z-Fold were
   // removed (confirmed zero matches anywhere) and Flat moved to last (the
   // true catch-all).
   "flyers-and-brochures": {
-    "all-inclusive-flyers-and-brochures": ["all inclusive", "all-inclusive"],
+    "all-inclusive-flyers-brochures": ["all inclusive", "all-inclusive"],
+    "eddm-full-service-half-folds": ["eddm full service", "eddm", "half fold"],
+    "eddm-print-only-half-folds": ["eddm print only", "eddm", "half fold"],
+    "eddm-full-service-flyers": ["eddm full service", "eddm"],
+    "eddm-flyers-print-only": ["eddm print only", "eddm"],
+    "direct-mail-half-fold-flyers": ["direct mail", "half fold"],
+    "direct-mail-tri-fold-flyers": ["direct mail", "tri fold"],
+    "direct-mail-specialty-folds-flyers-and-brochures": ["direct mail", "specialty"],
+    "direct-mail-flyers-coated": ["direct mail", "coated"],
+    "direct-mail-flyers-uncoated": ["direct mail", "uncoated"],
+    "direct-mail-flyers": ["direct mail"],
+    "specialty-folds-brochures": ["specialty fold", "gatefold", "gate fold", "accordion", "french fold"],
+    "z-fold-brochures": ["z fold", "z-fold", "zfold"],
+    "tri-fold-brochures": ["tri fold", "tri-fold", "trifold"],
     "half-fold-brochures": ["half-fold", "half fold", "folds to"],
+    "endurace-flyers-and-brochures": ["endurace"],
     "tearoff-flyers": ["tear", "tearoff", "tear-off"],
-    "flat-flyers-and-brochures": [], // catch-all
+    "flat-flyers-brochures": [], // catch-all
   },
+  // Kept in sync with print/[category]/page.tsx TYPE_RULES for postcards —
+  // order is critical: more specific keywords before broader ones.
   "postcards": {
     "all-inclusive-postcards": ["all inclusive", "all-inclusive"],
+    "eddm-full-service-postcards": ["eddm full service", "full service"],
+    "eddm-print-only-postcards": ["eddm print only", "print only"],
     "eddm-postcards": ["eddm"],
-    "raised-foil-postcards": ["raised foil", "dual raised", "raised spot"],
+    "dual-raised-rsvp-postcards": ["rsvp"],
+    "dual-raised-postcards": ["dual raised"],
+    "raised-foil-postcards": ["raised foil"],
+    "raised-spot-uv-postcards": ["raised spot"],
+    "foil-worx-postcards": ["foil worx"],
+    "tearoff-postcards": ["tear"],
+    "painted-edge-postcards": ["painted-edge", "painted edge"],
+    "endurace-postcards": ["endurace"],
+    "akuafoil-postcards": ["akuafoil"],
+    "brown-kraft-postcards": ["brown kraft", "kraft"],
+    "suede-postcards": ["suede"],
+    "silk-postcards": ["silk"],
+    "pearl-postcards": ["pearl"],
+    "natural-postcards": ["natural"],
+    "linen-uncoated-postcards": ["linen"],
+    "plastic-postcards": ["plastic"],
+    "magnet-postcards": ["magnet"],
+    "100lb-gloss-cover-postcards": ["100lb gloss cover"],
+    "18pt-postcards": ["18pt"],
+    "16pt-postcards": ["16pt"],
+    "14pt-postcards": ["14pt"],
+    "direct-mail-postcards": ["direct mail"],
     "standard-postcards": [], // catch-all
   },
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
@@ -211,14 +369,42 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   "business-cards-standard": {
     "standard-business-cards": [], // catch-all (now the only rule)
   },
-  // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
-  // file's comment for why the 4 plain sizes collapse into one Standard
-  // catch-all (Size becomes the calculator dropdown) instead of 4 cards.
+  // Kept in sync with print/[category]/page.tsx — see that file's comment
+  // for the full root-cause/fix rationale (missing TYPE_RULES entries were
+  // silently disabling the Stock/Coating/Shape cascade for these 11
+  // categories) AND why these use a "business card"/"linen" keyword rather
+  // than an empty catch-all (most of these uuids are shared with Greeting
+  // Cards' matching brand material — a catch-all let Greeting Card sizes
+  // leak into the Business Card Size dropdown).
+  "raised-foil": { "raised-foil-business-cards": ["business card"] },
+  "silk-cards": { "silk-business-cards": ["business card"] },
+  "suede-cards": { "suede-business-cards": ["business card"] },
+  "pearl-cards": { "pearl-business-cards": ["business card"] },
+  "natural-cards": { "natural-business-cards": ["business card"] },
+  "painted-edge-cards": { "painted-edge-business-cards": ["business card"] },
+  "brown-kraft-cards": { "brown-kraft-business-cards": ["business card"] },
+  akuafoil: { "akuafoil-business-cards": ["business card"] },
+  "linen-uncoated": { "linen-uncoated-business-cards": ["linen"] },
+  "raised-spot-uv": { "raised-spot-uv-business-cards": ["business card"] },
+  "endurace-cards": { "endurace-business-cards": ["business card"] },
+  "dual-raised": { "dual-raised-business-cards": ["business card"] },
+  "foil-worx": { "foil-worx-business-cards": ["business card"] },
+  "plastic-cards": { "plastic-business-cards": ["business card"] },
+  "leaf-cards": { "leaf-business-cards": ["leaf"] },
+  "fold-over-cards": { "fold-over-business-cards": ["fold over"] },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for presentation-folders —
+  // specialty stocks first, then size-based splits, catch-all last.
   "presentation-folders": {
+    "silk-presentation-folder": ["silk"],
+    "suede-presentation-folder": ["suede"],
+    "akuafoil-presentation-folder": ["akuafoil"],
     "natural-presentation-folder": ["natural"],
     "pearl-presentation-folder": ["pearl"],
     "glueless-presentation-folder": ["glue-less", "glueless", "glue less"],
-    "standard-presentation-folder": [], // catch-all
+    "9x12-presentation-folder": ['9" x 12"', "9x12"],
+    "9x14-presentation-folder": ['9" x 14.5"', "9x14"],
+    "5x10-presentation-folder": ['5.25" x 10.5"', "5.25x10"],
+    "6x9-presentation-folder": [], // catch-all
   },
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
   // file's comment for why "Die Cut" isn't a 4th type here.
@@ -230,6 +416,7 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES — see that
   // file's comment for why this is PRINT-METHOD-classified, not stock.
   envelopes: {
+    "remittance-envelopes": ["remittance"],
     "blank-envelopes": ["blank"],
     "digital-envelopes": ["digital"],
     "variable-addressing-envelopes": ["variable"],
@@ -241,6 +428,7 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // file's comment for why Akuafoil/Foiled are checked before Bottleneck/
   // Silk.
   "hang-tags": {
+    "dual-raised-hang-tags": ["dual raised"],
     "akuafoil-hang-tags": ["akuafoil"],
     "foil-worx-hang-tags": ["foiled"],
     "bottleneck-hang-tags": ["bottle neck", "bottleneck"],
@@ -265,8 +453,7 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   },
   "rack-cards": {
     "akuafoil-rack-cards": ["akuafoil"],
-    "3-5-x-8-5-standard-rack-cards": ['3.5" x 8.5"'],
-    "4-x-9-standard-rack-cards": [], // catch-all
+    "standard-rack-cards": [], // catch-all (was previously split into 3.5x8.5 and 4x9)
   },
   "sell-sheets": {
     "akuafoil-sell-sheets": ["akuafoil"],
@@ -302,6 +489,11 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "table-cloths": ["table cloth"],
     "table-runners": [], // catch-all
   },
+  "wall-arts": {
+    "clear-acrylic-signs": ["acrylic"],
+    "aluminum-dye-sub": ["dye sub", "dye sublimation", "dye-sub"],
+    "mounted-canvas": ["canvas"],
+  },
   "rigid-signs": {
     "10mm-coroplast-signs": ["10mm"],
     "coroplast-rider-signs": ["rider"],
@@ -316,14 +508,14 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   "outdoor-banners": {
     "mesh-banners": ["mesh"],
     "scrim-vinyl-banners": ["13oz outdoor vinyl banner"],
+    "18oz-blockout-banner": ["18oz"],
     "banner-stand-kit": [], // catch-all
   },
   "indoor-banners": {
     "artist-canvas": ["artist canvas"],
     "premium-polyester-banners": ["premium polyester banner"],
     "premium-vinyl-banners": ["10mil"],
-    "15oz-blockout-indoor-vinyl-banner": ["15oz"],
-    "18oz-blockout-indoor-vinyl-banner": [], // catch-all
+    "15oz-blockout-indoor-vinyl-banner": [], // catch-all (18oz already excluded)
   },
   flags: {
     "feather-flags": ["feather"],
@@ -331,10 +523,11 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "teardrop-flags": [], // catch-all
   },
   "window-graphics": {
+    "digital-clear-window-clings": ["digital"],
     "see-through-perforated-window-vinyl-graphic": ["perforated"],
     "opaque-window-graphics": ["opaque"],
-    "standard-clings-clear": ["clear"],
-    "standard-clings-white": [], // catch-all
+    "clear-window-clings": ["clear"],
+    "standard-white-window-clings": [], // catch-all
   },
   // Kept in sync with print/[category]/page.tsx — see that file's comment.
   // Deliberately NO catch-all: Floor Graphics shares this same UUID and
@@ -353,32 +546,154 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "foam-core-counter-cards": ["foam core"],
     "white-pvc-counter-cards": ["pvc"],
   },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for booklets —
+  // "Gloss Cover" before "Gloss" to avoid misclassification.
+  booklets: {
+    "matte-book-uncoated-booklets": ["matte"],
+    "dull-book-satin-aq-booklets": ["dull"],
+    "gloss-cover-aq-booklets": ["gloss cover"],
+    "premium-opaque-uncoated-booklets": ["opaque", "premium opaque", "60lb", "70lb"],
+    "direct-mail-booklets": ["direct mail"],
+    "gloss-booklets": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for calendars —
+  // binding types (Spiral/Hard-Cover) before size-based splits.
+  calendars: {
+    "spiral-bind-calendars": ["spiral"],
+    "hard-cover-calendars": ["hard cover", "hard-cover", "hardcover"],
+    "12x12-calendars": ['12" x 12"', "12x12"],
+    "11x8-5-calendars": ['11" x 8.5"', "11x8.5"],
+    "9x12-calendars": ['9" x 12"', "9x12"],
+    "8-5x11-calendars": ['8.5" x 11"', "8.5x11"],
+    "self-cover-calendars": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for trading-cards —
+  // Akuafoil/Brown Kraft before 16pt/18pt to avoid misclassification.
+  "trading-cards": {
+    "akuafoil-trading-cards": ["akuafoil"],
+    "brown-kraft-trading-cards": ["brown kraft", "kraft"],
+    "foil-worx-trading-cards": ["foil worx", "foiled"],
+    "natural-trading-cards": ["natural"],
+    "pearl-trading-cards": ["pearl"],
+    "suede-trading-cards": ["suede"],
+    "100lb-cover-linen-trading-cards": ["linen"],
+    "18pt-trading-cards": ["18pt"],
+    "16pt-trading-cards": ["16pt"],
+    "14pt-trading-cards": [], // catch-all
+  },
+  // Kept in sync with print/[category]/page.tsx's TYPE_RULES for magnets.
+  magnets: {
+    "car-door-magnets": ["car door", "vehicle"],
+    "magnet-postcards": ["postcard"],
+    "oval-magnets": ["oval"],
+    "magnet-announcement-cards": ["announcement"],
+    "magnet-business-cards": ["business card"],
+    "standard-magnets": [], // catch-all
+  },
 }
 
 // Type slug -> display label
 const TYPE_LABELS: Record<string, string> = {
-  "all-inclusive-flyers-and-brochures": "All Inclusive Flyers and Brochures",
-  "flat-flyers-and-brochures": "Flat Flyers and Brochures",
-  "half-fold-brochures": "Half-Fold Brochures",
+  "saddle-stitch-catalogs": "Saddle Stitch Catalogs",
+  "perfect-bound-catalogs": "Perfect Bound Catalogs",
+  "variable-numbering-event-tickets": "Variable Numbering Event Tickets",
+  "standard-event-tickets": "Standard Event Tickets",
+  "dual-raised-greeting-cards": "Dual Raised Greeting Cards",
+  "gift-card-holder-greeting-cards": "Cards with Gift Card Holder Greeting Cards",
+  "linen-greeting-cards": "100lb Cover Linen Greeting Cards",
+  "gloss-cover-greeting-cards": "100lb Gloss Cover Greeting Cards",
+  "pearl-greeting-cards": "Pearl Greeting Cards",
+  "silk-greeting-cards": "Silk Greeting Cards",
+  "raised-spot-uv-greeting-cards": "Raised Spot UV Greeting Cards",
+  "natural-greeting-cards": "Natural Greeting Cards",
+  "suede-greeting-cards": "Suede Greeting Cards",
+  "brown-kraft-greeting-cards": "Brown Kraft Greeting Cards",
+  "raised-foil-greeting-cards": "Raised Foil Greeting Cards",
+  "akuafoil-greeting-cards": "Akuafoil Greeting Cards",
+  "standard-greeting-cards": "Standard Greeting Cards",
+  "all-inclusive-flyers-brochures": "All Inclusive Flyers Brochures",
+  "eddm-full-service-half-folds": "EDDM Full Service - Half Folds",
+  "eddm-print-only-half-folds": "EDDM Print Only - Half Folds",
+  "eddm-full-service-flyers": "EDDM Full Service - Flyers",
+  "eddm-flyers-print-only": "EDDM Flyers - Print Only",
+  "direct-mail-half-fold-flyers": "Direct Mail Half Fold Flyers and Brochures",
+  "direct-mail-tri-fold-flyers": "Direct Mail Tri Fold Flyers and Brochures",
+  "direct-mail-flyers-coated": "Direct Mail Flyers Brochures Coated",
+  "direct-mail-flyers-uncoated": "Direct Mail Flyers Brochures Uncoated",
+  "direct-mail-flyers": "Direct Mail Flyers and Brochures",
+  "specialty-folds-brochures": "Specialty Folds Brochures",
+  "z-fold-brochures": "Z Fold Brochures",
+  "tri-fold-brochures": "Tri Fold Brochures",
+  "endurace-flyers-and-brochures": "EndurACE Flyers and Brochures",
+  "flat-flyers-brochures": "Flat Flyers Brochures",
+  "half-fold-brochures": "Half Fold Brochures",
   "tearoff-flyers": "Tearoff Flyers",
-  "all-inclusive-postcards": "All Inclusive Postcards",
+  "direct-mail-specialty-folds-flyers-and-brochures": "Direct Mail Specialty Folds Flyers and Brochures",
+  "all-inclusive-postcards": "All-Inclusive Postcards",
+  "eddm-full-service-postcards": "EDDM Full Service Postcards",
+  "eddm-print-only-postcards": "EDDM Print Only Postcards",
   "eddm-postcards": "EDDM Postcards",
+  "dual-raised-rsvp-postcards": "Dual Raised RSVP",
+  "dual-raised-postcards": "Dual Raised Postcards",
   "raised-foil-postcards": "Raised Foil Postcards",
+  "raised-spot-uv-postcards": "Raised Spot UV Postcards",
+  "foil-worx-postcards": "Foil Worx Postcards",
+  "tearoff-postcards": "Tearoff Postcards",
+  "painted-edge-postcards": "Painted-Edge Postcards",
+  "endurace-postcards": "EndurACE Postcards",
+  "akuafoil-postcards": "Akuafoil Postcards",
+  "brown-kraft-postcards": "Brown Kraft Postcards",
+  "suede-postcards": "Suede Postcards",
+  "silk-postcards": "Silk Postcards",
+  "pearl-postcards": "Pearl Postcards",
+  "natural-postcards": "Natural Postcards",
+  "linen-uncoated-postcards": "Linen Uncoated Postcards",
+  "plastic-postcards": "Plastic Postcards",
+  "magnet-postcards": "Magnet Postcards",
+  "100lb-gloss-cover-postcards": "100LB Gloss Cover Postcards",
+  "18pt-postcards": "18pt Postcards",
+  "16pt-postcards": "16PT Postcards",
+  "14pt-postcards": "14pt Postcards",
+  "direct-mail-postcards": "Direct Mail Postcards",
   "standard-postcards": "Standard Postcards",
   "standard-business-cards": "Standard Business Cards",
+  "raised-foil-business-cards": "Raised Foil Business Cards",
+  "silk-business-cards": "Silk Business Cards",
+  "suede-business-cards": "Suede Business Cards",
+  "pearl-business-cards": "Pearl Business Cards",
+  "natural-business-cards": "Natural Business Cards",
+  "painted-edge-business-cards": "Painted Edge Business Cards",
+  "brown-kraft-business-cards": "Brown Kraft Business Cards",
+  "akuafoil-business-cards": "Akuafoil Business Cards",
+  "linen-uncoated-business-cards": "Linen Uncoated Business Cards",
+  "raised-spot-uv-business-cards": "Raised Spot UV Business Cards",
+  "endurace-business-cards": "EndurACE Business Cards",
+  "dual-raised-business-cards": "Dual Raised Business Cards",
+  "foil-worx-business-cards": "Foil Worx Business Cards",
+  "plastic-business-cards": "Plastic Business Cards",
+  "leaf-business-cards": "Leaf Business Cards",
+  "fold-over-business-cards": "Fold-over Business Cards",
+  "silk-presentation-folder": "Silk Presentation Folder",
+  "suede-presentation-folder": "Suede Presentation Folder",
+  "akuafoil-presentation-folder": "Akuafoil Presentation Folder",
   "natural-presentation-folder": "Natural Presentation Folder",
   "pearl-presentation-folder": "Pearl Presentation Folder",
-  "glueless-presentation-folder": "Glue-less Presentation Folder",
-  "standard-presentation-folder": "Standard Presentation Folder",
+  "glueless-presentation-folder": "Glue Less 9x12 Presentation Folder",
+  "9x12-presentation-folder": "9x12 Presentation Folder",
+  "9x14-presentation-folder": "9x14.5 Presentation Folder",
+  "5x10-presentation-folder": "5.25x10.5 Presentation Folder",
+  "6x9-presentation-folder": "6x9 Presentation Folder",
   "endurace-door-hangers": "EndurACE Door Hangers",
   "tearoff-door-hangers": "Tearoff Door Hangers",
   "standard-door-hangers": "Standard Door Hangers",
+  "remittance-envelopes": "Remittance Envelopes",
   "blank-envelopes": "Blank Envelopes",
   "digital-envelopes": "Digital Envelopes",
   "variable-addressing-envelopes": "Variable Addressing Envelopes",
   "linen-uncoated-envelopes": "Linen Uncoated Envelopes",
   "natural-envelopes": "Natural Envelopes",
   "offset-envelopes": "Offset Envelopes",
+  "dual-raised-hang-tags": "Dual Raised Hang Tags",
   "akuafoil-hang-tags": "Akuafoil Hang Tags",
   "foil-worx-hang-tags": "Foil Worx Hang Tags",
   "bottleneck-hang-tags": "Bottleneck Hang Tags",
@@ -396,9 +711,36 @@ const TYPE_LABELS: Record<string, string> = {
   "matte-finish-posters": "Matte-Finish Posters",
   "gloss-cover-posters": "Gloss Cover Posters",
   "gloss-book-posters": "Gloss Book Posters",
+  "matte-book-uncoated-booklets": "Matte Book Uncoated Booklets",
+  "dull-book-satin-aq-booklets": "Dull Book with Satin AQ Booklets",
+  "gloss-cover-aq-booklets": "Gloss Cover with AQ Booklets",
+  "premium-opaque-uncoated-booklets": "Premium Opaque Uncoated Booklets",
+  "direct-mail-booklets": "Direct Mail Booklets",
+  "gloss-booklets": "Gloss Booklets",
+  "spiral-bind-calendars": "Spiral Bind Calendars",
+  "hard-cover-calendars": "Hard-Cover Calendars",
+  "12x12-calendars": "12x12 Calendars",
+  "11x8-5-calendars": "11x8.5 Calendars",
+  "9x12-calendars": "9x12 Calendars",
+  "8-5x11-calendars": "8.5x11 Calendars",
+  "self-cover-calendars": "Self-Cover Calendars",
+  "akuafoil-trading-cards": "Akuafoil Trading Cards",
+  "brown-kraft-trading-cards": "Brown Kraft Trading Cards",
+  "foil-worx-trading-cards": "Foil Worx Trading Cards",
+  "natural-trading-cards": "Natural Trading Cards",
+  "pearl-trading-cards": "Pearl Trading Cards",
+  "suede-trading-cards": "Suede Trading Cards",
+  "100lb-cover-linen-trading-cards": "100lb Cover Linen Trading Cards",
+  "18pt-trading-cards": "18pt Trading Cards",
+  "16pt-trading-cards": "16pt Trading Cards",
+  "14pt-trading-cards": "14pt Trading Cards",
+  "car-door-magnets": "Car Door Magnets",
+  "oval-magnets": "Oval Magnets",
+  "magnet-announcement-cards": "Magnet Announcement Cards",
+  "magnet-business-cards": "Magnet Business Cards",
+  "standard-magnets": "Standard Magnets",
   "akuafoil-rack-cards": "Akuafoil Rack Cards",
-  "3-5-x-8-5-standard-rack-cards": "3.5 x 8.5 Standard Rack Cards",
-  "4-x-9-standard-rack-cards": "4 x 9 Standard Rack Cards",
+  "standard-rack-cards": "Standard Rack Cards",
   "akuafoil-sell-sheets": "Akuafoil Sell Sheets",
   "brown-kraft-sell-sheets": "Brown Kraft Sell Sheets",
   "endurace-sell-sheets": "EndurACE Sell Sheets",
@@ -416,32 +758,36 @@ const TYPE_LABELS: Record<string, string> = {
   "eddm-sell-sheets": "EDDM Sell Sheets",
   "eddm-flyers": "EDDM Flyers",
   "trading-cards": "Trading Cards",
-  "table-cloths": "Table Cloths",
+  "table-cloths": "Tablecloths",
   "table-runners": "Table Runners",
+  "clear-acrylic-signs": "Clear Acrylic Signs",
+  "aluminum-dye-sub": "Aluminum Dye Sub",
+  "mounted-canvas": "Mounted Canvas",
   "10mm-coroplast-signs": "10mm Coroplast Signs",
-  "coroplast-rider-signs": "Coroplast Rider Signs",
+  "coroplast-rider-signs": "Rider Signs",
   "4mm-coroplast-signs": "4mm Coroplast Signs",
   "3mm-pvc-signs": "3mm PVC Signs",
   "foam-core-signs": "Foam Core Signs",
   "aluminum-heavy-duty": "Aluminum Heavy Duty",
-  "aluminum-sandwich-board": "Aluminum Sandwich Board",
+  "aluminum-sandwich-board": "Single and Double Sided Aluminum Sandwich Board",
   "styrene-signs": "Styrene Signs",
   "gator-board-signs": "Gator Board Signs",
   "mesh-banners": "Mesh Banners",
   "scrim-vinyl-banners": "Scrim Vinyl Banners",
+  "18oz-blockout-banner": "18oz Blockout Banner",
   "banner-stand-kit": "Banner Stand Kit",
   "artist-canvas": "Artist Canvas",
   "premium-polyester-banners": "Premium Polyester Banners",
   "premium-vinyl-banners": "Premium Vinyl Banners",
   "15oz-blockout-indoor-vinyl-banner": "15oz Blockout Indoor Vinyl Banner",
-  "18oz-blockout-indoor-vinyl-banner": "18oz Blockout Indoor Vinyl Banner",
   "feather-flags": "Feather Flags",
   "pole-flags": "Pole Flags",
   "teardrop-flags": "Teardrop Flags",
+  "digital-clear-window-clings": "Digital Clear Window Clings",
   "see-through-perforated-window-vinyl-graphic": "See-Through Perforated Window Vinyl Graphic",
   "opaque-window-graphics": "Opaque Window Graphics",
-  "standard-clings-clear": "Standard Clings: Clear",
-  "standard-clings-white": "Standard Clings: White",
+  "clear-window-clings": "Clear Window Clings",
+  "standard-white-window-clings": "Standard White Window Clings",
   "high-tack-adhesive-vinyl": "High Tack Adhesive Vinyl",
   "low-tack-vinyl-wall-decals": "Low Tack Vinyl Wall Decals",
   "tabletop-displays": "Tabletop Displays",
@@ -458,6 +804,16 @@ const TYPE_LABELS: Record<string, string> = {
 // to each product (Grommets, Shape, Pole Pockets, Hems, D-Rings, Rope, Velcro,
 // ...) still shows. Hidden groups keep their default in the live price.
 const SIGNS_HIDDEN_GROUPS = ["coating", "product orientation", "flute directions", "h-stakes"]
+// Postcards: hide wholesale-only mailing/distribution options not relevant to print-only orders.
+// "Mailing Service" and "Postage Class" are also excluded from the quote via configurator logic.
+const POSTCARDS_HIDDEN_GROUPS = ["mailing service", "postage class", "product orientation", "remainders extras", "additional options"]
+// All other products: hide the same wholesale-only groups that add cost or clutter.
+// These groups are still excluded from the quote via configurator defaults logic, but
+// hiding them prevents confusion for customers who shouldn't see mailing/postage options.
+const GENERAL_HIDDEN_GROUPS = ["mailing service", "postage class", "product orientation", "remainders extras", "additional options"]
+// All-inclusive (flyers/brochures/trading-cards): also hide print method — but still need
+// all of the wholesale-only groups from GENERAL_HIDDEN_GROUPS.
+const ALL_INCLUSIVE_HIDDEN_GROUPS = [...GENERAL_HIDDEN_GROUPS, "print method"]
 
 // Kept in sync with print/[category]/page.tsx's FLAT_SIZE_PAREN.
 const FLAT_SIZE_PAREN = /\(\s*flat\s+size\s*:?[^)]*\)\s*/gi
@@ -812,10 +1168,23 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
       "$1 Rectangle Stickers with $2UV",
     ],
   ],
+  // Renamed from "Print and Trim Boxes" (2026-07-08) — kept in sync with
+  // print/[category]/page.tsx, see that file's comment for why.
   "custom-boxes": [
-    [/^18PTC1S-CPBXNC-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with No Coating'],
-    [/^18PTC1S-CPBXSPUVFR-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Spot UV on the front only, No UV Coating on the back'],
-    [/^18PTC1S-CPBXUV-([\d.]+)X([\d.]+)$/i, '$1" X $2" Print and Trim Boxes with Full UV on the front only, No UV Coating on the back'],
+    [/^18PTC1S-CPBXNC-([\d.]+)X([\d.]+)$/i, '$1" X $2" Custom Boxes with No Coating'],
+    [/^18PTC1S-CPBXSPUVFR-([\d.]+)X([\d.]+)$/i, '$1" X $2" Custom Boxes with Spot UV on the front only, No UV Coating on the back'],
+    [/^18PTC1S-CPBXUV-([\d.]+)X([\d.]+)$/i, '$1" X $2" Custom Boxes with Full UV on the front only, No UV Coating on the back'],
+  ],
+  // Kept in sync with print/[category]/page.tsx's CATEGORY_WORD_OVERRIDES["packaging"] — see that file's comment for why.
+  packaging: [
+    [/\s+with\s+Akuafoil\b/gi, " "],
+    [/\b\d+BC\s+Box\b/gi, "Business Card Boxes"],
+    [/\s+with\s+Handle,?\s*/gi, " "],
+    [/\bWine\s+Box\b/gi, "Wine Boxes"],
+    [/\bTuck\s+Box\b/gi, "Roll End Tuck Top Boxes"],
+    [/\bSales\s+Box\b/gi, "Sales Presentation Boxes"],
+    [/\bCube\s+Box\b/gi, "Cube Boxes"],
+    [/\bGolf\s+Ball\s+Box\b/gi, "Golf Ball Boxes"],
   ],
   "header-cards": [
     [/\buncoated\s+(?=header\s+cards)/gi, ""],
@@ -830,6 +1199,13 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
     [/\buncoated\s+(?=trading\s+cards)/gi, ""],
   ],
   "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  // Same Foil Worx naming pattern as Trading Cards — Foil Worx UUID has
+  // "14PT Uncoated Foiled Postcards"; strip the stock prefix so all foiled
+  // stocks merge into one card, then rename to match 4over's label.
+  "postcards": [
+    [/\b\d+pt\s+(?:uncoated\s+|silk\s+laminated\s+)?(?=foiled\s+postcards?)/gi, ""],
+    [/\bfoiled\s+postcards?\b/gi, "Foil Worx Postcards"],
+  ],
   "booklets": [[/\b(?:60lb|70lb|80lb|100lb)\s+(?=(?:gloss\s*book|gloss\s*cover|matte\s*book)\b)/gi, ""]],
   "greeting-cards": [
     [/\buncoated\s+(?=greeting\s+cards)/gi, ""],
@@ -982,6 +1358,7 @@ export default async function ProductTypePage({
     let initialStockUuid: string | undefined
     let initialCoatingUuid: string | undefined
     let allowedProductUuidsOverride: string[] | undefined
+    let filteredSizeUuids: string[] | undefined
     if (leaf?.parentSlug && SIZE_GROUPED_PARENTS.includes(leaf.parentSlug)) {
       // Applied BEFORE stripSize, not after: some overrides (e.g. Calendars'
       // missing-stock-name parenthetical) target a pattern that an EARLIER
@@ -1028,6 +1405,49 @@ export default async function ProductTypePage({
         if (listResult.success) {
           const match = listResult.data?.size_list?.find((s) => normalizeSizeText(s.name) === sizeText)
           initialSizeUuid = match?.uuid
+        }
+        // CRITICAL FIX (2026-07-08): "Packaging" and "Majestic Boxes" share
+        // ONE category UUID across 8+ genuinely different box types (Cube/
+        // Wine/Sales/Tuck/Golf Ball/Business Card/Pillow/Print & Trim
+        // Boxes) — the generic live cascade's Size dropdown (fetchList({})
+        // with no filters) shows EVERY size across ALL of them mixed
+        // together, unscoped. Confirmed live: picking Sales Box's
+        // "11.75x1x10" size while viewing the Cube Boxes page kept "Cube
+        // Boxes" as the H1 but silently resolved productUuid/price to a
+        // Sales Box — a real wrong-product/wrong-price bug, not cosmetic.
+        // Fix: rebuild each row's card title using the EXACT SAME pipeline
+        // that built the level-3 card grid (CATEGORY_WORD_OVERRIDES →
+        // stripSize → BOX_THICKNESS_PREFIX strip) and keep only the rows
+        // whose title matches this card's — i.e. this card's true
+        // siblings. filteredSizeUuids scopes the visible Size dropdown;
+        // allowedProductUuidsOverride scopes the final resolution so
+        // getAllowedProducts() never falls back to the WRONG unfiltered
+        // list. Also fixes Wine Boxes' "with Handle" merge as a side
+        // effect — both variants already produce the identical "Wine
+        // Boxes" title, so extractShape()'s shapeList mechanism (which
+        // needs both sibling uuids up front) now sees them too.
+        const overrides = CATEGORY_WORD_OVERRIDES[category] || []
+        const titleFor = (desc: string) => {
+          let n = overrides.reduce((d, [pattern, replacement]) => d.replace(pattern, replacement), desc)
+          n = stripSize(n, false) || n
+          n = n.replace(BOX_THICKNESS_PREFIX, "").trim() || n
+          return n
+        }
+        const { data: allBoxRows } = await supabase
+          .from("fourover_products")
+          .select("product_uuid, product_description")
+          .eq("category_uuid", catUuid)
+        const siblings = (allBoxRows || []).filter(
+          (p) => titleFor(p.product_description || "") === productName,
+        )
+        if (siblings.length > 0) {
+          allowedProductUuidsOverride = siblings.map((p) => p.product_uuid)
+          const siblingSizeTexts = new Set(
+            siblings.map((p) => normalizeSizeText(extractSize(p.product_description || ""))),
+          )
+          filteredSizeUuids = (listResult.data?.size_list || [])
+            .filter((s) => siblingSizeTexts.has(normalizeSizeText(s.name)))
+            .map((s) => s.uuid)
         }
       } else if (catUuid && baseName) {
         // Same 1000-row PostgREST cap as fetchCategoryProducts above — this
@@ -1276,6 +1696,7 @@ export default async function ProductTypePage({
               <div className="mt-6">
                 <ProductInfoTabs
                   categoryUuid={product.category_uuid || leaf?.uuid || ""}
+                  productUuid={product.product_uuid}
                   productName={productName}
                   content={productContent ?? null}
                   isBusinessCards={isBusinessCards}
@@ -1287,11 +1708,13 @@ export default async function ProductTypePage({
               categorySlug={category}
               productName={productName}
               allowedProductUuids={allowedProductUuidsOverride || [product.product_uuid]}
+              filteredSizeUuids={filteredSizeUuids}
               isBanner={["indoor-banners","outdoor-banners","rigid-signs","window-graphics","vehicle-magnets"].includes(category)}
               hiddenGroups={
                 leaf?.parentSlug === "signs-banners" ? SIGNS_HIDDEN_GROUPS :
-                isAllInclusive ? ["product orientation", "print method"] :
-                undefined
+                isAllInclusive ? ALL_INCLUSIVE_HIDDEN_GROUPS :
+                category === "postcards" ? POSTCARDS_HIDDEN_GROUPS :
+                GENERAL_HIDDEN_GROUPS
               }
               sizeProducts={sizeProducts}
               initialSizeUuid={initialSizeUuid}
@@ -1321,16 +1744,11 @@ export default async function ProductTypePage({
   }
 
   async function fetchCategoryProducts(uuid: string) {
-    // PostgREST's default max-rows caps a single .select() at 1000 — Window
-    // Graphics' shared "ae3afb44..." category has 1485 products, and the 5
-    // Opaque ones silently fell outside that first page, leaving the
-    // Opaque Window Graphics type's matchedProducts empty ("No products
-    // found.") even though the level-3 grid correctly listed it. Page
-    // through with .range() until a partial (or empty) page confirms we've
-    // reached the end.
+    // Paginate by ACTUAL rows returned per page — see [category]/page.tsx comment.
     let rows: { product_uuid: string; product_description: string; product_code: string }[] = []
     const PAGE_SIZE = 1000
-    for (let from = 0; ; from += PAGE_SIZE) {
+    let from = 0
+    while (true) {
       const { data: page } = await supabase
         .from("fourover_products")
         .select("product_uuid, product_description, product_code")
@@ -1338,7 +1756,7 @@ export default async function ProductTypePage({
         .range(from, from + PAGE_SIZE - 1)
       if (!page || page.length === 0) break
       rows = rows.concat(page)
-      if (page.length < PAGE_SIZE) break
+      from += page.length
     }
 
     if (!rows || rows.length === 0) {
@@ -1385,6 +1803,20 @@ export default async function ProductTypePage({
   // that file's comment for why.
   if (category === "rigid-signs") {
     allProducts = allProducts.filter((p) => !matchesAllKeywords(p.product_description, "counter card"))
+  }
+
+  // Kept in sync with print/[category]/page.tsx's matching filter — 18oz
+  // Blockout entries live in indoor-banners' own UUID but 4over.com
+  // displays them under Outdoor Banners; excluded here, re-added to
+  // outdoor-banners via EXTRA_PRODUCT_SOURCES below.
+  if (category === "indoor-banners") {
+    allProducts = allProducts.filter((p) => !matchesAllKeywords(p.product_description, "18oz"))
+  }
+
+  // Kept in sync with print/[category]/page.tsx's matching filter —
+  // Stickers and Bumper Stickers share the SAME UUID, split by "bumper".
+  if (category === "stickers") {
+    allProducts = allProducts.filter((p) => !matchesAllKeywords(p.product_description, "bumper"))
   }
 
   // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
@@ -1466,6 +1898,19 @@ export default async function ProductTypePage({
   // Get option groups for the FIRST product (they share the same option structure)
   // Size selector will be derived from the list of matched products
   const firstProduct = matchedProducts[0]
+  // Raw lowercased descriptions of every product classified into THIS type —
+  // handed to the client so it can filter Stock/Coating options by name
+  // freshly every time it fetches a NEW list for whichever Size the user
+  // has currently selected, rather than relying on a server-computed
+  // snapshot tied to one specific anchor size. Confirmed necessary
+  // (2026-07-09, Foil Worx Business Cards): a stock/coating filter computed
+  // from just one candidateSize's own raw stock_list can never include a
+  // stock that only exists at a DIFFERENT (still valid, still selectable)
+  // size — e.g. Foil Worx's "32PT Uncoated" stock only appears in the raw
+  // stock_list at Size="2\" x 3.5\"", so a filter built while the anchor
+  // probe was examining a different size silently excluded it, even though
+  // the text-matching logic itself was correct.
+  const matchedProductTexts = matchedProducts.map((p) => p.product_description.toLowerCase())
   let optionGroups: any[] = []
 
   // A type sourced entirely from an EXTRA_PRODUCT_SOURCES entry (e.g.
@@ -1492,6 +1937,25 @@ export default async function ProductTypePage({
   let initialStockUuid: string | undefined
   let initialCoatingUuid: string | undefined
   let filteredSizeUuids: string[] | undefined
+  // Same reasoning as filteredSizeUuids, extended to Stock/Coating: without
+  // this, e.g. All-Inclusive Postcards' Stock/Coating dropdowns showed every
+  // stock/coating from the whole "Postcards" category (6 stocks, 5 coatings)
+  // instead of just the 2 stocks / 3 coatings this type actually uses —
+  // confirmed (2026-07-08) as a genuine WRONG-PRICE bug, not just a cosmetic
+  // one: picking one of the unscoped options (e.g. "Aqueous Coating", which
+  // no real All-Inclusive product uses) hits getAllowedProducts()'s
+  // `allowed.length > 0 ? allowed : list` fallback in
+  // product-configurator-client.tsx, which silently returns the FULL
+  // unfiltered product list and resolves to a completely different postcard
+  // type (confirmed: selecting it made a "Scoring Options" field appear —
+  // that field belongs to a different postcard type entirely, not All-
+  // Inclusive). Computed below from the SAME stock/coating probe results the
+  // initialStockUuid/initialCoatingUuid resolution already fetches, so this
+  // costs no extra API calls.
+  // Stock/Coating filtering itself now lives entirely client-side, driven
+  // by `matchedProductTexts` above — see that declaration's comment. The
+  // stock/coating probing below is still needed to resolve
+  // initialStockUuid/initialCoatingUuid (which combo to anchor the page on).
   // Signs-banners uses sizeProducts mode (Size dropdown → direct product_uuid),
   // so the live-cascade anchor (initialSizeUuid/Stock/Coating) is not needed
   // and the expensive 4over API probe calls below can be skipped entirely.
@@ -1520,23 +1984,60 @@ export default async function ProductTypePage({
       // only sizes that the matched products actually use. The live
       // Stock/Coating cascade still runs normally — only the visible size list
       // is narrowed (e.g. All-Inclusive Postcards: 4 sizes, not 50+).
-      const currentTypeKws = typeRules.find(([slug]) => slug === typeSlug)?.[1] ?? []
-      if (!isSignsBanners && currentTypeKws.length > 0) {
+      // Catalogs' "size" isn't just WxH — Saddle Stitch and Perfect Bound
+      // catalogs share the SAME two bare dimensions ("8.5x11"/"5.5x8.5") but
+      // occupy DIFFERENT page-count ranges (Saddle Stitch: 8-52 pages,
+      // Perfect Bound: 28-92), and the live size_list names each entry
+      // "8.5\" x 11\"- 36 page" (page count is part of the size identity).
+      // Bare SIZE_DIM extraction (below, dimension only) can never
+      // distinguish these — confirmed wrong-price bug (2026-07-09): Saddle
+      // Stitch Catalogs' Size dropdown showed all 42 combos from BOTH
+      // catalog types, and picking a Perfect-Bound-only page count (e.g.
+      // "8.5\" x 11\"- 92 page") silently resolved to a real Perfect Bound
+      // product ("Binding Type: Perfect Bound") while still on the Saddle
+      // Stitch page. Grabbing the trailing "-N page"/"-N Page" suffix when
+      // present (most descriptions have it right after the dimension: '8.5"
+      // X 11" -40 Page Saddle Stitch...') makes the extracted size identity
+      // as specific as the size_list's own naming, so the exact-match below
+      // correctly discriminates; categories without this suffix pattern are
+      // unaffected (the optional group just doesn't match anything).
+      const SIZE_DIM_WITH_PAGE = new RegExp(SIZE_DIM.source + "\\s*-?\\s*\\d+\\s*page", "i")
+      const extractSizeIdentity = (desc: string) => desc.match(SIZE_DIM_WITH_PAGE)?.[0] || desc.match(SIZE_DIM)?.[0]
+      // Was gated on `currentTypeKws.length > 0` (skip catch-all types) —
+      // removed that gate: a catch-all's matchedProducts is ALREADY the
+      // correctly-classified narrower set (everything NOT claimed by an
+      // earlier, more specific rule; classifyProduct() checks rules in
+      // order), so it's just as safe to scope Size from it as any other
+      // type. Confirmed as a real gap (2026-07-09): Perfect Bound Catalogs
+      // (Catalogs' own catch-all) kept showing all 42 sizes from BOTH
+      // catalog types even after fixing Saddle Stitch's non-catch-all
+      // filtering above — the guard was skipping it specifically because it
+      // has no keywords, not because narrowing would be wrong for it.
+      // firstProduct being truthy (checked above) guarantees at least one
+      // matchedProducts entry, so this can't collapse to an accidental
+      // "show everything" via an empty result.
+      if (!isSignsBanners) {
         const matchedSizeTexts = new Set(
           matchedProducts
-            .map((p) => p.product_description.match(SIZE_DIM)?.[0])
+            .map((p) => extractSizeIdentity(p.product_description))
             .filter(Boolean)
-            .map((s) => normalizeSizeText(s!))
+            .map((s) => normalizeSizeText(s!).replace(/\s*-\s*/g, "-"))
         )
         filteredSizeUuids = (listResult.data?.size_list || [])
-          .filter((s) => matchedSizeTexts.has(normalizeSizeText(s.name)))
+          .filter((s) => matchedSizeTexts.has(normalizeSizeText(s.name).replace(/\s*-\s*/g, "-")))
           .map((s) => s.uuid)
       }
 
       // startsWith, not exact equality: some size_list entries carry a
       // descriptive suffix the bare dimension doesn't have (e.g. "8.5\" x
       // 22\"- 4 page" for Half-Fold Brochures' 4-page fold pattern).
-      const sizeMatch = sizeText ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), sizeText)) : undefined
+      // If the category declares a preferredSizeText (e.g. '2" x 3.5"' for
+      // Standard BC), that size wins over the first-alphabetical-product size.
+      const preferredSizeEntry = leaf?.preferredSizeText
+        ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), normalizeSizeText(leaf.preferredSizeText!)))
+        : undefined
+      const sizeMatch = preferredSizeEntry
+        ?? (sizeText ? listResult.data?.size_list?.find((s) => sizeStartsWith(normalizeSizeText(s.name), sizeText)) : undefined)
       const allowedUuids = new Set(matchedProducts.map((p) => p.product_uuid))
       // Flags' own description states a LINEAR size ("Feather Flag - 10ft -
       // 3oz Polyester") that has ZERO textual correlation to the live
@@ -1681,6 +2182,7 @@ export default async function ProductTypePage({
               <div className="mt-6">
                 <ProductInfoTabs
                   categoryUuid={effectiveCategoryUuid}
+                  productUuid={firstProduct?.product_uuid}
                   productName={typeLabel}
                   content={productContent ?? null}
                   isBusinessCards={isBusinessCardsType}
@@ -1697,11 +2199,13 @@ export default async function ProductTypePage({
                 allowedProductUuids={matchedProducts.map((p) => p.product_uuid)}
                 hiddenGroups={
                   isSignsBanners ? SIGNS_HIDDEN_GROUPS :
-                  isAllInclusiveType ? ["product orientation", "print method"] :
-                  undefined
+                  isAllInclusiveType ? ALL_INCLUSIVE_HIDDEN_GROUPS :
+                  category === "postcards" ? POSTCARDS_HIDDEN_GROUPS :
+                  GENERAL_HIDDEN_GROUPS
                 }
                 sizeProducts={signsSizeProducts}
                 filteredSizeUuids={signsSizeProducts ? undefined : filteredSizeUuids}
+                matchedProductTexts={signsSizeProducts ? undefined : matchedProductTexts}
                 initialSizeUuid={signsSizeProducts ? undefined : initialSizeUuid}
                 initialStockUuid={signsSizeProducts ? undefined : initialStockUuid}
                 initialCoatingUuid={signsSizeProducts ? undefined : initialCoatingUuid}

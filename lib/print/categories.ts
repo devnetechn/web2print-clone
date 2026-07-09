@@ -17,6 +17,9 @@ export interface SubCategory {
   // description matches ALL of these keyword(s) are shown on this
   // subcategory's page. A single string is shorthand for [string].
   keyword?: string | string[]
+  // When set, the product configurator defaults to this size instead of the
+  // first alphabetical size from the API (e.g. "2\" x 3.5\"" for Standard BC).
+  preferredSizeText?: string
 }
 
 // Matches a product description against one keyword: a plain substring match,
@@ -47,7 +50,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       // "Business Cards > Business Cards" as looking like an accidental
       // duplicate. Same naming pattern as Standard Postcards/Presentation
       // Folder/Flat Flyers and Brochures elsewhere in this catalog.
-      { name: "Standard Business Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "business-cards-standard", image: "/images/cat/business-cards/standard.jpg" },
+      { name: "Standard Business Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "business-cards-standard", image: "/images/cat/business-cards/standard.jpg", preferredSizeText: '2" x 3.5"' },
       { name: "Raised Foil", uuid: "f30e7cbf-0e9a-4122-a5aa-3330887e4d9f", slug: "raised-foil", image: "/images/cat/business-cards/raised-foil.jpg", keyword: "business card" },
       { name: "Silk Cards", uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", slug: "silk-cards", image: "/images/cat/business-cards/silk.jpg", keyword: "business card" },
       { name: "Suede Cards", uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", slug: "suede-cards", image: "/images/cat/business-cards/suede.jpg", keyword: "business card" },
@@ -119,7 +122,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     subcategories: [
       { name: "Table Covers", uuid: "5f53c3d3-962a-4b18-8db8-a6a01ec31130", slug: "table-covers", image: "/images/signs/table-covers.jpg" },
       { name: "Rigid Signs", uuid: "9c475aac-62ea-4538-96e2-ab7e2ccb0a45", slug: "rigid-signs", image: "/images/signs/rigid-signs.jpg" },
-      { name: "Wall Arts", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/signs/wall-arts.jpg" },
+      { name: "Wall Art", uuid: "b83112e8-ab2f-4f80-82ea-752c0a7d4f13", slug: "wall-arts", image: "/images/signs/wall-arts.jpg" },
       { name: "Outdoor Banners", uuid: "d9181764-0579-402f-bfc8-4ff65408886e", slug: "outdoor-banners", image: "/images/signs/outdoor-banners.jpg" },
       { name: "Indoor Banners", uuid: "35170807-4aa5-4d13-986f-c0e266a5d685", slug: "indoor-banners", image: "/images/signs/indoor-banners.jpg" },
       { name: "Flags", uuid: "04072d2d-8cc5-472f-bc1f-9243382992dc", slug: "flags", image: "/images/signs/flags.jpg" },
@@ -146,14 +149,33 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     label: "Boxes & Packaging",
     subcategories: [
       { name: "Packaging", uuid: "c11d8936-67ad-4b59-a48d-1683f42f055c", slug: "packaging", image: "/images/cat/packaging.jpg" },
-      // 4over's own product_description for every entry here is literally
-      // its product_code ("18PTC1S-CPBXNC-10X10", no clean sibling
-      // anywhere to reconstruct from) — confirmed via exact stock_uuid
-      // match that this is fourprintshop's "Print & Trim Boxes" (under
-      // Standard Boxes), not a genuinely separate "Custom Boxes" product.
-      // Renamed to match; slug kept as "custom-boxes" since it's just the
-      // URL, not user-facing.
-      { name: "Print & Trim Boxes", uuid: "776a6fc9-b3fe-4ede-82e9-bbfccd51c293", slug: "custom-boxes", image: "/images/cat/custom-boxes.jpg" },
+      // Akuafoil box variants were briefly split into a separate "Majestic
+      // Boxes" subcategory (2026-07-08 same day) after confirming 4over.com's
+      // own Cube Boxes product page shows no Akuafoil option — but the user
+      // decided (2026-07-08, later same day) to merge them back: one card
+      // per box type, Akuafoil selectable inside that card's calculator
+      // instead of a separate subcategory. Akuafoil variants differ from
+      // plain by Stock (e.g. "18PT C1S" vs "14PT Uncoated") AND Colorspec
+      // ("5/0 (4/0 with Foil on Front)" vs "4/0 (4 color front)") at the
+      // SAME physical Size — the normal generic Stock/Colorspec cascade
+      // dropdowns handle this natively once both uuids are in the same
+      // card's sibling set (see CATEGORY_WORD_OVERRIDES["packaging"]'s
+      // Akuafoil-strip rule) — no shapeList/extractShape mechanism needed,
+      // unlike Wine Boxes' Handle merge.
+      // CORRECTED (2026-07-08): this category's OWN official 4over name
+      // (confirmed via GET /printproducts/categories/776a6fc9...) is
+      // literally "Custom Boxes" — a genuinely different, fully-custom
+      // product (option groups: Custom Box Style Four Panel/Tray Style/
+      // Other, Custom Box Closure Tuck End/Beers Tray, Custom Box Die
+      // Options, Custom Box Glue Options) from the real "Print & Trim
+      // Boxes" (6 standard sizes 11x17/12x18/13x19/19x27/8.5x11/8.5x14,
+      // just Stock/Coating/Colorspec — confirmed live on 4over.com's own
+      // /print-and-trim-boxes page, which matches our SEPARATE "packaging"
+      // > "Print and Trim Flat Sheets" card exactly, not this one). A prior
+      // session's rename to "Print & Trim Boxes" here was based on
+      // fourprintshop matching, not 4over.com — wrong product. Reverted to
+      // 4over's own name; slug kept as "custom-boxes" (URL-only).
+      { name: "Custom Boxes", uuid: "776a6fc9-b3fe-4ede-82e9-bbfccd51c293", slug: "custom-boxes", image: "/images/cat/custom-boxes.jpg" },
       // fourprintshop nests this under "Standard Packaging Tags & Cards"
       // alongside Bottleneck/Regular Hang Tags (and "Majestic Packaging
       // Tags & Cards" alongside the rest of Hang Tags' own materials) — per
@@ -168,6 +190,14 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     subcategories: [
       { name: "Roll Labels", uuid: "a2b13bce-0643-41ce-9a03-e21f9a92d7d4", slug: "roll-labels", image: "/images/cat/roll-labels.jpg" },
       { name: "Stickers", uuid: "7381a85e-5e48-4673-aa67-862dd6553ef0", slug: "stickers", image: "/images/cat/stickers.jpg" },
+      // 4over.com's own /rolls-labels-stickers page (2026-07-08) lists
+      // Bumper Stickers as its OWN 3rd subcategory (1 item), separate from
+      // Stickers (6 items) — "4mil Bumper Stickers" shares the SAME
+      // "Stickers" UUID, split out here via keyword; the "stickers" leaf
+      // excludes "bumper" matches (see the `category === "stickers"`
+      // filter in print/[category]/page.tsx and [typeSlug]/page.tsx) so the
+      // two don't double-list.
+      { name: "Bumper Stickers", uuid: "7381a85e-5e48-4673-aa67-862dd6553ef0", slug: "bumper-stickers", image: "/images/cat/stickers.jpg", keyword: "bumper" },
       // Removed "Adhesive Vinyl" — it pointed at the SAME UUID as Signs &
       // Banners' Floor Graphics/Wall Decals ("4bf65303..."), an unrelated
       // category misplaced here; fourprintshop's own Roll Labels & Stickers
@@ -195,6 +225,7 @@ export interface FlatCategory {
   parentLabel: string
   image: string
   keyword?: string | string[]
+  preferredSizeText?: string
 }
 
 // Flat lookup: subcategory slug -> { uuid, name, parentSlug, parentLabel, image, keyword }
@@ -208,6 +239,7 @@ for (const [groupSlug, group] of Object.entries(GROUPS)) {
       parentLabel: group.label,
       image: sub.image,
       keyword: sub.keyword,
+      preferredSizeText: sub.preferredSizeText,
     }
   }
 }

@@ -38,6 +38,20 @@ type SpecsState =
 
 interface ProductInfoTabsProps {
   categoryUuid: string
+  // Scopes the Specs tab to a KNOWN product of the CURRENT type, instead of
+  // grabbing categoryUuid's first product blind. Without this, hasTypeRules
+  // categories (a type classified out of a broader shared category, e.g.
+  // All-Inclusive Postcards inside "Postcards") showed completely wrong
+  // specs — the unscoped categoryproductslist call just returns whichever
+  // product happens to sort first across the WHOLE category, which has no
+  // relation to the type actually being viewed (confirmed 2026-07-08: All-
+  // Inclusive Postcards' Specs tab showed "1.5\" x 7\", 100LB Cover Linen,
+  // No Coating" — none of which are real All-Inclusive values; that's just
+  // whatever sorted first among all 749 Postcards products). Falls back to
+  // the old category-wide lookup when omitted (single-subcategory leaves
+  // with no TYPE_RULES splitting, where the category's own first product
+  // genuinely IS representative).
+  productUuid?: string
   productName: string
   content: ProductContent | null
   isBusinessCards?: boolean
@@ -45,6 +59,7 @@ interface ProductInfoTabsProps {
 
 export function ProductInfoTabs({
   categoryUuid,
+  productUuid,
   productName,
   content,
   isBusinessCards = false,
@@ -62,14 +77,16 @@ export function ProductInfoTabs({
   const loadSpecs = async () => {
     setSpecsState({ status: "loading" })
     try {
-      const r1 = await fetch(
-        `/api/4over/categoryproductslist?category_uuid=${encodeURIComponent(categoryUuid)}`
-      )
-      if (!r1.ok) throw new Error("categoryproductslist failed")
-      const d1 = await r1.json()
-      if (!d1.success) throw new Error("cascade failed")
-
-      const firstProductUuid: string | null = d1.data?.products?.[0]?.product_uuid ?? null
+      let firstProductUuid: string | null = productUuid ?? null
+      if (!firstProductUuid) {
+        const r1 = await fetch(
+          `/api/4over/categoryproductslist?category_uuid=${encodeURIComponent(categoryUuid)}`
+        )
+        if (!r1.ok) throw new Error("categoryproductslist failed")
+        const d1 = await r1.json()
+        if (!d1.success) throw new Error("cascade failed")
+        firstProductUuid = d1.data?.products?.[0]?.product_uuid ?? null
+      }
 
       if (!firstProductUuid) {
         setSpecsState({ status: "done", sizes: [], stocks: [], coatings: [], colorspecs: [], turnaround: [], extraGroups: [] })
