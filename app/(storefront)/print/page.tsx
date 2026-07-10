@@ -2,7 +2,7 @@ import Link from "next/link"
 
 const TOP_CATEGORIES = [
   { name: "Business Cards", slug: "business-cards", description: "Premium quality business cards in various stocks and finishes" },
-  { name: "Marketing Materials", slug: "marketing-materials", description: "Flyers, brochures, postcards, booklets and more" },
+  { name: "Marketing Products", slug: "marketing-materials", description: "Flyers, brochures, postcards, booklets and more" },
   { name: "Signs & Banners", slug: "signs-banners", description: "Indoor and outdoor signage, banners, and displays" },
   { name: "Boxes & Packaging", slug: "boxes-packaging", description: "Custom packaging and box solutions" },
   { name: "Roll Labels & Stickers", slug: "roll-labels-stickers", description: "Custom roll labels, stickers, and adhesive products" },

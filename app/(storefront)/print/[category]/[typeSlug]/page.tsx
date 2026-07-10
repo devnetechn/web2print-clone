@@ -14,6 +14,8 @@ import type { ProductContent } from "@/lib/print/product-content"
 const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | string[] }[]> = {
   "flyers-and-brochures": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE -- 0 live matches (account gap)
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "flyer" }, // EDDM Flyers -- see print/[category]/page.tsx's matching entry for why this is a single keyword, not ["flyer","brochure","half fold"]
   ],
   "door-hangers": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "door hanger" },
@@ -68,6 +70,7 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "sell sheet"] },
     { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: ["silk", "sell sheet"] },
     { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: ["suede", "sell sheet"] },
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "sell sheet" }, // 2026-07-09: was missing -- see matching TYPE_RULES comment in print/[category]/page.tsx
   ],
   "table-tent-cards": [
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
@@ -141,21 +144,106 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "trading card" }, // Foil Worx
   ],
   // Kept in sync with EXTRA_PRODUCT_SOURCES in print/[category]/page.tsx —
-  // Car Door Magnets live under vehicle-magnets UUID.
+  // Car Door Magnets live under vehicle-magnets UUID. 2026-07-10: was
+  // `keyword: "car door"`, 0 live matches (real text is "30mil Car Magnet").
   magnets: [
-    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car door" }, // Car Door Magnets
+    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car magnet" }, // Car Door Magnets
   ],
 }
 
 // Kept in sync with TYPE_IMAGES in print/[category]/page.tsx.
 const TYPE_IMAGES: Record<string, Record<string, string>> = {
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.calendars
+  calendars: {
+    "12x12-calendars": "/images/cat/calendars/12x12.jpg",
+    "8-5x11-calendars": "/images/cat/calendars/8-5x11.jpg",
+    "spiral-bind-calendars": "/images/cat/calendars/spiral-bind.jpg",
+    "11x8-5-calendars": "/images/cat/calendars/11x8-5.jpg",
+    "9x12-calendars": "/images/cat/calendars/9x12.jpg",
+    "hard-cover-calendars": "/images/cat/calendars/hard-cover.jpg",
+    "self-cover-calendars": "/images/cat/calendars/self-cover.jpg",
+  },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.presentation-folders
+  "presentation-folders": {
+    "silk-presentation-folder": "/images/cat/presentation-folders/silk.jpg",
+    "suede-presentation-folder": "/images/cat/presentation-folders/suede.jpg",
+    "akuafoil-presentation-folder": "/images/cat/presentation-folders/akuafoil.jpg",
+    "natural-presentation-folder": "/images/cat/presentation-folders/natural.jpg",
+    "pearl-presentation-folder": "/images/cat/presentation-folders/pearl.jpg",
+    "glueless-presentation-folder": "/images/cat/presentation-folders/glueless.jpg",
+    "9x12-presentation-folder": "/images/cat/presentation-folders/9x12.jpg",
+    "9x14-presentation-folder": "/images/cat/presentation-folders/9x14.jpg",
+    "5x10-presentation-folder": "/images/cat/presentation-folders/5x10.jpg",
+    "6x9-presentation-folder": "/images/cat/presentation-folders/6x9.jpg",
+  },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.booklets
+  // -- see that entry's comment for the resolveProductImage() confusion
+  // this fixed (2026-07-09).
+  booklets: {
+    "matte-book-uncoated-booklets": "/images/cat/booklets/matte-book-uncoated.jpg",
+    "dull-book-satin-aq-booklets": "/images/cat/booklets/dull-book-satin-aq.jpg",
+    "gloss-cover-aq-booklets": "/images/cat/booklets/gloss-cover-aq.jpg",
+    "premium-opaque-uncoated-booklets": "/images/cat/booklets/premium-opaque-uncoated.jpg",
+    "gloss-booklets": "/images/cat/booklets/gloss.jpg",
+  },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.postcards
+  // -- 2026-07-10: now 4over.com's own actual postcard photos, downloaded
+  // and hosted locally, see that entry's comment for the full story.
+  "postcards": {
+    "all-inclusive-postcards": "/images/cat/postcards/all-inclusive.jpg",
+    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
+    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
+    "dual-raised-rsvp-postcards": "/images/cat/postcards/dual-raised-rsvp.png",
+    "dual-raised-postcards": "/images/cat/postcards/dual-raised.png",
+    "raised-foil-postcards": "/images/cat/postcards/raised-foil.jpg",
+    "raised-spot-uv-postcards": "/images/cat/postcards/raised-spot-uv.jpg",
+    "foil-worx-postcards": "/images/cat/postcards/foil-worx.jpg",
+    "tearoff-postcards": "/images/cat/postcards/tearoff.jpg",
+    "painted-edge-postcards": "/images/cat/postcards/painted-edge.jpg",
+    "endurace-postcards": "/images/cat/postcards/endurace.jpg",
+    "akuafoil-postcards": "/images/cat/postcards/akuafoil.jpg",
+    "brown-kraft-postcards": "/images/cat/postcards/brown-kraft.jpg",
+    "suede-postcards": "/images/cat/postcards/suede.jpg",
+    "silk-postcards": "/images/cat/postcards/silk.jpg",
+    "pearl-postcards": "/images/cat/postcards/pearl.jpg",
+    "natural-postcards": "/images/cat/postcards/natural.jpg",
+    "linen-uncoated-postcards": "/images/cat/postcards/linen-uncoated.jpg",
+    "plastic-postcards": "/images/cat/postcards/plastic.jpg",
+    "magnet-postcards": "/images/cat/postcards/magnet.jpg",
+    "100lb-gloss-cover-postcards": "/images/cat/postcards/100lb-gloss-cover.jpg",
+    "18pt-postcards": "/images/cat/postcards/standard.jpg",
+    "16pt-postcards": "/images/cat/postcards/16pt.jpg",
+    "14pt-postcards": "/images/cat/postcards/standard.jpg",
+    "direct-mail-postcards": "/images/cat/postcards/direct-mail.jpg",
+    "standard-postcards": "/images/cat/postcards/standard.jpg",
+  },
+  "trading-cards": {
+    "akuafoil-trading-cards": "/images/cat/trading-cards/akuafoil.jpg",
+    "brown-kraft-trading-cards": "/images/cat/trading-cards/brown-kraft.jpg",
+    "foil-worx-trading-cards": "/images/cat/trading-cards/foil-worx.jpg",
+    "natural-trading-cards": "/images/cat/trading-cards/natural.jpg",
+    "pearl-trading-cards": "/images/cat/trading-cards/pearl.jpg",
+    "silk-trading-cards": "/images/cat/trading-cards/silk.jpg",
+    "suede-trading-cards": "/images/cat/trading-cards/suede.jpg",
+    "100lb-cover-linen-trading-cards": "/images/cat/trading-cards/100lb-cover-linen.jpg",
+    "18pt-trading-cards": "/images/cat/trading-cards/18pt.jpg",
+    "16pt-trading-cards": "/images/cat/trading-cards/16pt.jpg",
+    "14pt-trading-cards": "/images/cat/trading-cards/14pt.jpg",
+  },
   "flyers-and-brochures": {
     "all-inclusive-flyers-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+    "eddm-full-service-flyers": "/images/cat/flyers-and-brochures/eddm-full-service.jpg",
+    "eddm-flyers-print-only": "/images/cat/flyers-and-brochures/eddm-print-only.jpg",
+    "tri-fold-brochures": "/images/cat/flyers-and-brochures/tri-fold.jpg",
+    "z-fold-brochures": "/images/cat/flyers-and-brochures/z-fold.jpg",
+    "specialty-folds-brochures": "/images/cat/flyers-and-brochures/specialty-folds.jpg",
+    "endurace-flyers-and-brochures": "/images/cat/flyers-and-brochures/endurace.jpg",
   },
   envelopes: {
+    "remittance-envelopes": "/images/cat/envelopes/remittance.png",
     "blank-envelopes": "/images/cat/envelopes/blank.jpg",
     "digital-envelopes": "/images/cat/envelopes/digital.jpg",
     "variable-addressing-envelopes": "/images/cat/envelopes/variable-addressing.jpg",
@@ -184,9 +272,12 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "gloss-cover-posters": "/images/cat/posters/gloss-cover.jpg",
     "gloss-book-posters": "/images/cat/posters/gloss-book.jpg",
   },
+  // 2026-07-10: both photos replaced -- neither was actually from 4over.com
+  // (100-150KB unrelated stock photos vs 4over's real ~13-15KB CDN
+  // thumbnails, same bug class as [[posters-audit]]).
   "rack-cards": {
     "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
-    "standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
+    "standard-rack-cards": "/images/cat/rack-cards/standard.jpg",
   },
   "sell-sheets": {
     "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
@@ -196,6 +287,8 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "silk-sell-sheets": "/images/cat/sell-sheets/silk.jpg",
     "suede-sell-sheets": "/images/cat/sell-sheets/suede.jpg",
     "standard-sell-sheets": "/images/cat/sell-sheets.jpg",
+    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
+    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
   },
   "table-tent-cards": {
     "natural-table-tents": "/images/cat/table-tent-cards/natural.jpg",
@@ -203,35 +296,42 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "4x6-table-tent": "/images/cat/table-tent-cards/4x6.jpg",
     "5x5-5-table-tent": "/images/cat/table-tent-cards/5x5.5.jpg",
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES["tear-off-cards"].
   "tear-off-cards": {
-    "door-hangers-tear-off": "/images/cat/door-hangers.jpg",
+    "door-hangers-tear-off": "/images/cat/door-hangers/tearoff.jpg",
     "flyers-tear-off": "/images/cat/flyers-and-brochures/tearoff.jpg",
-    "postcards-tear-off": "/images/cat/postcards.jpg",
+    "postcards-tear-off": "/images/cat/postcards/tearoff.jpg",
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.eddm.
   eddm: {
-    "eddm-postcards": "/images/cat/postcards.jpg",
-    "eddm-sell-sheets": "/images/cat/sell-sheets.jpg",
-    "eddm-flyers": "/images/cat/flyers-and-brochures.jpg",
+    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
+    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
+    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
+    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
+    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
+    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
   },
   "table-covers": {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
     "table-runners": "/images/cat/table-covers/table-runners.jpg",
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES["wall-arts"].
   "wall-arts": {
-    "clear-acrylic-signs": "/images/signs/wall-arts.jpg",
-    "aluminum-dye-sub": "/images/signs/wall-arts.jpg",
-    "mounted-canvas": "/images/signs/wall-arts.jpg",
+    "clear-acrylic-signs": "/images/cat/wall-arts/clear-acrylic.jpg",
+    "aluminum-dye-sub": "/images/cat/wall-arts/aluminum-dye-sub.jpg",
+    "mounted-canvas": "/images/cat/wall-arts/mounted-canvas.jpg",
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES["rigid-signs"].
   "rigid-signs": {
     "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
-    "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.jpg",
+    "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.png",
     "4mm-coroplast-signs": "/images/cat/rigid-signs/4mm-coroplast.jpg",
     "3mm-pvc-signs": "/images/cat/rigid-signs/3mm-pvc.jpg",
     "foam-core-signs": "/images/cat/rigid-signs/foam-core.jpg",
     "aluminum-heavy-duty": "/images/cat/rigid-signs/aluminum-heavy-duty.jpg",
     "aluminum-sandwich-board": "/images/cat/rigid-signs/aluminum-sandwich-board.jpg",
-    "styrene-signs": "/images/signs/rigid-signs.jpg",
-    "gator-board-signs": "/images/signs/rigid-signs.jpg",
+    "styrene-signs": "/images/cat/rigid-signs/styrene-signs.jpg",
+    "gator-board-signs": "/images/cat/rigid-signs/gator-board-signs.jpg",
   },
   "outdoor-banners": {
     "mesh-banners": "/images/cat/outdoor-banners/mesh.jpg",
@@ -250,8 +350,9 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "pole-flags": "/images/cat/flags/pole.jpg",
     "teardrop-flags": "/images/cat/flags/teardrop.jpg",
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES["window-graphics"].
   "window-graphics": {
-    "digital-clear-window-clings": "/images/cat/window-graphics/clear.jpg",
+    "digital-clear-window-clings": "/images/cat/window-graphics/digital-clear.jpg",
     "see-through-perforated-window-vinyl-graphic": "/images/cat/window-graphics/perforated.jpg",
     "opaque-window-graphics": "/images/cat/window-graphics/opaque.jpg",
     "clear-window-clings": "/images/cat/window-graphics/clear.jpg",
@@ -261,6 +362,14 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "high-tack-adhesive-vinyl": "/images/cat/wall-decals/high-tack.jpg",
     "low-tack-vinyl-wall-decals": "/images/cat/wall-decals/low-tack.jpg",
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES["banner-stands"].
+  "banner-stands": {
+    "deluxe-single-sided-retractable-banner-stands": "/images/cat/banner-stands/deluxe-single-sided.jpg",
+    "x-style-collapsible-outdoor-banner-stands": "/images/cat/banner-stands/x-style-outdoor.jpg",
+    "x-style-collapsible-banner-stands": "/images/cat/banner-stands/x-style-indoor.jpg",
+    "standard-retractable-banner-stands": "/images/cat/banner-stands/standard-retractable.jpg",
+    "telescopic-backdrop-banner-stands": "/images/cat/banner-stands/telescopic-backdrop.jpg",
+  },
   displays: {
     "tabletop-displays": "/images/cat/displays/tabletop.jpg",
     "fabric-tube-displays": "/images/cat/displays/fabric-tube.jpg",
@@ -269,6 +378,17 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "fan-cutout": "/images/cat/displays/fan-cutout.jpg",
     "foam-core-counter-cards": "/images/cat/displays/foam-core-counter.jpg",
     "white-pvc-counter-cards": "/images/cat/displays/white-pvc-counter.jpg",
+  },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES["event-tickets"].
+  "event-tickets": {
+    "variable-numbering-event-tickets": "/images/cat/event-tickets/variable-numbering.jpg",
+  },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.magnets.
+  magnets: {
+    "car-door-magnets": "/images/cat/magnets/car-door.jpg",
+    "oval-magnets": "/images/cat/magnets/oval.jpg",
+    "magnet-announcement-cards": "/images/cat/magnets/announcement.jpg",
+    "standard-magnets": "/images/cat/magnets/standard-uv.jpg",
   },
 }
 
@@ -314,16 +434,16 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // true catch-all).
   "flyers-and-brochures": {
     "all-inclusive-flyers-brochures": ["all inclusive", "all-inclusive"],
-    "eddm-full-service-half-folds": ["eddm full service", "eddm", "half fold"],
-    "eddm-print-only-half-folds": ["eddm print only", "eddm", "half fold"],
-    "eddm-full-service-flyers": ["eddm full service", "eddm"],
-    "eddm-flyers-print-only": ["eddm print only", "eddm"],
-    "direct-mail-half-fold-flyers": ["direct mail", "half fold"],
-    "direct-mail-tri-fold-flyers": ["direct mail", "tri fold"],
-    "direct-mail-specialty-folds-flyers-and-brochures": ["direct mail", "specialty"],
-    "direct-mail-flyers-coated": ["direct mail", "coated"],
-    "direct-mail-flyers-uncoated": ["direct mail", "uncoated"],
-    "direct-mail-flyers": ["direct mail"],
+    // EDDM Full Service/Print Only Half-Folds removed (2026-07-09, account gap).
+    // "eddm-flyers-base" classifies the shared EDDM Flyers product pool for
+    // OPTION_PRESET_TYPES' 2 split cards (Full Service / Print Only) to draw
+    // from — see the matching comment in print/[category]/page.tsx.
+    "eddm-flyers-base": ["eddm"],
+    // "direct-mail-*" (6 entries) removed 2026-07-09: confirmed 0 live products
+    // anywhere in this category contain "direct mail" text — account gap. The
+    // "...coated" variant was additionally an ACTIVE bug (OR-matched "coated"
+    // is a substring of "uncoated", silently absorbing 17 unrelated plain
+    // flyers) — see the matching TYPE_RULES comment in print/[category]/page.tsx.
     "specialty-folds-brochures": ["specialty fold", "gatefold", "gate fold", "accordion", "french fold"],
     "z-fold-brochures": ["z fold", "z-fold", "zfold"],
     "tri-fold-brochures": ["tri fold", "tri-fold", "trifold"],
@@ -336,14 +456,15 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // order is critical: more specific keywords before broader ones.
   "postcards": {
     "all-inclusive-postcards": ["all inclusive", "all-inclusive"],
-    "eddm-full-service-postcards": ["eddm full service", "full service"],
-    "eddm-print-only-postcards": ["eddm print only", "print only"],
-    "eddm-postcards": ["eddm"],
+    // "eddm-postcards-base" classifies the shared EDDM Postcards product pool
+    // (all 63 genuine EDDM postcards) for OPTION_PRESET_TYPES' 2 split cards
+    // (Full Service / Print Only) -- see matching comment in print/[category]/page.tsx.
+    "eddm-postcards-base": ["eddm"],
     "dual-raised-rsvp-postcards": ["rsvp"],
     "dual-raised-postcards": ["dual raised"],
     "raised-foil-postcards": ["raised foil"],
     "raised-spot-uv-postcards": ["raised spot"],
-    "foil-worx-postcards": ["foil worx"],
+    "foil-worx-postcards": ["foil worx", "foiled"], // 2026-07-09: was missing "foiled" -- see matching TYPE_RULES comment
     "tearoff-postcards": ["tear"],
     "painted-edge-postcards": ["painted-edge", "painted edge"],
     "endurace-postcards": ["endurace"],
@@ -459,6 +580,7 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "akuafoil-sell-sheets": ["akuafoil"],
     "brown-kraft-sell-sheets": ["brown kraft"],
     "endurace-sell-sheets": ["endurace"],
+    "eddm-sell-sheets-base": ["eddm"], // classifies the shared pool for OPTION_PRESET_TYPES' 2 split cards -- see matching TYPE_RULES comment in print/[category]/page.tsx
     "pearl-sell-sheets": ["pearl"],
     "silk-sell-sheets": ["silk"],
     "suede-sell-sheets": ["suede"],
@@ -475,10 +597,11 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "flyers-tear-off": ["flyers"],
     "postcards-tear-off": [], // catch-all
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_RULES.eddm.
   eddm: {
-    "eddm-postcards": ["postcards"],
-    "eddm-sell-sheets": ["sell sheets"],
-    "eddm-flyers": [], // catch-all
+    "eddm-postcards-base": ["postcards"],
+    "eddm-sell-sheets-base": ["sell sheets"],
+    "eddm-flyers-base": [], // catch-all
   },
   // "table cloth" not "tablethrow" — this file's targeted reconstruction
   // above (right before classification) already renamed the raw
@@ -537,6 +660,14 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "high-tack-adhesive-vinyl": ["high tack"],
     "low-tack-vinyl-wall-decals": ["wall"],
   },
+  // Kept in sync with print/[category]/page.tsx's own TYPE_RULES["banner-stands"].
+  "banner-stands": {
+    "deluxe-single-sided-retractable-banner-stands": ["deluxe"],
+    "x-style-collapsible-outdoor-banner-stands": ["13oz outdoor banner with economy"],
+    "x-style-collapsible-banner-stands": ["economy collapsible"],
+    "standard-retractable-banner-stands": ["retractable banner with stand"],
+    "telescopic-backdrop-banner-stands": [], // catch-all (code-like entries)
+  },
   displays: {
     "tabletop-displays": ["tabletop"],
     "fabric-tube-displays": ["fabric tube"],
@@ -575,6 +706,7 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "foil-worx-trading-cards": ["foil worx", "foiled"],
     "natural-trading-cards": ["natural"],
     "pearl-trading-cards": ["pearl"],
+    "silk-trading-cards": ["silk"], // 2026-07-09: was missing -- see matching TYPE_RULES comment in print/[category]/page.tsx
     "suede-trading-cards": ["suede"],
     "100lb-cover-linen-trading-cards": ["linen"],
     "18pt-trading-cards": ["18pt"],
@@ -583,13 +715,41 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   },
   // Kept in sync with print/[category]/page.tsx's TYPE_RULES for magnets.
   magnets: {
-    "car-door-magnets": ["car door", "vehicle"],
+    "car-door-magnets": ["car magnet", "vehicle"],
     "magnet-postcards": ["postcard"],
     "oval-magnets": ["oval"],
     "magnet-announcement-cards": ["announcement"],
     "magnet-business-cards": ["business card"],
     "standard-magnets": [], // catch-all
   },
+}
+
+// Kept in sync with print/[category]/page.tsx's own OPTION_PRESET_TYPES —
+// see that map's comment for the full explanation.
+const OPTION_PRESET_TYPES: Record<string, { label: string; slug: string; baseSlug: string; optionGroupMatch: RegExp; optionMatch: RegExp }[]> = {
+  "flyers-and-brochures": [
+    { label: "EDDM Full Service - Flyers", slug: "eddm-full-service-flyers", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Flyers - Print Only", slug: "eddm-flyers-print-only", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    { label: "Tri Fold Brochures", slug: "tri-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Tri-Fold/i },
+    { label: "Z Fold Brochures", slug: "z-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Z-Fold/i },
+    { label: "Specialty Folds Brochures", slug: "specialty-folds-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /gatefold|french fold|roll fold|parallel fold|half-fold and then/i },
+  ],
+  postcards: [
+    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+  ],
+  "sell-sheets": [
+    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+  ],
+  eddm: [
+    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+  ],
 }
 
 // Type slug -> display label
@@ -612,15 +772,6 @@ const TYPE_LABELS: Record<string, string> = {
   "akuafoil-greeting-cards": "Akuafoil Greeting Cards",
   "standard-greeting-cards": "Standard Greeting Cards",
   "all-inclusive-flyers-brochures": "All Inclusive Flyers Brochures",
-  "eddm-full-service-half-folds": "EDDM Full Service - Half Folds",
-  "eddm-print-only-half-folds": "EDDM Print Only - Half Folds",
-  "eddm-full-service-flyers": "EDDM Full Service - Flyers",
-  "eddm-flyers-print-only": "EDDM Flyers - Print Only",
-  "direct-mail-half-fold-flyers": "Direct Mail Half Fold Flyers and Brochures",
-  "direct-mail-tri-fold-flyers": "Direct Mail Tri Fold Flyers and Brochures",
-  "direct-mail-flyers-coated": "Direct Mail Flyers Brochures Coated",
-  "direct-mail-flyers-uncoated": "Direct Mail Flyers Brochures Uncoated",
-  "direct-mail-flyers": "Direct Mail Flyers and Brochures",
   "specialty-folds-brochures": "Specialty Folds Brochures",
   "z-fold-brochures": "Z Fold Brochures",
   "tri-fold-brochures": "Tri Fold Brochures",
@@ -628,10 +779,15 @@ const TYPE_LABELS: Record<string, string> = {
   "flat-flyers-brochures": "Flat Flyers Brochures",
   "half-fold-brochures": "Half Fold Brochures",
   "tearoff-flyers": "Tearoff Flyers",
-  "direct-mail-specialty-folds-flyers-and-brochures": "Direct Mail Specialty Folds Flyers and Brochures",
+  "eddm-full-service-flyers": "EDDM Full Service - Flyers",
+  "eddm-flyers-print-only": "EDDM Flyers - Print Only",
+  "eddm-full-service-sell-sheets": "EDDM Full Service Sell Sheets",
+  "eddm-print-only-sell-sheets": "EDDM Sell Sheets Print Only",
+  "eddm-full-service-half-folds": "EDDM Full Service - Half Folds",
+  "eddm-print-only-half-folds": "EDDM Print Only - Half Folds",
   "all-inclusive-postcards": "All-Inclusive Postcards",
   "eddm-full-service-postcards": "EDDM Full Service Postcards",
-  "eddm-print-only-postcards": "EDDM Print Only Postcards",
+  "eddm-print-only-postcards": "EDDM Postcards Print Only",
   "eddm-postcards": "EDDM Postcards",
   "dual-raised-rsvp-postcards": "Dual Raised RSVP",
   "dual-raised-postcards": "Dual Raised Postcards",
@@ -708,7 +864,7 @@ const TYPE_LABELS: Record<string, string> = {
   "backlit-posters": "Backlit Posters",
   "blockout-posters": "Blockout Posters",
   "photo-gloss-posters": "Photo Gloss Posters",
-  "matte-finish-posters": "Matte-Finish Posters",
+  "matte-finish-posters": "Dull Book Posters",
   "gloss-cover-posters": "Gloss Cover Posters",
   "gloss-book-posters": "Gloss Book Posters",
   "matte-book-uncoated-booklets": "Matte Book Uncoated Booklets",
@@ -729,6 +885,7 @@ const TYPE_LABELS: Record<string, string> = {
   "foil-worx-trading-cards": "Foil Worx Trading Cards",
   "natural-trading-cards": "Natural Trading Cards",
   "pearl-trading-cards": "Pearl Trading Cards",
+  "silk-trading-cards": "Silk Trading Cards",
   "suede-trading-cards": "Suede Trading Cards",
   "100lb-cover-linen-trading-cards": "100lb Cover Linen Trading Cards",
   "18pt-trading-cards": "18pt Trading Cards",
@@ -790,6 +947,11 @@ const TYPE_LABELS: Record<string, string> = {
   "standard-white-window-clings": "Standard White Window Clings",
   "high-tack-adhesive-vinyl": "High Tack Adhesive Vinyl",
   "low-tack-vinyl-wall-decals": "Low Tack Vinyl Wall Decals",
+  "deluxe-single-sided-retractable-banner-stands": "Deluxe Single-Sided Retractable Banner Stands",
+  "x-style-collapsible-outdoor-banner-stands": "X-Style Collapsible Outdoor Banner Stands",
+  "x-style-collapsible-banner-stands": "X-Style Collapsible Banner Stands",
+  "standard-retractable-banner-stands": "Standard Retractable Banner Stands",
+  "telescopic-backdrop-banner-stands": "Telescopic Backdrop Banner Stands",
   "tabletop-displays": "Tabletop Displays",
   "fabric-tube-displays": "Fabric Tube Displays",
   "silicon-edge-graphic-display": "Silicon Edge Graphic Display",
@@ -1137,6 +1299,9 @@ function buildSignSizeProducts(products: { product_uuid: string; product_descrip
 // see that file's comment for why.
 const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
   // Kept in sync with print/[category]/page.tsx — see that file's comment.
+  // 2026-07-10: raw product text says "30mil Car Magnet" but 4over.com's own
+  // marketing/nav name for this exact product is "Car Door Magnets".
+  "vehicle-magnets": [[/30mil\s+Car\s+Magnet/i, "Car Door Magnets"]],
   "tote-bags": [
     [/\b(blue|natural|red)\b\s*(?=with)/gi, ""],
     [
@@ -1348,7 +1513,8 @@ export default async function ProductTypePage({
     const isBusinessCards =
       (leaf?.parentSlug === "business-cards" && category !== "oval-cards" && category !== "fold-over-cards") ||
       ((category === "announcement-cards" || category.endsWith("-announcement-cards")) &&
-        product.category_uuid !== leaf?.uuid)
+        product.category_uuid !== leaf?.uuid) ||
+      category === "floor-graphics"
     const isAllInclusive = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures" || category === "trading-cards"
     // Signs & Banners: drop the leading size from the title (size is chosen in
     // the calculator), and group all same-stock size variants so the Size
@@ -1882,17 +2048,36 @@ export default async function ProductTypePage({
   const typeRules = Object.entries(TYPE_KEYWORDS[category] || {})
   const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
 
+  // Kept in sync with print/[category]/page.tsx's own TypeRule.excludeSizePrefixes
+  // -- see that entry's comment for the full explanation (2026-07-10, Postcards).
+  const EXCLUDE_SIZE_PREFIXES: Record<string, Record<string, string[]>> = {
+    postcards: {
+      "16pt-postcards": ['1.5" X 7"', '2" X 7"', '2" X 8"', '2.5" X 8"', '2.5" X 8.5"', '2.75" X 8.5"', '3.66" X 4.25"'],
+      "14pt-postcards": ['1.5" X 7"', '2" X 7"', '2" X 8"', '2.5" X 8"', '2.5" X 8.5"', '2.75" X 8.5"'],
+      "18pt-postcards": ['2" X 8"', '2.125" X 5.5"', '2.75" X 4.25"', '3.66" X 4.25"', '3.667" X 8.5"'],
+    },
+  }
+
   function classifyType(description: string): string | null {
     const lower = description.toLowerCase()
+    const excludeMap = EXCLUDE_SIZE_PREFIXES[category]
     for (const [slug, kws] of typeRules) {
+      if (excludeMap?.[slug]?.some((p) => description.startsWith(p))) continue
       if (kws.length === 0) return slug // catch-all
       if (kws.some((k) => lower.includes(k))) return slug
     }
     return null // no rule matched and no catch-all — matches old behavior (excluded from every type)
   }
 
+  // Option-preset virtual types (EDDM Full Service/Print Only, Tri Fold/Z
+  // Fold/Specialty Folds Brochures) classify against their BASE type's slug
+  // (same product set as e.g. "Flat Flyers Brochures" or the internal
+  // "eddm-flyers-base"), not their own — see OPTION_PRESET_TYPES' comment.
+  const optionPreset = OPTION_PRESET_TYPES[category]?.find((p) => p.slug === typeSlug)
+  const classifySlug = optionPreset ? optionPreset.baseSlug : typeSlug
+
   const matchedProducts = (allProducts || [])
-    .filter((p) => (typeRules.length === 0 ? true : classifyType(p.product_description) === typeSlug))
+    .filter((p) => (typeRules.length === 0 ? true : classifyType(p.product_description) === classifySlug))
     .sort((a, b) => a.product_description.localeCompare(b.product_description))
 
   // Get option groups for the FIRST product (they share the same option structure)
@@ -1930,8 +2115,8 @@ export default async function ProductTypePage({
   // falls back to ANY product at that stock — the page still shows a price,
   // just for the wrong product type. See initialStockUuid's doc comment.
   const isSignsBanners = leaf?.parentSlug === "signs-banners"
-  const isBusinessCardsType = leaf?.parentSlug === "business-cards" &&
-    category !== "oval-cards" && category !== "fold-over-cards"
+  const isBusinessCardsType = (leaf?.parentSlug === "business-cards" &&
+    category !== "oval-cards" && category !== "fold-over-cards") || category === "floor-graphics"
   const isAllInclusiveType = typeSlug.includes("all-inclusive") || category === "flyers-and-brochures" || category === "trading-cards"
   let initialSizeUuid: string | undefined
   let initialStockUuid: string | undefined
@@ -2212,6 +2397,7 @@ export default async function ProductTypePage({
                 isBusinessCards={isBusinessCardsType}
                 isAllInclusive={isAllInclusiveType}
                 isBanner={["indoor-banners","outdoor-banners","rigid-signs","window-graphics","vehicle-magnets"].includes(category)}
+                preferredExtraOption={optionPreset ? { groupNameMatch: optionPreset.optionGroupMatch.source, optionNameMatch: optionPreset.optionMatch.source } : undefined}
               />
             </div>
           </div>

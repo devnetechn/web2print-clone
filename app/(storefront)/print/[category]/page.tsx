@@ -9,7 +9,18 @@ import { resolveProductImage } from "@/lib/print/product-images"
 // PRODUCT TYPE GROUPING RULES per spec
 // Each rule: { label, slug, keywords[] } — match ANY keyword in description
 // =====================================================================
-interface TypeRule { label: string; slug: string; keywords: string[] }
+// excludeSizePrefixes: optional list of literal size-dimension prefixes
+// (e.g. "1.5\" X 7\"") to EXCLUDE from this rule's match even when its
+// keywords otherwise match — for rules whose keyword is too broad (e.g.
+// "14pt" matching every 14PT-stocked product in a shared category) and
+// needs to exclude specific sizes that 4over.com's own retail listing for
+// this exact type doesn't offer either (confirmed 2026-07-10, Postcards'
+// 14pt/16pt: 1.5x7/2x7/2x8/2.5x8/2.5x8.5/2.75x8.5 exist in the wholesale
+// API with genuine "14PT ... Postcards"/"16PT ... Postcards" text, but
+// neither 4over.com/14pt-postcards nor /16pt-postcards lists them as a Size
+// option — falls through to whatever LATER rule (or the catch-all) would
+// otherwise have claimed the product).
+interface TypeRule { label: string; slug: string; keywords: string[]; excludeSizePrefixes?: string[] }
 
 const TYPE_RULES: Record<string, TypeRule[]> = {
   // fourprintshop lists 8 types here; our sandbox data only has products
@@ -29,21 +40,54 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // their broader fold-type siblings to avoid misclassification.
   "flyers-and-brochures": [
     { label: "All Inclusive Flyers Brochures",               slug: "all-inclusive-flyers-brochures",              keywords: ["all inclusive", "all-inclusive"] },
-    { label: "EDDM Full Service - Half Folds",              slug: "eddm-full-service-half-folds",               keywords: ["eddm full service", "eddm", "half fold"] },
-    { label: "EDDM Print Only - Half Folds",                slug: "eddm-print-only-half-folds",                keywords: ["eddm print only", "eddm", "half fold"] },
-    { label: "EDDM Full Service - Flyers",                  slug: "eddm-full-service-flyers",                  keywords: ["eddm full service", "eddm"] },
-    { label: "EDDM Flyers - Print Only",                    slug: "eddm-flyers-print-only",                    keywords: ["eddm print only", "eddm"] },
-    { label: "Direct Mail Half Fold Flyers and Brochures",  slug: "direct-mail-half-fold-flyers",              keywords: ["direct mail", "half fold"] },
-    { label: "Direct Mail Tri Fold Flyers and Brochures",   slug: "direct-mail-tri-fold-flyers",               keywords: ["direct mail", "tri fold"] },
-    { label: "Direct Mail Specialty Folds Flyers and Brochures", slug: "direct-mail-specialty-folds-flyers-and-brochures", keywords: ["direct mail", "specialty"] },
-    { label: "Direct Mail Flyers Brochures Coated",         slug: "direct-mail-flyers-coated",                 keywords: ["direct mail", "coated"] },
-    { label: "Direct Mail Flyers Brochures Uncoated",       slug: "direct-mail-flyers-uncoated",               keywords: ["direct mail", "uncoated"] },
-    { label: "Direct Mail Flyers and Brochures",            slug: "direct-mail-flyers",                        keywords: ["direct mail"] },
-    { label: "Specialty Folds Brochures",                   slug: "specialty-folds-brochures",                 keywords: ["specialty fold", "gatefold", "gate fold", "accordion", "french fold"] },
-    { label: "Z Fold Brochures",                            slug: "z-fold-brochures",                          keywords: ["z fold", "z-fold", "zfold"] },
-    { label: "Tri Fold Brochures",                          slug: "tri-fold-brochures",                        keywords: ["tri fold", "tri-fold", "trifold"] },
+    // "EDDM Full Service - Half Folds"/"EDDM Print Only - Half Folds" removed
+    // 2026-07-09: confirmed 0 live products anywhere in the EDDM uuid contain
+    // "half fold" text, AND no product's own "Folding Options" ever offers a
+    // half-fold choice (only "Tri-Fold / Letter Fold") -- genuine account gap,
+    // not a code issue. Deliberately NOT re-added as a keyword-matched rule:
+    // classifyProduct() OR-matches keywords, so a rule like ["eddm","half fold"]
+    // would match on "eddm" ALONE and silently steal every other EDDM product
+    // (flyers, postcards, sell sheets) into this dead type instead of leaving
+    // them correctly classified elsewhere.
+    // "EDDM Full Service - Flyers" and "EDDM Flyers - Print Only" originally
+    // required "full service"/"print only" text that NEVER appears in any of
+    // the 55 genuine EDDM flyer descriptions (confirmed via raw API) -- both
+    // entries silently matched 0 products, and every real EDDM flyer fell
+    // through into the "Flat Flyers Brochures" catch-all instead. The true
+    // differentiator is "EDDM Service Option" (Full Service/Print Only), a
+    // genuine single-product option group. This "-base" entry classifies the
+    // shared product pool only -- it's excluded from the visible card grid
+    // (see the sortedTypes filter below) in favor of 2 OPTION_PRESET_TYPES
+    // virtual cards that pre-select Full Service / Print Only respectively,
+    // per Boss Dwayne's explicit request to keep them as 2 separate findable
+    // cards matching 4over.com's own literal listing (not merged into one
+    // card behind a dropdown, which was the first, wrong attempt at this).
+    { label: "EDDM Flyers",                                 slug: "eddm-flyers-base",                          keywords: ["eddm"] },
+    // "Direct Mail *" (6 entries) removed 2026-07-09: confirmed 0 live products
+    // contain "direct mail" text anywhere in this category (account gap). The
+    // "...Coated" variant was additionally an ACTIVE bug, not just dead: its
+    // ["direct mail","coated"] keywords are OR-matched by classifyProduct(), and
+    // "coated" is a substring of "uncoated" -- so it was silently absorbing 17
+    // genuine "70lb Premium Uncoated Text" flyers (nothing to do with Direct Mail)
+    // under a wrong "Direct Mail...Coated" label. Removing lets them fall through
+    // to the correct "Flat Flyers Brochures" catch-all instead.
+    // "Specialty Folds Brochures"/"Z Fold Brochures"/"Tri Fold Brochures" are
+    // NOT separate keyword-matched TYPE_RULES entries (2026-07-09 correction —
+    // previously wrongly flagged "account gap: 0 live matches" here, based on
+    // searching for "tri fold"/"z fold"/"specialty fold" literal TEXT in
+    // descriptions, which genuinely doesn't exist). The real differentiator
+    // is 4over's own "Folding Options" calculator field on "Flat Flyers
+    // Brochures" itself (confirmed live: Tri-Fold / Letter Fold, Z-Fold,
+    // Gatefold, Double Gatefold, French Fold, Roll Fold, Double Parallel
+    // Fold, Reverse Double Parallel Fold, Half-Fold and then Tri-Fold are ALL
+    // real options there) — Boss Dwayne flagged these as "missing" because
+    // burying 11 fold choices inside a card literally named "Flat" isn't
+    // discoverable. Fixed via FOLDING_PRESET_TYPES below: 3 virtual cards
+    // that reuse Flat Flyers Brochures' own product set but pre-select the
+    // matching Folding Option, giving each fold type its own findable card
+    // (matching 4over.com's own separate listings) without duplicating data.
     { label: "Half Fold Brochures",                          slug: "half-fold-brochures",                       keywords: ["half-fold", "half fold", "folds to"] },
-    { label: "EndurACE Flyers and Brochures",               slug: "endurace-flyers-and-brochures",             keywords: ["endurace"] },
+    { label: "EndurACE Flyers and Brochures",               slug: "endurace-flyers-and-brochures",             keywords: ["endurace"] }, // account gap: EndurACE uuid has no flyer/brochure products
     { label: "Tearoff Flyers",                              slug: "tearoff-flyers",                            keywords: ["tear", "tearoff", "tear-off"] },
     { label: "Flat Flyers Brochures",                        slug: "flat-flyers-brochures",                     keywords: [] }, // catch-all
   ],
@@ -54,14 +98,26 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // "dual raised", "raised foil" before "foil", "eddm full service" before "eddm").
   "postcards": [
     { label: "All-Inclusive Postcards",       slug: "all-inclusive-postcards",       keywords: ["all inclusive", "all-inclusive"] },
-    { label: "EDDM Full Service Postcards",   slug: "eddm-full-service-postcards",   keywords: ["eddm full service", "full service"] },
-    { label: "EDDM Print Only Postcards",     slug: "eddm-print-only-postcards",     keywords: ["eddm print only", "print only"] },
-    { label: "EDDM Postcards",               slug: "eddm-postcards",               keywords: ["eddm"] },
-    { label: "Dual Raised RSVP",             slug: "dual-raised-rsvp-postcards",   keywords: ["rsvp"] },
+    // "EDDM Full Service Postcards"/"EDDM Print Only Postcards" removed
+    // 2026-07-09: confirmed via raw API that none of the 63 genuine EDDM
+    // postcard products contain "full service"/"print only" text anywhere
+    // (same root cause as Flyers & Brochures' identical EDDM split -- see
+    // [[flyers-brochures-audit]]). 2026-07-09: split into 2
+    // OPTION_PRESET_TYPES virtual cards (Full Service / Print Only,
+    // pre-selecting "EDDM Service Option") per Boss Dwayne's request to
+    // match 4over.com's separate listings -- this "-base" entry only
+    // classifies the shared product pool, excluded from the visible grid.
+    { label: "EDDM Postcards",               slug: "eddm-postcards-base",          keywords: ["eddm"] },
+    { label: "Dual Raised RSVP",             slug: "dual-raised-rsvp-postcards",   keywords: ["rsvp"] }, // account gap: 0 live matches
     { label: "Dual Raised Postcards",        slug: "dual-raised-postcards",        keywords: ["dual raised"] },
     { label: "Raised Foil Postcards",        slug: "raised-foil-postcards",        keywords: ["raised foil"] },
     { label: "Raised Spot UV Postcards",     slug: "raised-spot-uv-postcards",     keywords: ["raised spot"] },
-    { label: "Foil Worx Postcards",          slug: "foil-worx-postcards",          keywords: ["foil worx"] },
+    // 2026-07-09: was ["foil worx"] only -- confirmed 0 of the 40 genuine
+    // Foil Worx postcard products contain that literal phrase, all say
+    // "...Foiled Postcards" instead (same pattern as Trading Cards' own
+    // Foil Worx entry). All 40 were silently landing on 14pt/16pt-postcards
+    // instead (whichever bare stock-pt rule they reached first).
+    { label: "Foil Worx Postcards",          slug: "foil-worx-postcards",          keywords: ["foil worx", "foiled"] },
     { label: "Tearoff Postcards",            slug: "tearoff-postcards",            keywords: ["tear"] },
     { label: "Painted-Edge Postcards",       slug: "painted-edge-postcards",       keywords: ["painted-edge", "painted edge"] },
     { label: "EndurACE Postcards",           slug: "endurace-postcards",           keywords: ["endurace"] },
@@ -73,12 +129,20 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Natural Postcards",            slug: "natural-postcards",            keywords: ["natural"] },
     { label: "Linen Uncoated Postcards",     slug: "linen-uncoated-postcards",     keywords: ["linen"] },
     { label: "Plastic Postcards",            slug: "plastic-postcards",            keywords: ["plastic"] },
-    { label: "Magnet Postcards",             slug: "magnet-postcards",             keywords: ["magnet"] },
+    { label: "Magnet Postcards",             slug: "magnet-postcards",             keywords: ["magnet"] }, // account gap: 0 live matches in the Magnets uuid
     { label: "100LB Gloss Cover Postcards",  slug: "100lb-gloss-cover-postcards",  keywords: ["100lb gloss cover"] },
-    { label: "18pt Postcards",               slug: "18pt-postcards",               keywords: ["18pt"] },
-    { label: "16PT Postcards",               slug: "16pt-postcards",               keywords: ["16pt"] },
-    { label: "14pt Postcards",               slug: "14pt-postcards",               keywords: ["14pt"] },
-    { label: "Direct Mail Postcards",        slug: "direct-mail-postcards",        keywords: ["direct mail"] },
+    // excludeSizePrefixes (2026-07-10): these sizes genuinely exist for
+    // 14PT/16PT/18PT in the wholesale API ("1.5\" X 7\" 14PT ... Postcards"
+    // etc, confirmed via raw productsfeed) but 4over.com's own retail page
+    // for the matching type doesn't list them as a Size option — falls
+    // through to "Standard Postcards" (catch-all) instead. NOT a shared
+    // list across the 3 -- confirmed each type's exclusions differ (e.g.
+    // 18PT's own listing DOES include "2.75\" x 8.5\"", which 14PT/16PT's
+    // listings do NOT).
+    { label: "18pt Postcards",               slug: "18pt-postcards",               keywords: ["18pt"], excludeSizePrefixes: ['2" X 8"', '2.125" X 5.5"', '2.75" X 4.25"', '3.66" X 4.25"', '3.667" X 8.5"'] },
+    { label: "16PT Postcards",               slug: "16pt-postcards",               keywords: ["16pt"], excludeSizePrefixes: ['1.5" X 7"', '2" X 7"', '2" X 8"', '2.5" X 8"', '2.5" X 8.5"', '2.75" X 8.5"', '3.66" X 4.25"'] },
+    { label: "14pt Postcards",               slug: "14pt-postcards",               keywords: ["14pt"], excludeSizePrefixes: ['1.5" X 7"', '2" X 7"', '2" X 8"', '2.5" X 8"', '2.5" X 8.5"', '2.75" X 8.5"'] },
+    { label: "Direct Mail Postcards",        slug: "direct-mail-postcards",        keywords: ["direct mail"] }, // account gap: 0 live matches (same as Flyers & Brochures' identical gap)
     { label: "Standard Postcards",           slug: "standard-postcards",           keywords: [] }, // catch-all
   ],
   // Round Corner/Oval/Fold Over used to be separate types here, but per
@@ -302,23 +366,26 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Regular Hang Tags",        slug: "regular-hang-tags",        keywords: [] }, // catch-all
   ],
   magnets: [
-    { label: "Car Door Magnets",           slug: "car-door-magnets",           keywords: ["car door", "vehicle"] },
+    { label: "Car Door Magnets",           slug: "car-door-magnets",           keywords: ["car magnet", "vehicle"] },
     { label: "Magnet Postcards",           slug: "magnet-postcards",           keywords: ["postcard"] },
     { label: "Oval Magnets",              slug: "oval-magnets",               keywords: ["oval"] },
     { label: "Magnet Announcement Cards", slug: "magnet-announcement-cards",  keywords: ["announcement"] },
     { label: "Magnet Business Cards",     slug: "magnet-business-cards",      keywords: ["business card"] },
     { label: "Standard Magnets",          slug: "standard-magnets",           keywords: [] }, // catch-all
   ],
-  // fourprintshop's literal /marketing-material/posters/products/ is a
-  // 6-card grid — confirmed live: "Gloss Book Posters" is 100LB Gloss Book
-  // ONLY (does NOT merge 80LB like Booklets did), "Matte-Finish Posters" =
-  // "100LB Dull Book" stock, "Photo Gloss Posters" = the dedicated "8mil
-  // Photo Poster - Gloss" stock (raw wording in this sandbox is just "8mil
-  // Poster", no "Photo"/"Gloss" words at all). Backlit/Blockout/Photo Gloss
-  // all live OUTSIDE this category's own UUID — merged in via
-  // EXTRA_PRODUCT_SOURCES below. Backlit's own descriptions are pure
-  // product_code ("9MILBACKLIT-POSTER-12X15", a 4over data gap — even
-  // fourprintshop's OWN Backlit product page is broken/sizeless live) —
+  // 4over.com's own /marketing-products/posters lists 7 types: Rally Signs,
+  // Gloss Cover, Photo Gloss, Backlit, Blockout, Dull Book, Gloss Book.
+  // "Rally Signs" is a confirmed genuine account gap -- 0 "rally" matches
+  // anywhere in the entire fourover_products table, not just this category
+  // (see also the Silk Trading Cards comment above, same situation). "Dull
+  // Book Posters" = "100LB Dull Book" stock (label renamed 2026-07-10 from
+  // "Matte-Finish Posters" to match 4over.com's own naming exactly -- slug
+  // kept as "matte-finish-posters" for URL stability). "Photo Gloss Posters"
+  // = the dedicated "8mil Photo Poster - Gloss" stock (raw wording in this
+  // account is just "8mil Poster", no "Photo"/"Gloss" words at all).
+  // Backlit/Blockout/Photo Gloss all live OUTSIDE this category's own UUID —
+  // merged in via EXTRA_PRODUCT_SOURCES below. Backlit's own descriptions
+  // are pure product_code ("9MILBACKLIT-POSTER-12X15", a 4over data gap) —
   // classifyProduct() matches keywords as a SUBSTRING of the raw text
   // (".includes()"), so "backlit" still matches inside "9milbacklit-..."
   // fine; no reconstruction needed since TYPE_RULES cards are titled from
@@ -327,7 +394,7 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Backlit Posters",     slug: "backlit-posters",     keywords: ["backlit"] },
     { label: "Blockout Posters",    slug: "blockout-posters",    keywords: ["blockout"] },
     { label: "Photo Gloss Posters", slug: "photo-gloss-posters", keywords: ["8mil"] },
-    { label: "Matte-Finish Posters", slug: "matte-finish-posters", keywords: ["dull"] },
+    { label: "Dull Book Posters", slug: "matte-finish-posters", keywords: ["dull"] },
     { label: "Gloss Cover Posters", slug: "gloss-cover-posters", keywords: ["gloss cover"] },
     { label: "Gloss Book Posters",  slug: "gloss-book-posters",  keywords: [] }, // catch-all
   ],
@@ -351,10 +418,23 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Akuafoil Sell Sheets", slug: "akuafoil-sell-sheets", keywords: ["akuafoil"] },
     { label: "Brown Kraft Sell Sheets", slug: "brown-kraft-sell-sheets", keywords: ["brown kraft"] },
     { label: "EndurACE Sell Sheets", slug: "endurace-sell-sheets", keywords: ["endurace"] },
+    // 2026-07-09: "EDDM Full Service - Sell Sheets"/"EDDM Sell Sheets - Print
+    // Only" (2 separate 4over.com listings) were missing entirely -- worse,
+    // the EDDM uuid wasn't even pulled into this category's EXTRA_PRODUCT_
+    // SOURCES at all, so its 45 genuine EDDM Sell Sheets products were never
+    // fetched in the first place (same 2-layer bug found in Flyers &
+    // Brochures/Postcards -- see [[flyers-brochures-audit]]/[[postcards-audit]]).
+    // Split into 2 OPTION_PRESET_TYPES virtual cards (Full Service / Print
+    // Only) per Boss Dwayne's request -- this "-base" entry only classifies
+    // the shared product pool, excluded from the visible grid.
+    { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets-base", keywords: ["eddm"] },
     { label: "Pearl Sell Sheets", slug: "pearl-sell-sheets", keywords: ["pearl"] },
     { label: "Silk Sell Sheets", slug: "silk-sell-sheets", keywords: ["silk"] },
     { label: "Suede Sell Sheets", slug: "suede-sell-sheets", keywords: ["suede"] },
     { label: "Standard Sell Sheets", slug: "standard-sell-sheets", keywords: [] }, // catch-all
+    // "Direct Mail Sell Sheets" not added -- confirmed 0 live matches
+    // anywhere in the main Sell Sheets uuid (account gap, same as
+    // Flyers/Postcards' identical Direct Mail gap).
   ],
   // fourprintshop's literal /marketing-material/table-tent/products/ is a
   // 4-card grid — confirmed live: SIZE splits the plain stocks (4x6 / 5x5.5,
@@ -384,22 +464,29 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Flyers with Tear-Off Perforation", slug: "flyers-tear-off", keywords: ["flyers"] },
     { label: "Postcards with Tear-Off Perforation", slug: "postcards-tear-off", keywords: [] }, // catch-all
   ],
-  // Same situation as tear-off-cards above: fourprintshop has no standalone
-  // "EDDM" category at all (only an "EDDM - Postcards" sub-card nested
-  // under its own Postcards category) — this is a pure 4over backend
-  // bucket mixing 3 genuinely different product types (Flyers/Postcards/
-  // Sell Sheets, all "EDDM"). Verified clean 3-way split across all 158
-  // raw entries (63 Postcards / 45 Sell Sheets / 50 Flyers, zero leftover)
-  // — Flyers checked last since roughly a third of its own entries are
-  // missing the word "Flyer" entirely (4over data gap, e.g. "100LB EDDM
-  // Gloss Cover With AQ" with no type word), so it can only be expressed
-  // as the catch-all once Postcards/Sell Sheets are ruled out. One card
-  // per type per the user's instruction, Stock/Weight fully selectable in
-  // the calculator.
+  // 2026-07-10: rebuilt against 4over.com's own actual `/direct-mail-services`
+  // page (the earlier version of this comment cited "fourprintshop", the
+  // stale pre-Boss-Dwayne reference site — see [[client-demo-reference-was-fourprintshop-not-v0]]).
+  // 4over.com's real page is a 16-card grid: 8 EDDM cards (4 product types x
+  // Full Service/Print Only) + 8 non-EDDM "Direct Mail *" cards. Confirmed
+  // via direct DB query: the 8 "Direct Mail *" cards are a genuine account
+  // gap (0 "direct mail" matches anywhere in the whole account, matching the
+  // identical gap already documented in flyers-and-brochures/postcards above)
+  // -- not reproduced here. The 8 EDDM cards reduce to 3 real product-type
+  // buckets in this uuid's own data (Postcards/Sell Sheets/Flyers -- "Half
+  // Folds" and "Booklet" have 0 matching text, they're not separate data,
+  // "Half Folds" is 4over's own name for the general Flyers line on this
+  // overview page specifically). Verified clean 3-way split across all 165
+  // raw entries (63 Postcards / 45 Sell Sheets / 55 Flyers + 2 unmatched
+  // Flyers, zero leftover). These "-base" entries only classify the shared
+  // product pools -- excluded from the visible grid in favor of the 6
+  // OPTION_PRESET_TYPES virtual cards below (Full Service / Print Only per
+  // type), matching 4over.com's own literal 2-cards-per-type split, same
+  // mechanism already used by flyers-and-brochures/postcards/sell-sheets.
   eddm: [
-    { label: "EDDM Postcards", slug: "eddm-postcards", keywords: ["postcards"] },
-    { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets", keywords: ["sell sheets"] },
-    { label: "EDDM Flyers", slug: "eddm-flyers", keywords: [] }, // catch-all
+    { label: "EDDM Postcards", slug: "eddm-postcards-base", keywords: ["postcards"] },
+    { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets-base", keywords: ["sell sheets"] },
+    { label: "EDDM Flyers", slug: "eddm-flyers-base", keywords: [] }, // catch-all
   ],
   // 4over.com's /signs-banners/display-events/table-covers page (the
   // canonical reference) is a 2-card grid: "Tablecloths", "Table Runners" —
@@ -557,6 +644,31 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "High Tack Adhesive Vinyl", slug: "high-tack-adhesive-vinyl", keywords: ["high tack"] },
     { label: "Low Tack Vinyl Wall Decals", slug: "low-tack-vinyl-wall-decals", keywords: ["wall"] },
   ],
+  // 2026-07-10: was a flat sizeGrouped listing with no TYPE_RULES -- 5 cards
+  // rendered but titled from raw, sometimes code-like text (one card was
+  // literally "13OZOUTDOOR-BANNER", a pure product_code, no image at all).
+  // 4over.com's real /signs-banners/display-events/{indoor,outdoor}-banner-
+  // stands pages list 6 types: Standard Retractable, Deluxe Single-Sided
+  // Retractable, X-Style Collapsible (indoor), X-Style Collapsible Outdoor,
+  // Telescopic Backdrop, Deluxe Double-Sided Retractable. Confirmed via
+  // direct DB query: only 11 raw rows exist total, collapsing to these 4
+  // real product lines + 1 code-like group -- "Deluxe Double-Sided" has 0
+  // "double" matches anywhere, a confirmed account gap. "Deluxe" raw text
+  // has a genuine 4over typo ("Retarctable"), harmless since the card title
+  // comes from the static label below, not the raw description. The 6
+  // code-like "13OZOUTDOOR-BANNER-WxH" entries (36x60 up to 95x96, much
+  // larger than the other stands' 24x60/33x80/47x80) have no descriptive
+  // text at all -- labeled "Telescopic Backdrop" as the best fit (backdrop-
+  // scale sizes, and it's the only 4over.com type left unaccounted for),
+  // but this is INFERRED from size range, not confirmed via explicit
+  // product text -- flag for re-verification if a 4over rep can confirm.
+  "banner-stands": [
+    { label: "Deluxe Single-Sided Retractable Banner Stands", slug: "deluxe-single-sided-retractable-banner-stands", keywords: ["deluxe"] },
+    { label: "X-Style Collapsible Outdoor Banner Stands", slug: "x-style-collapsible-outdoor-banner-stands", keywords: ["13oz outdoor banner with economy"] },
+    { label: "X-Style Collapsible Banner Stands", slug: "x-style-collapsible-banner-stands", keywords: ["economy collapsible"] },
+    { label: "Standard Retractable Banner Stands", slug: "standard-retractable-banner-stands", keywords: ["retractable banner with stand"] },
+    { label: "Telescopic Backdrop Banner Stands", slug: "telescopic-backdrop-banner-stands", keywords: [] }, // catch-all (code-like entries)
+  ],
   // fourprintshop's literal /signs-banners/displays/products/ is a 6-card
   // grid spanning 4 DIFFERENT 4over categories — confirmed live: "Event
   // Tents"/"Fan Cutout"/"Foam Core Counter Cards"/"White PVC Counter Cards"
@@ -593,11 +705,72 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Foil Worx Trading Cards",         slug: "foil-worx-trading-cards",         keywords: ["foil worx", "foiled"] },
     { label: "Natural Trading Cards",           slug: "natural-trading-cards",           keywords: ["natural"] },
     { label: "Pearl Trading Cards",             slug: "pearl-trading-cards",             keywords: ["pearl"] },
+    // 2026-07-09: "Silk Trading Cards" was missing entirely (present on
+    // 4over.com, its EXTRA_PRODUCT_SOURCES uuid was already being pulled in
+    // below) -- with no keyword rule to claim it, every Silk product silently
+    // fell through to the "14pt Trading Cards" catch-all instead of forming
+    // its own card.
+    { label: "Silk Trading Cards",              slug: "silk-trading-cards",              keywords: ["silk"] },
     { label: "Suede Trading Cards",             slug: "suede-trading-cards",             keywords: ["suede"] },
     { label: "100lb Cover Linen Trading Cards", slug: "100lb-cover-linen-trading-cards", keywords: ["linen"] },
     { label: "18pt Trading Cards",              slug: "18pt-trading-cards",              keywords: ["18pt"] },
     { label: "16pt Trading Cards",              slug: "16pt-trading-cards",              keywords: ["16pt"] },
     { label: "14pt Trading Cards",              slug: "14pt-trading-cards",              keywords: [] }, // catch-all
+  ],
+}
+
+// Virtual type-cards that don't classify a DIFFERENT set of products the way
+// TYPE_RULES does — they reuse a "base" type's own product set, but pre-
+// select a specific value in one of that base type's "extra" calculator
+// option groups (Folding Options, EDDM Service Option, etc), and get their
+// own findable card with the right label/slug instead of being buried
+// inside a dropdown or merged away. Kept in sync with [typeSlug]/page.tsx's
+// own copy (same duplicate-map pattern as TYPE_RULES/TYPE_KEYWORDS
+// throughout this file).
+// 2026-07-09: renamed from FOLDING_PRESET_TYPES — originally built only for
+// Tri Fold/Z Fold/Specialty Folds Brochures, then reused for EDDM Full
+// Service/Print Only after Boss Dwayne confirmed (via WhatsApp video +
+// follow-up) he wants those presented as 2 SEPARATE findable cards matching
+// 4over.com's own literal listing, not merged into one card with a dropdown
+// (the earlier merge decision in [[flyers-brochures-audit]]/[[postcards-audit]]/
+// [[sell-sheets-audit]] was wrong for this specific case — those categories'
+// merged "EDDM X" TYPE_RULES entries were removed and replaced by the 2
+// split presets below).
+const OPTION_PRESET_TYPES: Record<string, { label: string; slug: string; baseSlug: string; optionGroupMatch: RegExp; optionMatch: RegExp }[]> = {
+  "flyers-and-brochures": [
+    { label: "EDDM Full Service - Flyers", slug: "eddm-full-service-flyers", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Flyers - Print Only", slug: "eddm-flyers-print-only", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    { label: "Tri Fold Brochures", slug: "tri-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Tri-Fold/i },
+    { label: "Z Fold Brochures", slug: "z-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Z-Fold/i },
+    // Everything else that isn't Flat/Half-Fold/Tri-Fold/Z-Fold — matches
+    // 4over.com's own "Specialty Folds Brochures" grouping (Gatefold, Double
+    // Gatefold, French Fold, Roll Fold, Double Parallel Fold, Reverse Double
+    // Parallel Fold, Half-Fold and then Tri-Fold).
+    { label: "Specialty Folds Brochures", slug: "specialty-folds-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /gatefold|french fold|roll fold|parallel fold|half-fold and then/i },
+  ],
+  postcards: [
+    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+  ],
+  "sell-sheets": [
+    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+  ],
+  // 2026-07-10: the eddm category's own /direct-mail-services overview page.
+  // Postcards/Sell Sheets pairs reuse the SAME slugs (and therefore the same
+  // TYPE_LABELS/TYPE_IMAGES entries) as postcards'/sell-sheets' own EDDM
+  // cards above -- TYPE_LABELS is a flat, category-unaware Record<string,
+  // string>, so giving these a different label under a different slug here
+  // risked an inconsistent/colliding lookup for no real benefit (same
+  // product, same service). Only "Half Folds" is genuinely new (4over.com's
+  // own name for the Flyers pair on THIS specific overview page).
+  eddm: [
+    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
   ],
 }
 
@@ -623,8 +796,12 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   // BEFORE classifyProduct() buckets it into type cards.
   "flyers-and-brochures": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] }, // Tearoff Flyers
-    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE
-    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: ["flyer", "brochure", "half fold"] }, // EDDM variants
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE -- 0 live matches (account gap: this uuid only has BCs/Door Hangers/Menus/Mini Menus/Postcards/Sell Sheets, no Flyers/Brochures)
+    // Was `["flyer", "brochure", "half fold"]` (matchesAllKeywords = AND) --
+    // confirmed 2026-07-09 that NO product in this uuid contains "brochure"
+    // text at all, so the AND of all 3 was permanently false and this entire
+    // source silently contributed 0 products, no matter what TYPE_RULES said.
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "flyer" }, // EDDM Flyers (excludes the uuid's EDDM Postcards/Sell Sheets, which don't say "flyer")
   ],
   // "Tearoff Door Hangers" (Tear Off Cards UUID) + "EndurACE Door Hangers"
   // (EndurACE UUID, same one used by EndurACE Business Cards/Flyers) — see
@@ -666,9 +843,13 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", keyword: "hang tag" }, // Raised Spot UV
   ],
   // Car Door Magnets live under Signs & Banners (vehicle-magnets UUID) but
-  // 4over.com lists them under Marketing Products > Magnets too.
+  // 4over.com lists them under Marketing Products > Magnets too. 2026-07-10:
+  // was `keyword: "car door"` -- 0 live matches, confirmed this uuid's 17
+  // products all say "30mil Car Magnet" (no "Door" in the text at all), so
+  // the keyword was permanently false and this source silently contributed
+  // 0 products no matter what TYPE_RULES said.
   magnets: [
-    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car door" }, // Car Door Magnets
+    { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car magnet" }, // Car Door Magnets
   ],
   // "Backlit Posters" (dedicated UUID, raw product_code descriptions — see
   // the matching comment on posters' TYPE_RULES entry) + "Blockout"/"Photo
@@ -694,6 +875,10 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "sell sheet"] },
     { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: ["silk", "sell sheet"] },
     { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: ["suede", "sell sheet"] },
+    // 2026-07-09: was missing entirely -- the EDDM uuid's 45 genuine Sell
+    // Sheets products were never fetched into this category at all. See
+    // matching TYPE_RULES comment above.
+    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "sell sheet" },
   ],
   "table-tent-cards": [
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
@@ -793,13 +978,121 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
 // the SAME generic leaf.image, since classifyProduct() only sorts by text
 // pattern, not by a distinct photo per type.
 const TYPE_IMAGES: Record<string, Record<string, string>> = {
+  // 2026-07-10: was missing entirely, same recurring symptom. "11x8-5" and
+  // "hard-cover" and "self-cover" (catch-all) are confirmed genuine account
+  // gaps (0 live matches -- no product anywhere in this account's 22
+  // Calendars mentions "Hard Cover" or a landscape "11\" X 8.5\"" dimension)
+  // so these 3 images are unused right now, downloaded anyway for when/if
+  // the account gap is resolved.
+  calendars: {
+    "12x12-calendars": "/images/cat/calendars/12x12.jpg",
+    "8-5x11-calendars": "/images/cat/calendars/8-5x11.jpg",
+    "spiral-bind-calendars": "/images/cat/calendars/spiral-bind.jpg",
+    "11x8-5-calendars": "/images/cat/calendars/11x8-5.jpg",
+    "9x12-calendars": "/images/cat/calendars/9x12.jpg",
+    "hard-cover-calendars": "/images/cat/calendars/hard-cover.jpg",
+    "self-cover-calendars": "/images/cat/calendars/self-cover.jpg",
+  },
+  // 2026-07-10: was missing entirely -- same symptom as Trading Cards/
+  // Postcards/Booklets below. Downloaded directly from 4over.com's own CDN
+  // (all 10 types confirmed exact match against their live listing).
+  "presentation-folders": {
+    "silk-presentation-folder": "/images/cat/presentation-folders/silk.jpg",
+    "suede-presentation-folder": "/images/cat/presentation-folders/suede.jpg",
+    "akuafoil-presentation-folder": "/images/cat/presentation-folders/akuafoil.jpg",
+    "natural-presentation-folder": "/images/cat/presentation-folders/natural.jpg",
+    "pearl-presentation-folder": "/images/cat/presentation-folders/pearl.jpg",
+    "glueless-presentation-folder": "/images/cat/presentation-folders/glueless.jpg",
+    "9x12-presentation-folder": "/images/cat/presentation-folders/9x12.jpg",
+    "9x14-presentation-folder": "/images/cat/presentation-folders/9x14.jpg",
+    "5x10-presentation-folder": "/images/cat/presentation-folders/5x10.jpg",
+    "6x9-presentation-folder": "/images/cat/presentation-folders/6x9.jpg",
+  },
+  // 2026-07-09: was missing entirely -- every Booklets type card fell back
+  // to the generic parent image, same symptom class as Trading Cards/
+  // Postcards below. Root cause here was different and took much longer to
+  // find: booklets DOES have a TYPE_RULES entry (`booklets: [...]`, written
+  // with a bare/unquoted key), so it takes the hasTypeRules branch and reads
+  // from THIS map -- a `resolveProductImage()` per-product image mechanism
+  // ALSO exists with a "booklets" entry in lib/print/product-images.ts, but
+  // that mechanism is only reachable from the OTHER (sizeGrouped, no
+  // TYPE_RULES) branch, so it was silently dead code for this category the
+  // whole time. Don't confuse the two mechanisms for any category -- check
+  // whether `TYPE_RULES[category]` has an entry (quoted OR bare key) FIRST
+  // before assuming a category's images come from resolveProductImage().
+  booklets: {
+    "matte-book-uncoated-booklets": "/images/cat/booklets/matte-book-uncoated.jpg",
+    "dull-book-satin-aq-booklets": "/images/cat/booklets/dull-book-satin-aq.jpg",
+    "gloss-cover-aq-booklets": "/images/cat/booklets/gloss-cover-aq.jpg",
+    "premium-opaque-uncoated-booklets": "/images/cat/booklets/premium-opaque-uncoated.jpg",
+    "gloss-booklets": "/images/cat/booklets/gloss.jpg",
+  },
+  // 2026-07-10: replaced the 2026-07-09 stand-in (reused Business Cards/
+  // Flyers & Brochures material photos) with 4over.com's own actual postcard
+  // product images, downloaded from their CDN and hosted locally (same
+  // no-hotlinking pattern as every other TYPE_IMAGES entry) after the user
+  // asked to match the real site's pictures directly. "14pt"/"18pt" share
+  // 4over's own "standard-postcards.jpg" (their site does too); Dual Raised/
+  // Dual Raised RSVP use .png since that's the source format on 4over's CDN.
+  "postcards": {
+    "all-inclusive-postcards": "/images/cat/postcards/all-inclusive.jpg",
+    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
+    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
+    "dual-raised-rsvp-postcards": "/images/cat/postcards/dual-raised-rsvp.png",
+    "dual-raised-postcards": "/images/cat/postcards/dual-raised.png",
+    "raised-foil-postcards": "/images/cat/postcards/raised-foil.jpg",
+    "raised-spot-uv-postcards": "/images/cat/postcards/raised-spot-uv.jpg",
+    "foil-worx-postcards": "/images/cat/postcards/foil-worx.jpg",
+    "tearoff-postcards": "/images/cat/postcards/tearoff.jpg",
+    "painted-edge-postcards": "/images/cat/postcards/painted-edge.jpg",
+    "endurace-postcards": "/images/cat/postcards/endurace.jpg",
+    "akuafoil-postcards": "/images/cat/postcards/akuafoil.jpg",
+    "brown-kraft-postcards": "/images/cat/postcards/brown-kraft.jpg",
+    "suede-postcards": "/images/cat/postcards/suede.jpg",
+    "silk-postcards": "/images/cat/postcards/silk.jpg",
+    "pearl-postcards": "/images/cat/postcards/pearl.jpg",
+    "natural-postcards": "/images/cat/postcards/natural.jpg",
+    "linen-uncoated-postcards": "/images/cat/postcards/linen-uncoated.jpg",
+    "plastic-postcards": "/images/cat/postcards/plastic.jpg",
+    "magnet-postcards": "/images/cat/postcards/magnet.jpg",
+    "100lb-gloss-cover-postcards": "/images/cat/postcards/100lb-gloss-cover.jpg",
+    "18pt-postcards": "/images/cat/postcards/standard.jpg",
+    "16pt-postcards": "/images/cat/postcards/16pt.jpg",
+    "14pt-postcards": "/images/cat/postcards/standard.jpg",
+    "direct-mail-postcards": "/images/cat/postcards/direct-mail.jpg",
+    "standard-postcards": "/images/cat/postcards/standard.jpg",
+  },
+  // 2026-07-09: was missing entirely -- every Trading Cards type card fell
+  // back to the parent subcategory's own generic image, so all 11 cards
+  // showed the SAME picture despite distinct per-material photos already
+  // existing on disk (public/images/cat/trading-cards/*.jpg).
+  "trading-cards": {
+    "akuafoil-trading-cards": "/images/cat/trading-cards/akuafoil.jpg",
+    "brown-kraft-trading-cards": "/images/cat/trading-cards/brown-kraft.jpg",
+    "foil-worx-trading-cards": "/images/cat/trading-cards/foil-worx.jpg",
+    "natural-trading-cards": "/images/cat/trading-cards/natural.jpg",
+    "pearl-trading-cards": "/images/cat/trading-cards/pearl.jpg",
+    "silk-trading-cards": "/images/cat/trading-cards/silk.jpg",
+    "suede-trading-cards": "/images/cat/trading-cards/suede.jpg",
+    "100lb-cover-linen-trading-cards": "/images/cat/trading-cards/100lb-cover-linen.jpg",
+    "18pt-trading-cards": "/images/cat/trading-cards/18pt.jpg",
+    "16pt-trading-cards": "/images/cat/trading-cards/16pt.jpg",
+    "14pt-trading-cards": "/images/cat/trading-cards/14pt.jpg",
+  },
   "flyers-and-brochures": {
     "all-inclusive-flyers-brochures": "/images/cat/flyers-and-brochures/all-inclusive.jpg",
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
+    "eddm-full-service-flyers": "/images/cat/flyers-and-brochures/eddm-full-service.jpg",
+    "eddm-flyers-print-only": "/images/cat/flyers-and-brochures/eddm-print-only.jpg",
+    "tri-fold-brochures": "/images/cat/flyers-and-brochures/tri-fold.jpg",
+    "z-fold-brochures": "/images/cat/flyers-and-brochures/z-fold.jpg",
+    "specialty-folds-brochures": "/images/cat/flyers-and-brochures/specialty-folds.jpg",
+    "endurace-flyers-and-brochures": "/images/cat/flyers-and-brochures/endurace.jpg",
   },
   envelopes: {
+    "remittance-envelopes": "/images/cat/envelopes/remittance.png", // 2026-07-10: was missing (unquoted TYPE_RULES key, same trap as Booklets -- see [[booklets-audit]])
     "blank-envelopes": "/images/cat/envelopes/blank.jpg",
     "digital-envelopes": "/images/cat/envelopes/digital.jpg",
     "variable-addressing-envelopes": "/images/cat/envelopes/variable-addressing.jpg",
@@ -828,10 +1121,15 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "gloss-cover-posters": "/images/cat/posters/gloss-cover.jpg",
     "gloss-book-posters": "/images/cat/posters/gloss-book.jpg",
   },
+  // 2026-07-10: keys were stale ("3-5-x-8-5-standard-rack-cards"/"4-x-9-
+  // standard-rack-cards" from before Standard was merged into one catch-all
+  // card) so the real "standard-rack-cards" slug fell back to the generic
+  // parent image. Also replaced both photos -- neither was actually from
+  // 4over.com (100-150KB unrelated stock photos vs 4over's real ~13-15KB
+  // CDN thumbnails, same bug class as [[posters-audit]]).
   "rack-cards": {
     "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
-    "3-5-x-8-5-standard-rack-cards": "/images/cat/rack-cards/standard-3.5x8.5.jpg",
-    "4-x-9-standard-rack-cards": "/images/cat/rack-cards/standard-4x9.jpg",
+    "standard-rack-cards": "/images/cat/rack-cards/standard.jpg",
   },
   "sell-sheets": {
     "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
@@ -841,6 +1139,8 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "silk-sell-sheets": "/images/cat/sell-sheets/silk.jpg",
     "suede-sell-sheets": "/images/cat/sell-sheets/suede.jpg",
     "standard-sell-sheets": "/images/cat/sell-sheets.jpg",
+    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
+    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
   },
   "table-tent-cards": {
     "natural-table-tents": "/images/cat/table-tent-cards/natural.jpg",
@@ -848,40 +1148,58 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "4x6-table-tent": "/images/cat/table-tent-cards/4x6.jpg",
     "5x5-5-table-tent": "/images/cat/table-tent-cards/5x5.5.jpg",
   },
-  // No per-stock fourprintshop photos exist for this category (no reference
-  // page at all) — reusing the SAME real generic photo per product type,
-  // consistent with each type's own existing image elsewhere on the site
-  // (door-hangers.jpg, postcards.jpg, and flyers-and-brochures' own
-  // tearoff.jpg, sourced from this exact same UUID).
+  // 2026-07-10: was using generic parent-category fallback images for 2 of
+  // 3 cards. 4over.com actually has dedicated "Tearoff Door Hangers"/
+  // "Tearoff Postcards" product pages with their own real photos (Tearoff
+  // Flyers' was already correctly downloaded) -- fetched the Door Hangers
+  // one fresh from 4over's CDN, and reused Postcards' own tearoff.jpg
+  // (already downloaded during the postcards image-fix round).
   "tear-off-cards": {
-    "door-hangers-tear-off": "/images/cat/door-hangers.jpg",
+    "door-hangers-tear-off": "/images/cat/door-hangers/tearoff.jpg",
     "flyers-tear-off": "/images/cat/flyers-and-brochures/tearoff.jpg",
-    "postcards-tear-off": "/images/cat/postcards.jpg",
+    "postcards-tear-off": "/images/cat/postcards/tearoff.jpg",
   },
+  // 2026-07-10: rebuilt for the 6 new OPTION_PRESET_TYPES cards (was 3 old
+  // "-base" slugs pointing at generic parent images, no longer rendered
+  // directly). Postcards/Sell Sheets pairs reuse the exact same photos
+  // already downloaded for postcards'/sell-sheets' own EDDM cards; Half
+  // Folds pair downloaded fresh from 4over.com's own /direct-mail-services
+  // CDN images.
   eddm: {
-    "eddm-postcards": "/images/cat/postcards.jpg",
-    "eddm-sell-sheets": "/images/cat/sell-sheets.jpg",
-    "eddm-flyers": "/images/cat/flyers-and-brochures.jpg",
+    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
+    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
+    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
+    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
+    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
+    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
   },
   "table-covers": {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
     "table-runners": "/images/cat/table-covers/table-runners.jpg",
   },
+  // 2026-07-10: was missing entirely -- all 3 cards shared the generic
+  // parent image. Downloaded real photos from 4over.com's CDN.
   "wall-arts": {
-    "clear-acrylic-signs": "/images/signs/wall-arts.jpg",
-    "aluminum-dye-sub": "/images/signs/wall-arts.jpg",
-    "mounted-canvas": "/images/signs/wall-arts.jpg",
+    "clear-acrylic-signs": "/images/cat/wall-arts/clear-acrylic.jpg",
+    "aluminum-dye-sub": "/images/cat/wall-arts/aluminum-dye-sub.jpg",
+    "mounted-canvas": "/images/cat/wall-arts/mounted-canvas.jpg",
   },
+  // 2026-07-10: all 9 photos replaced -- none were actually from 4over.com
+  // (same non-4over-stock-photo bug class as posters/rack-cards/etc), and
+  // Styrene/Gator Board were missing entirely (fell back to the generic
+  // parent image). "Sidewalk Signs" and "Real Estate Post" (2 more of
+  // 4over.com's own 13-item rigid-signs listing) confirmed genuine account
+  // gaps via direct DB query -- 0 matches anywhere in the whole account.
   "rigid-signs": {
     "10mm-coroplast-signs": "/images/cat/rigid-signs/10mm-coroplast.jpg",
-    "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.jpg",
+    "coroplast-rider-signs": "/images/cat/rigid-signs/coroplast-rider.png",
     "4mm-coroplast-signs": "/images/cat/rigid-signs/4mm-coroplast.jpg",
     "3mm-pvc-signs": "/images/cat/rigid-signs/3mm-pvc.jpg",
     "foam-core-signs": "/images/cat/rigid-signs/foam-core.jpg",
     "aluminum-heavy-duty": "/images/cat/rigid-signs/aluminum-heavy-duty.jpg",
     "aluminum-sandwich-board": "/images/cat/rigid-signs/aluminum-sandwich-board.jpg",
-    "styrene-signs": "/images/signs/rigid-signs.jpg",
-    "gator-board-signs": "/images/signs/rigid-signs.jpg",
+    "styrene-signs": "/images/cat/rigid-signs/styrene-signs.jpg",
+    "gator-board-signs": "/images/cat/rigid-signs/gator-board-signs.jpg",
   },
   "outdoor-banners": {
     "mesh-banners": "/images/cat/outdoor-banners/mesh.jpg",
@@ -900,8 +1218,13 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "pole-flags": "/images/cat/flags/pole.jpg",
     "teardrop-flags": "/images/cat/flags/teardrop.jpg",
   },
+  // 2026-07-10: all 5 photos replaced -- none were actually from 4over.com
+  // (same non-4over-stock-photo bug class as posters/rack-cards/etc). Also
+  // fixed "digital-clear-window-clings" sharing "clear-window-clings"' own
+  // image -- 4over.com shows these as 2 visually distinct products with 2
+  // distinct photos, not a shared one.
   "window-graphics": {
-    "digital-clear-window-clings": "/images/cat/window-graphics/clear.jpg",
+    "digital-clear-window-clings": "/images/cat/window-graphics/digital-clear.jpg",
     "see-through-perforated-window-vinyl-graphic": "/images/cat/window-graphics/perforated.jpg",
     "opaque-window-graphics": "/images/cat/window-graphics/opaque.jpg",
     "clear-window-clings": "/images/cat/window-graphics/clear.jpg",
@@ -910,6 +1233,13 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   "wall-decals": {
     "high-tack-adhesive-vinyl": "/images/cat/wall-decals/high-tack.jpg",
     "low-tack-vinyl-wall-decals": "/images/cat/wall-decals/low-tack.jpg",
+  },
+  "banner-stands": {
+    "deluxe-single-sided-retractable-banner-stands": "/images/cat/banner-stands/deluxe-single-sided.jpg",
+    "x-style-collapsible-outdoor-banner-stands": "/images/cat/banner-stands/x-style-outdoor.jpg",
+    "x-style-collapsible-banner-stands": "/images/cat/banner-stands/x-style-indoor.jpg",
+    "standard-retractable-banner-stands": "/images/cat/banner-stands/standard-retractable.jpg",
+    "telescopic-backdrop-banner-stands": "/images/cat/banner-stands/telescopic-backdrop.jpg",
   },
   displays: {
     "tabletop-displays": "/images/cat/displays/tabletop.jpg",
@@ -920,6 +1250,25 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "foam-core-counter-cards": "/images/cat/displays/foam-core-counter.jpg",
     "white-pvc-counter-cards": "/images/cat/displays/white-pvc-counter.jpg",
   },
+  // 2026-07-10: was missing entirely, same recurring symptom. "standard-
+  // event-tickets" is a confirmed genuine account gap (all 35 products in
+  // this account's category are "with Variable Numbering" -- no plain
+  // Standard/non-numbered ticket line exists), so only 1 of 2 images is
+  // used right now.
+  "event-tickets": {
+    "variable-numbering-event-tickets": "/images/cat/event-tickets/variable-numbering.jpg",
+  },
+  // 2026-07-10: was missing entirely, same recurring symptom. "Magnet
+  // Postcards" and "Magnet Business Cards" (2 of 4over.com's 7 listed
+  // types) are confirmed genuine account gaps -- 0 "magnet" text matches
+  // anywhere in the postcards or business-cards category UUIDs -- so only
+  // 4 images are used right now.
+  magnets: {
+    "car-door-magnets": "/images/cat/magnets/car-door.jpg",
+    "oval-magnets": "/images/cat/magnets/oval.jpg",
+    "magnet-announcement-cards": "/images/cat/magnets/announcement.jpg",
+    "standard-magnets": "/images/cat/magnets/standard-uv.jpg",
+  },
 }
 
 // Classify a product description into a type slug for a given category
@@ -929,6 +1278,7 @@ function classifyProduct(description: string, categorySlug: string): TypeRule | 
   const lower = description.toLowerCase()
   // Try each rule in order (last rule with empty keywords is catch-all)
   for (const rule of rules) {
+    if (rule.excludeSizePrefixes?.some((p) => description.startsWith(p))) continue
     if (rule.keywords.length === 0) return rule // catch-all
     if (rule.keywords.some(k => lower.includes(k))) return rule
   }
@@ -1160,6 +1510,9 @@ function stripSize(desc: string, isBusinessCards = false): string {
 }
 
 const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
+  // 2026-07-10: raw product text says "30mil Car Magnet" but 4over.com's own
+  // marketing/nav name for this exact product is "Car Door Magnets".
+  "vehicle-magnets": [[/30mil\s+Car\s+Magnet/i, "Car Door Magnets"]],
   // Tote Bags' 3 raw entries are 3 color stocks (6OZCTBL/6OZCTNU/6OZCTRD)
   // all at the SAME single size — confirmed live, fourprintshop's own
   // "Tote Bags" page is ONE card with Color as a Stock dropdown (Blue/
@@ -1663,11 +2016,29 @@ export default async function PrintCategoryPage({
       typeMap.get(rule.slug)!.products.push(product)
     }
 
-    // Sort by rule order
+    // Sort by rule order. "-base" slugs (e.g. "eddm-flyers-base") only exist
+    // to classify a shared product pool for OPTION_PRESET_TYPES below to draw
+    // from — excluded from the visible grid since their own split preset
+    // cards (Full Service/Print Only, etc) are what should actually show.
+    const presetBaseSlugs = new Set((OPTION_PRESET_TYPES[category] || []).map((p) => p.baseSlug))
     const rules = TYPE_RULES[category]
     const sortedTypes = rules
       .map(r => typeMap.get(r.slug))
-      .filter(Boolean) as { rule: TypeRule; products: typeof productList; image: string }[]
+      .filter((entry): entry is { rule: TypeRule; products: typeof productList; image: string } => !!entry && !presetBaseSlugs.has(entry.rule.slug))
+
+    // Append virtual option-preset cards (EDDM Full Service/Print Only, Tri
+    // Fold/Z Fold/Specialty Folds Brochures) — same product set as their
+    // base type, own findable card. See OPTION_PRESET_TYPES' own comment.
+    for (const preset of OPTION_PRESET_TYPES[category] || []) {
+      const baseEntry = typeMap.get(preset.baseSlug)
+      if (baseEntry) {
+        sortedTypes.push({
+          rule: { label: preset.label, slug: preset.slug, keywords: [] },
+          products: baseEntry.products,
+          image: TYPE_IMAGES[category]?.[preset.slug] || baseEntry.image,
+        })
+      }
+    }
 
     // Only one type with products (e.g. business-cards-standard now that
     // Round Corner/Oval/Fold Over no longer fork off their own type) — skip

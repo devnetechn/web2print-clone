@@ -110,6 +110,15 @@ interface ProductConfiguratorClientProps {
   isBusinessCards?: boolean
   isAllInclusive?: boolean
   isBanner?: boolean
+  // Virtual fold-preset type cards (Tri Fold/Z Fold/Specialty Folds
+  // Brochures) reuse their base type's own product set (e.g. "Flat Flyers
+  // Brochures") but need to default one "extra" option group (Folding
+  // Options) to a SPECIFIC value instead of the group's usual default —
+  // see FOLDING_PRESET_TYPES in [typeSlug]/page.tsx for the full context.
+  // Regex SOURCE strings, not RegExp objects — Server Components can't pass
+  // RegExp instances to Client Components (confirmed: "Only plain objects...
+  // can be passed... Classes or null prototypes are not supported").
+  preferredExtraOption?: { groupNameMatch: string; optionNameMatch: string }
 }
 
 function translateList<T extends { name: string }>(list: T[], translator: (n: string) => string): T[] {
@@ -348,6 +357,7 @@ export function ProductConfiguratorClient({
   isBusinessCards = false,
   isAllInclusive = false,
   isBanner = false,
+  preferredExtraOption,
 }: ProductConfiguratorClientProps) {
   const router = useRouter()
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
@@ -871,7 +881,16 @@ export function ProductConfiguratorClient({
         for (const g of extras) {
           const hasPdfProof = /job.?sample|digital.?proof|pdf.?proof/i.test(g.group_name) ||
             g.options.some((o) => /job.?sample|digital.?proof|pdf.?proof/i.test(o.option_name))
-          if (hasPdfProof) {
+          const preferredOpt =
+            preferredExtraOption && new RegExp(preferredExtraOption.groupNameMatch, "i").test(g.group_name)
+              ? g.options.find((o) => new RegExp(preferredExtraOption.optionNameMatch, "i").test(o.option_name))
+              : undefined
+          if (preferredOpt) {
+            // Virtual fold-preset type card (Tri Fold/Z Fold/Specialty Folds
+            // Brochures etc) — override this group's usual default with the
+            // option matching this card's specific fold type.
+            defaults[g.group_uuid] = preferredOpt.option_uuid
+          } else if (hasPdfProof) {
             // Proof add-ons: always opt-in, never auto-selected (adds cost)
             defaults[g.group_uuid] = ""
           } else if (/mailing.?service|postage.?class/i.test(g.group_name)) {

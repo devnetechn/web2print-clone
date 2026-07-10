@@ -45,32 +45,32 @@ export function StorefrontFooter() {
               <h4 className="font-bold text-[#2c327a] mb-4">Product Category</h4>
               <ul className="space-y-2 text-sm text-slate-600">
                 <li>
-                  <Link href="/products/business-cards" className="hover:text-[#e42a27]">
+                  <Link href="/print/business-cards" className="hover:text-[#e42a27]">
                     Business Cards
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products/marketing" className="hover:text-[#e42a27]">
-                    Marketing Materials
+                  <Link href="/print/marketing-materials" className="hover:text-[#e42a27]">
+                    Marketing Products
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products/signs" className="hover:text-[#e42a27]">
+                  <Link href="/print/signs-banners" className="hover:text-[#e42a27]">
                     Signs & Banners
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products/boxes" className="hover:text-[#e42a27]">
+                  <Link href="/print/boxes-packaging" className="hover:text-[#e42a27]">
                     Boxes & Packaging
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products/labels" className="hover:text-[#e42a27]">
+                  <Link href="/print/roll-labels-stickers" className="hover:text-[#e42a27]">
                     Roll Labels & Stickers
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products/promo" className="hover:text-[#e42a27]">
+                  <Link href="/print/promo-products" className="hover:text-[#e42a27]">
                     Promo Products
                   </Link>
                 </li>
