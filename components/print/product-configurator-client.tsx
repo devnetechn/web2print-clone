@@ -313,6 +313,18 @@ function extractShapeCore(desc: string): string {
 const HANDLED_GROUP_NAMES = new Set([
   "product type",
   "product category",
+  // 2026-07-10: 4over's own API returns this group as bare "Category" (not
+  // "Product Category" like the entry above already anticipated) for
+  // Majestic-brand products (Akuafoil/Foil Worx/etc) -- its single option's
+  // option_prices_list is always genuinely empty ("product group as a
+  // category option" per its own description, pure metadata, not a real
+  // priceable choice). Was slipping through into extraGroups, getting
+  // auto-selected as a default, and sent to the quote API -- which broke
+  // pricing entirely (returned $0, silently resolving to an unrelated
+  // "Akuafoil Products" bucket item with no price data of its own).
+  // Confirmed reproducible on Presentation Folders' Akuafoil card; likely
+  // affects every Majestic-brand product across every category.
+  "category",
   "short side (inches)",
   "long side (inches)",
   "size",

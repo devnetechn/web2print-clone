@@ -89,7 +89,7 @@ const RULES: Record<string, ImageRule[]> = {
     { test: /blank/i, image: "/images/cat/letterheads/blank.jpg" },
   ],
   "ncr-forms": [
-    { test: /2-part.*wraparound|wraparound.*2-part/i, image: "/images/cat/ncr-forms/2part-wraparound.jpg" },
+    { test: /2-part.*wraparound|wraparound.*2-part/i, image: "/images/cat/ncr-forms/2part-wraparound.png" },
     { test: /3-part.*wraparound|wraparound.*3-part/i, image: "/images/cat/ncr-forms/3part-wraparound.jpg" },
     { test: /2-part/i, image: "/images/cat/ncr-forms/2part-variable.jpg" },
     { test: /3-part/i, image: "/images/cat/ncr-forms/3part-variable.jpg" },
@@ -132,6 +132,14 @@ const RULES: Record<string, ImageRule[]> = {
     { test: /round/i, image: "/images/cat/stickers/round.jpg" },
     { test: /rectangle/i, image: "/images/cat/stickers/rectangle.jpg" },
     { test: /leaf/i, image: "/images/cat/stickers/leaf.jpg" },
+  ],
+  // 2026-07-10: was missing entirely, same recurring symptom. "Common
+  // Menus" is a confirmed genuine account gap (0 live products under this
+  // uuid) -- see [[menus-audit]] -- so only these 3 real types are needed.
+  menus: [
+    { test: /endurace/i, image: "/images/cat/menus/endurace.jpg" },
+    { test: /brown\s*kraft/i, image: "/images/cat/menus/brown-kraft.jpg" },
+    { test: /natural/i, image: "/images/cat/menus/natural.jpg" },
   ],
   // 2026-07-10: was missing entirely -- own leaf/category key, separate
   // from "stickers" above despite sharing the same UUID.

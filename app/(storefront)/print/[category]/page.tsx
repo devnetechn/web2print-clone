@@ -145,6 +145,23 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Direct Mail Postcards",        slug: "direct-mail-postcards",        keywords: ["direct mail"] }, // account gap: 0 live matches (same as Flyers & Brochures' identical gap)
     { label: "Standard Postcards",           slug: "standard-postcards",           keywords: [] }, // catch-all
   ],
+  // 2026-07-10: new category (was completely missing from the site, see
+  // [[footer-broken-links-fix]]'s follow-up finding). 4over.com's own
+  // /marketing-products/social-cards lists exactly 3 types: Social Cards,
+  // Foil Worx Social Cards, Akuafoil Social Cards. Confirmed via direct DB
+  // query: Brown Kraft/Pearl/Plastic/Suede/Silk (5 more brand materials
+  // that DO have live data) are NOT separate cards on 4over.com's own
+  // listing -- they merge into the plain "Social Cards" catch-all, same as
+  // several Business Cards materials merge into Stock options elsewhere.
+  // "Foil Worx" raw text says "Foiled" (same pattern as Trading Cards/
+  // Postcards' own Foil Worx entries). Round Corner appears as a raw-text
+  // variant across multiple materials but isn't its own card on 4over.com
+  // either -- falls into whichever material card it belongs to.
+  "social-cards": [
+    { label: "Foil Worx Social Cards", slug: "foil-worx-social-cards", keywords: ["foiled", "foil worx"] },
+    { label: "Akuafoil Social Cards", slug: "akuafoil-social-cards", keywords: ["akuafoil"] },
+    { label: "Social Cards", slug: "standard-social-cards", keywords: [] }, // catch-all
+  ],
   // Round Corner/Oval/Fold Over used to be separate types here, but per
   // fourprintshop's literal reference (the Standard Business Cards page's own
   // Shape dropdown includes Rectangle/Rounded 2/Rounded 4/Oval, and its Size
@@ -431,7 +448,10 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Pearl Sell Sheets", slug: "pearl-sell-sheets", keywords: ["pearl"] },
     { label: "Silk Sell Sheets", slug: "silk-sell-sheets", keywords: ["silk"] },
     { label: "Suede Sell Sheets", slug: "suede-sell-sheets", keywords: ["suede"] },
-    { label: "Standard Sell Sheets", slug: "standard-sell-sheets", keywords: [] }, // catch-all
+    // 2026-07-10: renamed from "Standard" to "Common" -- confirmed live,
+    // 4over.com's own H1 for this catch-all bucket is literally "Common
+    // Sell Sheets" (https://4over.com/common-sell-sheets).
+    { label: "Common Sell Sheets", slug: "standard-sell-sheets", keywords: [] }, // catch-all
     // "Direct Mail Sell Sheets" not added -- confirmed 0 live matches
     // anywhere in the main Sell Sheets uuid (account gap, same as
     // Flyers/Postcards' identical Direct Mail gap).
@@ -740,6 +760,16 @@ const OPTION_PRESET_TYPES: Record<string, { label: string; slug: string; baseSlu
   "flyers-and-brochures": [
     { label: "EDDM Full Service - Flyers", slug: "eddm-full-service-flyers", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
     { label: "EDDM Flyers - Print Only", slug: "eddm-flyers-print-only", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
+    // 2026-07-10: 4over.com's own /marketing-products/flyers-brochures page
+    // lists FOUR EDDM cards, not 2 -- these 2 "Half Folds" entries use
+    // different photos than the "Flyers" pair above but draw from the
+    // exact same "eddm-flyers-base" pool (confirmed 0 "half fold" text
+    // anywhere in the raw data) -- 4over's own retail site lists the same
+    // wholesale product twice under 2 display names. Reuses the identical
+    // slugs/labels already built for the /print/eddm category's own Half
+    // Folds pair (same underlying data, same TYPE_LABELS/TYPE_IMAGES).
+    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
+    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
     { label: "Tri Fold Brochures", slug: "tri-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Tri-Fold/i },
     { label: "Z Fold Brochures", slug: "z-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Z-Fold/i },
     // Everything else that isn't Flat/Half-Fold/Tri-Fold/Z-Fold — matches
@@ -851,6 +881,15 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   magnets: [
     { uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", keyword: "car magnet" }, // Car Door Magnets
   ],
+  // Mini Menus live in the shared EndurACE (d3010094) and Brown Kraft
+  // (ee4f8eed) brand-stock UUIDs, not menus' own UUID (059ea2cb) — same
+  // "shared brand category, own UUID has none" pattern as Sell Sheets/Rack
+  // Cards above. Confirmed live 2026-07-10 while investigating "Common
+  // Menus" (a genuine account gap, no alternative anywhere in the account).
+  menus: [
+    { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: "mini menu" }, // EndurACE
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "mini menu" }, // Brown Kraft
+  ],
   // "Backlit Posters" (dedicated UUID, raw product_code descriptions — see
   // the matching comment on posters' TYPE_RULES entry) + "Blockout"/"Photo
   // Gloss" (both nested inside the SAME "Large Posters" UUID).
@@ -956,6 +995,20 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "announcement" }, // Silk
     { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "announcement" }, // Suede
   ],
+  // 2026-07-10: new category, same EXTRA_PRODUCT_SOURCES pattern as
+  // Announcement Cards above -- confirmed via direct DB query, 71 raw
+  // "social card" matches across these 8 uuids total (including the
+  // primary Business Cards uuid 08a9625a, scoped via categories.ts'
+  // keyword field there).
+  "social-cards": [
+    { uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", keyword: "social card" }, // Foil Worx
+    { uuid: "ee4f8eed-8dd6-4d16-8e2d-758d33e54381", keyword: "social card" }, // Brown Kraft
+    { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: "social card" }, // Pearl
+    { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "social card" }, // Akuafoil
+    { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "social card" }, // Plastic
+    { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "social card" }, // Suede
+    { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "social card" }, // Silk
+  ],
   // fourprintshop's literal /marketing-material/trading-cards/products/ is a
   // flat 11-card grid (100lb Cover Linen/14pt/16pt/18pt/Akuafoil/Brown Kraft/
   // Foil Worx/Natural/Pearl/Silk/Suede) — same "brand stock materials live in
@@ -1021,7 +1074,7 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   // whether `TYPE_RULES[category]` has an entry (quoted OR bare key) FIRST
   // before assuming a category's images come from resolveProductImage().
   booklets: {
-    "matte-book-uncoated-booklets": "/images/cat/booklets/matte-book-uncoated.jpg",
+    "matte-book-uncoated-booklets": "/images/cat/booklets/matte-book-uncoated.png",
     "dull-book-satin-aq-booklets": "/images/cat/booklets/dull-book-satin-aq.jpg",
     "gloss-cover-aq-booklets": "/images/cat/booklets/gloss-cover-aq.jpg",
     "premium-opaque-uncoated-booklets": "/images/cat/booklets/premium-opaque-uncoated.jpg",
@@ -1062,6 +1115,17 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "direct-mail-postcards": "/images/cat/postcards/direct-mail.jpg",
     "standard-postcards": "/images/cat/postcards/standard.jpg",
   },
+  "social-cards": {
+    "foil-worx-social-cards": "/images/cat/social-cards/foil-worx.jpg",
+    "akuafoil-social-cards": "/images/cat/social-cards/akuafoil.jpg",
+    "standard-social-cards": "/images/cat/social-cards/standard.jpg",
+  },
+  // 2026-07-10: was missing entirely -- both cards shared the generic
+  // parent image.
+  catalogs: {
+    "saddle-stitch-catalogs": "/images/cat/catalogs/saddle-stitch.jpg",
+    "perfect-bound-catalogs": "/images/cat/catalogs/perfect-bound.jpg",
+  },
   // 2026-07-09: was missing entirely -- every Trading Cards type card fell
   // back to the parent subcategory's own generic image, so all 11 cards
   // showed the SAME picture despite distinct per-material photos already
@@ -1086,6 +1150,8 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
     "eddm-full-service-flyers": "/images/cat/flyers-and-brochures/eddm-full-service.jpg",
     "eddm-flyers-print-only": "/images/cat/flyers-and-brochures/eddm-print-only.jpg",
+    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
+    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
     "tri-fold-brochures": "/images/cat/flyers-and-brochures/tri-fold.jpg",
     "z-fold-brochures": "/images/cat/flyers-and-brochures/z-fold.jpg",
     "specialty-folds-brochures": "/images/cat/flyers-and-brochures/specialty-folds.jpg",
@@ -1101,6 +1167,8 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "offset-envelopes": "/images/cat/envelopes/offset.jpg",
   },
   "hang-tags": {
+    // 2026-07-10: was missing entirely, same recurring symptom.
+    "dual-raised-hang-tags": "/images/cat/hang-tags/dual-raised.png",
     "akuafoil-hang-tags": "/images/cat/hang-tags/akuafoil.jpg",
     "foil-worx-hang-tags": "/images/cat/hang-tags/foil-worx.jpg",
     "bottleneck-hang-tags": "/images/cat/hang-tags/bottleneck.jpg",
@@ -1131,6 +1199,23 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "akuafoil-rack-cards": "/images/cat/rack-cards/akuafoil.jpg",
     "standard-rack-cards": "/images/cat/rack-cards/standard.jpg",
   },
+  // 2026-07-10: was missing entirely, same recurring symptom -- all 12
+  // cards shared one generic parent image. "Cards with Gift Card Holder"
+  // has no entry -- confirmed genuine account gap (0 live matches).
+  "greeting-cards": {
+    "dual-raised-greeting-cards": "/images/cat/greeting-cards/dual-raised.png",
+    "raised-foil-greeting-cards": "/images/cat/greeting-cards/raised-foil.jpg",
+    "raised-spot-uv-greeting-cards": "/images/cat/greeting-cards/raised-spot-uv.jpg",
+    "linen-greeting-cards": "/images/cat/greeting-cards/linen.jpg",
+    "gloss-cover-greeting-cards": "/images/cat/greeting-cards/gloss-cover.jpg",
+    "pearl-greeting-cards": "/images/cat/greeting-cards/pearl.jpg",
+    "silk-greeting-cards": "/images/cat/greeting-cards/silk.jpg",
+    "natural-greeting-cards": "/images/cat/greeting-cards/natural.jpg",
+    "suede-greeting-cards": "/images/cat/greeting-cards/suede.jpg",
+    "brown-kraft-greeting-cards": "/images/cat/greeting-cards/brown-kraft.jpg",
+    "akuafoil-greeting-cards": "/images/cat/greeting-cards/akuafoil.jpg",
+    "standard-greeting-cards": "/images/cat/greeting-cards/standard.jpg",
+  },
   "sell-sheets": {
     "akuafoil-sell-sheets": "/images/cat/sell-sheets/akuafoil.jpg",
     "brown-kraft-sell-sheets": "/images/cat/sell-sheets/brown-kraft.jpg",
@@ -1138,7 +1223,9 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "pearl-sell-sheets": "/images/cat/sell-sheets/pearl.jpg",
     "silk-sell-sheets": "/images/cat/sell-sheets/silk.jpg",
     "suede-sell-sheets": "/images/cat/sell-sheets/suede.jpg",
-    "standard-sell-sheets": "/images/cat/sell-sheets.jpg",
+    // 2026-07-10: was pointing at the generic parent image -- no dedicated
+    // photo existed for this catch-all card at all.
+    "standard-sell-sheets": "/images/cat/sell-sheets/common.jpg",
     "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
     "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
   },
@@ -1158,6 +1245,15 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "door-hangers-tear-off": "/images/cat/door-hangers/tearoff.jpg",
     "flyers-tear-off": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "postcards-tear-off": "/images/cat/postcards/tearoff.jpg",
+  },
+  // 2026-07-10: was missing entirely -- all 3 cards shared the generic
+  // parent image. "tearoff-door-hangers" reuses the same photo already
+  // downloaded for tear-off-cards' own "door-hangers-tear-off" card (same
+  // underlying product).
+  "door-hangers": {
+    "endurace-door-hangers": "/images/cat/door-hangers/endurace.jpg",
+    "tearoff-door-hangers": "/images/cat/door-hangers/tearoff.jpg",
+    "standard-door-hangers": "/images/cat/door-hangers/standard.jpg",
   },
   // 2026-07-10: rebuilt for the 6 new OPTION_PRESET_TYPES cards (was 3 old
   // "-base" slugs pointing at generic parent images, no longer rendered
@@ -2020,7 +2116,18 @@ export default async function PrintCategoryPage({
     // to classify a shared product pool for OPTION_PRESET_TYPES below to draw
     // from — excluded from the visible grid since their own split preset
     // cards (Full Service/Print Only, etc) are what should actually show.
-    const presetBaseSlugs = new Set((OPTION_PRESET_TYPES[category] || []).map((p) => p.baseSlug))
+    // EXCEPTION: "flat-flyers-brochures" is ALSO its own genuine visible
+    // card on 4over.com's own /marketing-products/flyers-brochures listing
+    // ("Flat Flyers and Brochures", the very first item) -- unlike EDDM's
+    // base (never shown bare, only as Full Service/Print Only), the fold
+    // presets (Tri Fold/Z Fold/Specialty Folds) are IN ADDITION TO the
+    // plain/unfolded version, not a replacement for it. Confirmed live
+    // 2026-07-10.
+    const presetBaseSlugs = new Set(
+      (OPTION_PRESET_TYPES[category] || [])
+        .map((p) => p.baseSlug)
+        .filter((slug) => slug !== "flat-flyers-brochures"),
+    )
     const rules = TYPE_RULES[category]
     const sortedTypes = rules
       .map(r => typeMap.get(r.slug))
