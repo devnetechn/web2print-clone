@@ -76,7 +76,10 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     ],
   },
   "marketing-materials": {
-    label: "Marketing Materials",
+    // 2026-07-10: renamed display label from "Marketing Materials" to
+    // "Marketing Products" to match 4over.com's own top-nav wording exactly
+    // (confirmed live) -- slug kept for URL stability.
+    label: "Marketing Products",
     subcategories: [
       { name: "Flyers and Brochures", uuid: "4edd37b2-c6d5-4938-b6c7-35e09cd7bf76", slug: "flyers-and-brochures", image: "/images/cat/flyers-and-brochures.jpg" },
       { name: "Trading Cards", uuid: "b45e4b55-a3cd-4897-9506-69ba456189e7", slug: "trading-cards", image: "/images/categories/postcards.jpg" },
@@ -108,9 +111,22 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       { name: "Posters", uuid: "e9db3435-dde9-442b-9957-2221fa4611c5", slug: "posters", image: "/images/cat/posters.jpg" },
       { name: "Rack Cards", uuid: "fafbcc3a-6196-479f-b589-c510f07372ef", slug: "rack-cards", image: "/images/cat/rack-cards.jpg" },
       { name: "Sell Sheets", uuid: "950d2eb7-d1ac-4a3c-b1b0-8c407ce635ed", slug: "sell-sheets", image: "/images/cat/sell-sheets.jpg" },
+      // 2026-07-10: was completely missing -- 4over.com's own /marketing-
+      // products listing shows it with 71 real products, confirmed via
+      // direct DB query. Has no dedicated 4over category UUID of its own --
+      // "Social Cards" text is scoped inside the SAME shared Business Cards
+      // uuid (08a9625a) as Leaf/Oval/Fold-over above, plus the 7 brand-
+      // material uuids (Foil Worx/Brown Kraft/Pearl/Akuafoil/Plastic/Suede/
+      // Silk) merged in via EXTRA_PRODUCT_SOURCES, same pattern as
+      // Announcement Cards.
+      { name: "Social Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "social-cards", image: "/images/cat/social-cards.jpg", keyword: "social card" },
       { name: "Table Tent Cards", uuid: "e2aa8867-357b-424c-b11d-11125e597cb2", slug: "table-tent-cards", image: "/images/cat/table-tent-cards.jpg" },
       { name: "Tear Off Cards", uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", slug: "tear-off-cards", image: "/images/cat/postcards.jpg" },
-      { name: "EDDM", uuid: "50a1f1a2-3567-4618-a703-074471472e8d", slug: "eddm", image: "/images/cat/postcards.jpg" },
+      // 2026-07-09: renamed from "EDDM" to match 4over.com's own top-level nav
+      // label "Direct Mail Services" (a separate primary category there,
+      // distinct from Marketing Products) -- see storefront-header.tsx's new
+      // nav link pointing here.
+      { name: "Direct Mail Services", uuid: "50a1f1a2-3567-4618-a703-074471472e8d", slug: "eddm", image: "/images/cat/postcards.jpg" },
       { name: "Header Cards", uuid: "a842ec1b-280d-4e13-aa74-18a2be824737", slug: "header-cards", image: "/images/cat/postcards.jpg" },
     ],
   },

@@ -165,11 +165,15 @@ export function StorefrontHeader() {
               {openMenu === "printing" && (
                 <div className="absolute left-0 top-full bg-white shadow-lg min-w-[240px] z-[100]">
                   <Link href="/print/business-cards" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Business Cards</Link>
-                  <Link href="/print/marketing-materials" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Marketing Materials</Link>
+                  <Link href="/print/marketing-materials" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Marketing Products</Link>
                   <Link href="/print/signs-banners" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Signs & Banners</Link>
                   <Link href="/print/boxes-packaging" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Boxes & Packaging</Link>
                   <Link href="/print/roll-labels-stickers" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Roll Labels & Stickers</Link>
                   <Link href="/print/promo-products" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Promo Products</Link>
+                  {/* 2026-07-10: "Direct Mail Services" link removed from this
+                      dropdown per explicit user request -- the underlying
+                      "/print/eddm" page still exists and works, just no
+                      longer linked from this nav menu. */}
                   <Link href="/print" className="block px-4 py-3 text-[#e42a27] hover:bg-[#e42a27] hover:text-white font-semibold">View All</Link>
                 </div>
               )}

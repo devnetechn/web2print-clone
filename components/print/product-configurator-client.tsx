@@ -110,6 +110,15 @@ interface ProductConfiguratorClientProps {
   isBusinessCards?: boolean
   isAllInclusive?: boolean
   isBanner?: boolean
+  // Virtual fold-preset type cards (Tri Fold/Z Fold/Specialty Folds
+  // Brochures) reuse their base type's own product set (e.g. "Flat Flyers
+  // Brochures") but need to default one "extra" option group (Folding
+  // Options) to a SPECIFIC value instead of the group's usual default —
+  // see FOLDING_PRESET_TYPES in [typeSlug]/page.tsx for the full context.
+  // Regex SOURCE strings, not RegExp objects — Server Components can't pass
+  // RegExp instances to Client Components (confirmed: "Only plain objects...
+  // can be passed... Classes or null prototypes are not supported").
+  preferredExtraOption?: { groupNameMatch: string; optionNameMatch: string }
 }
 
 function translateList<T extends { name: string }>(list: T[], translator: (n: string) => string): T[] {
@@ -304,6 +313,18 @@ function extractShapeCore(desc: string): string {
 const HANDLED_GROUP_NAMES = new Set([
   "product type",
   "product category",
+  // 2026-07-10: 4over's own API returns this group as bare "Category" (not
+  // "Product Category" like the entry above already anticipated) for
+  // Majestic-brand products (Akuafoil/Foil Worx/etc) -- its single option's
+  // option_prices_list is always genuinely empty ("product group as a
+  // category option" per its own description, pure metadata, not a real
+  // priceable choice). Was slipping through into extraGroups, getting
+  // auto-selected as a default, and sent to the quote API -- which broke
+  // pricing entirely (returned $0, silently resolving to an unrelated
+  // "Akuafoil Products" bucket item with no price data of its own).
+  // Confirmed reproducible on Presentation Folders' Akuafoil card; likely
+  // affects every Majestic-brand product across every category.
+  "category",
   "short side (inches)",
   "long side (inches)",
   "size",
@@ -348,6 +369,7 @@ export function ProductConfiguratorClient({
   isBusinessCards = false,
   isAllInclusive = false,
   isBanner = false,
+  preferredExtraOption,
 }: ProductConfiguratorClientProps) {
   const router = useRouter()
   const sizeVariantMode = !!(sizeProducts && sizeProducts.length > 0)
@@ -871,7 +893,16 @@ export function ProductConfiguratorClient({
         for (const g of extras) {
           const hasPdfProof = /job.?sample|digital.?proof|pdf.?proof/i.test(g.group_name) ||
             g.options.some((o) => /job.?sample|digital.?proof|pdf.?proof/i.test(o.option_name))
-          if (hasPdfProof) {
+          const preferredOpt =
+            preferredExtraOption && new RegExp(preferredExtraOption.groupNameMatch, "i").test(g.group_name)
+              ? g.options.find((o) => new RegExp(preferredExtraOption.optionNameMatch, "i").test(o.option_name))
+              : undefined
+          if (preferredOpt) {
+            // Virtual fold-preset type card (Tri Fold/Z Fold/Specialty Folds
+            // Brochures etc) — override this group's usual default with the
+            // option matching this card's specific fold type.
+            defaults[g.group_uuid] = preferredOpt.option_uuid
+          } else if (hasPdfProof) {
             // Proof add-ons: always opt-in, never auto-selected (adds cost)
             defaults[g.group_uuid] = ""
           } else if (/mailing.?service|postage.?class/i.test(g.group_name)) {
