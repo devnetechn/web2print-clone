@@ -1963,6 +1963,43 @@ export default async function PrintCategoryPage({
   // env vars aren't configured.
   const group = GROUPS[category]
   if (group) {
+    // 2026-07-11: Boss Dwayne explicit feedback — 4over.com's own
+    // /boxes-packaging page shows all 19 individual PRODUCTS directly in one
+    // flat grid (confirmed live), not 3 subcategory tiles requiring an extra
+    // click. Scoped to boxes-packaging only (the other 5 parent pages also
+    // do this on 4over.com, but weren't part of this specific request — see
+    // [[boxes-packaging-flat-listing]] memory for the full investigation).
+    // Each entry links to its own REAL existing page (Packaging/Hang Tags/
+    // Header Cards leaves already have correct data+images+pricing,
+    // verified in prior audits) — this is purely a landing-page shortcut,
+    // no new product data. Hang Tags' Plastic material is excluded: 4over's
+    // own flat listing doesn't include it either (matches their page
+    // exactly, not our full 12-type /print/hang-tags list).
+    const boxesPackagingFlatItems =
+      category === "boxes-packaging"
+        ? [
+            { name: "Business Card Boxes", href: "/print/packaging/business-card-boxes", image: "/images/cat/packaging/business-card-boxes.jpg" },
+            { name: "Roll End Tuck Top Boxes", href: "/print/packaging/roll-end-tuck-top-boxes", image: "/images/cat/packaging/tuck-top-boxes.jpg" },
+            { name: "Sales Presentation Boxes", href: "/print/packaging/sales-presentation-boxes", image: "/images/cat/packaging/sales-presentation-boxes.jpg" },
+            { name: "Golf Ball Boxes", href: "/print/packaging/golf-ball-boxes", image: "/images/cat/packaging/golf-ball-boxes.jpg" },
+            { name: "Wine Boxes", href: "/print/packaging/wine-boxes", image: "/images/cat/packaging/wine-boxes.jpg" },
+            { name: "Cube Boxes", href: "/print/packaging/cube-boxes", image: "/images/cat/packaging/cube-boxes.jpg" },
+            { name: "Print & Trim Boxes", href: "/print/packaging/print-trim-boxes", image: "/images/cat/packaging/print-trim-boxes.jpg" },
+            { name: "Dual Raised Hang Tags", href: "/print/hang-tags/dual-raised-hang-tags", image: "/images/cat/hang-tags/dual-raised.png" },
+            { name: "Pearl Hang Tags", href: "/print/hang-tags/pearl-hang-tags", image: "/images/cat/hang-tags/pearl.jpg" },
+            { name: "Silk Hang Tags", href: "/print/hang-tags/silk-hang-tags", image: "/images/cat/hang-tags/silk.jpg" },
+            { name: "Brown Kraft Hang Tags", href: "/print/hang-tags/brown-kraft-hang-tags", image: "/images/cat/hang-tags/brown-kraft.jpg" },
+            { name: "Bottleneck Hang Tags", href: "/print/hang-tags/bottleneck-hang-tags", image: "/images/cat/hang-tags/bottleneck.jpg" },
+            { name: "Suede Hang Tags", href: "/print/hang-tags/suede-hang-tags", image: "/images/cat/hang-tags/suede.jpg" },
+            { name: "Foil Worx Hang Tags", href: "/print/hang-tags/foil-worx-hang-tags", image: "/images/cat/hang-tags/foil-worx.jpg" },
+            { name: "Natural Hang Tags", href: "/print/hang-tags/natural-hang-tags", image: "/images/cat/hang-tags/natural.jpg" },
+            { name: "Regular Hang Tags", href: "/print/hang-tags/regular-hang-tags", image: "/images/cat/hang-tags/regular.jpg" },
+            { name: "Akuafoil Hang Tags", href: "/print/hang-tags/akuafoil-hang-tags", image: "/images/cat/hang-tags/akuafoil.jpg" },
+            { name: "Raised Spot UV Hang Tags", href: "/print/hang-tags/raised-spot-uv-hang-tags", image: "/images/cat/hang-tags/raised-spot-uv.jpg" },
+            { name: "Header Cards", href: "/print/header-cards", image: "/images/cat/header-cards.jpg" },
+          ]
+        : null
+
     return (
       <div className="min-h-screen bg-white">
         <div className="border-b border-slate-200 py-2 px-4">
@@ -1980,22 +2017,39 @@ export default async function PrintCategoryPage({
           <hr className="border-slate-200 mb-8" />
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
-            {group.subcategories.map((sub) => (
-              <div key={sub.slug} className="group text-center">
-                <Link href={`/print/${sub.slug}`}>
-                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
-                    <img src={sub.image} alt={sub.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            {boxesPackagingFlatItems
+              ? boxesPackagingFlatItems.map((item) => (
+                  <div key={item.href} className="group text-center">
+                    <Link href={item.href}>
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    </Link>
+                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{item.name}</h2>
+                    <Link
+                      href={item.href}
+                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+                    >
+                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    </Link>
                   </div>
-                </Link>
-                <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
-                <Link
-                  href={`/print/${sub.slug}`}
-                  className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                >
-                  View details <span className="text-base leading-none">&rsaquo;</span>
-                </Link>
-              </div>
-            ))}
+                ))
+              : group.subcategories.map((sub) => (
+                  <div key={sub.slug} className="group text-center">
+                    <Link href={`/print/${sub.slug}`}>
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
+                        <img src={sub.image} alt={sub.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    </Link>
+                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
+                    <Link
+                      href={`/print/${sub.slug}`}
+                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+                    >
+                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    </Link>
+                  </div>
+                ))}
           </div>
         </div>
       </div>
