@@ -64,7 +64,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       // (which turned out to contain only Greeting Cards — 0 business cards).
       { name: "Linen Uncoated", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "linen-uncoated", image: "/images/cat/business-cards/linen-uncoated.jpg", keyword: ["linen", "business card"] },
       { name: "Plastic Cards", uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", slug: "plastic-cards", image: "/images/cat/business-cards/plastic.jpg", keyword: "business card" },
-      { name: "Dual Raised", uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", slug: "dual-raised", image: "/images/cat/business-cards/dual-raised.jpg", keyword: "business card" },
+      { name: "Dual Raised", uuid: "4221cd91-1aec-4d6e-88e9-b573a011edb2", slug: "dual-raised", image: "/images/cat/business-cards/dual-raised.png", keyword: "business card" },
       { name: "Raised Spot UV", uuid: "c47d69ba-872e-4a3a-8318-e40fce02d41f", slug: "raised-spot-uv", image: "/images/cat/business-cards/raised-spot-uv.jpg", keyword: "business card" },
       { name: "Foil Worx", uuid: "db1e2442-0a86-49ea-8a2d-74c8a5091490", slug: "foil-worx", image: "/images/cat/business-cards/foil-worx.jpg", keyword: "business card" },
       { name: "EndurACE", uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", slug: "endurace-cards", image: "/images/cat/business-cards/endurace.jpg", keyword: "business card" },
