@@ -171,9 +171,10 @@ export function StorefrontHeader() {
                   <Link href="/print/roll-labels-stickers" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Roll Labels & Stickers</Link>
                   <Link href="/print/promo-products" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Promo Products</Link>
                   {/* 2026-07-10: "Direct Mail Services" link removed from this
-                      dropdown per explicit user request -- the underlying
-                      "/print/eddm" page still exists and works, just no
-                      longer linked from this nav menu. */}
+                      dropdown per explicit user request. 2026-07-11: EDDM/
+                      Direct Mail Services removed entirely (not just this nav
+                      link) per Boss Dwayne's follow-up request -- the
+                      underlying "/print/eddm" page no longer exists. */}
                   <Link href="/print" className="block px-4 py-3 text-[#e42a27] hover:bg-[#e42a27] hover:text-white font-semibold">View All</Link>
                 </div>
               )}

@@ -122,11 +122,13 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       { name: "Social Cards", uuid: "08a9625a-4152-40cf-9007-b2bbb349efec", slug: "social-cards", image: "/images/cat/social-cards.jpg", keyword: "social card" },
       { name: "Table Tent Cards", uuid: "e2aa8867-357b-424c-b11d-11125e597cb2", slug: "table-tent-cards", image: "/images/cat/table-tent-cards.jpg" },
       { name: "Tear Off Cards", uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", slug: "tear-off-cards", image: "/images/cat/postcards.jpg" },
-      // 2026-07-09: renamed from "EDDM" to match 4over.com's own top-level nav
-      // label "Direct Mail Services" (a separate primary category there,
-      // distinct from Marketing Products) -- see storefront-header.tsx's new
-      // nav link pointing here.
-      { name: "Direct Mail Services", uuid: "50a1f1a2-3567-4618-a703-074471472e8d", slug: "eddm", image: "/images/cat/postcards.jpg" },
+      // 2026-07-11: "Direct Mail Services"/EDDM removed entirely per Boss
+      // Dwayne's explicit request -- EDDM's real checkout on 4over.com needs
+      // a map-based USPS carrier-route picker with address-count pricing,
+      // which requires an external paid API/vendor (AccuZip, LeadsPlease,
+      // or USPS's own EDDM v3 API) we don't have. Low order volume didn't
+      // justify the cost, so removed rather than leave a mismatched/broken
+      // checkout live.
       { name: "Header Cards", uuid: "a842ec1b-280d-4e13-aa74-18a2be824737", slug: "header-cards", image: "/images/cat/postcards.jpg" },
     ],
   },
