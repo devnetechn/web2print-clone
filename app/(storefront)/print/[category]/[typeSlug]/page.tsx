@@ -426,7 +426,8 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   displays: {
     "tabletop-displays": "/images/cat/displays/tabletop.jpg",
     "fabric-tube-displays": "/images/cat/displays/fabric-tube.jpg",
-    "silicon-edge-graphic-display": "/images/signs/displays.jpg",
+    // Kept in sync with print/[category]/page.tsx's own entry.
+    "silicon-edge-graphic-display": "/images/cat/displays/silicon-edge.jpg",
     "event-tents": "/images/cat/displays/event-tents.jpg",
     "fan-cutout": "/images/cat/displays/fan-cutout.jpg",
     "foam-core-counter-cards": "/images/cat/displays/foam-core-counter.jpg",
@@ -1417,6 +1418,7 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
     [/\bSales\s+Box\b/gi, "Sales Presentation Boxes"],
     [/\bCube\s+Box\b/gi, "Cube Boxes"],
     [/\bGolf\s+Ball\s+Box\b/gi, "Golf Ball Boxes"],
+    [/Print\s+and\s+Trim\s+Flat\s+Sheets/gi, "Print & Trim Boxes"],
   ],
   "header-cards": [
     [/\buncoated\s+(?=header\s+cards)/gi, ""],
@@ -1430,7 +1432,11 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
     [/\bfoiled\s+trading\s+cards\b/gi, "Foil Worx Trading Cards"],
     [/\buncoated\s+(?=trading\s+cards)/gi, ""],
   ],
-  "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  "announcement-cards": [
+    [/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""],
+    // Kept in sync with print/[category]/page.tsx's own entry.
+    [/Indoor\s+Announcement\s+Magnet/i, "Magnet Announcement Cards"],
+  ],
   // Same Foil Worx naming pattern as Trading Cards — Foil Worx UUID has
   // "14PT Uncoated Foiled Postcards"; strip the stock prefix so all foiled
   // stocks merge into one card, then rename to match 4over's label.

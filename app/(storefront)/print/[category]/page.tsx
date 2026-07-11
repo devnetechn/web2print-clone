@@ -1340,7 +1340,12 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   displays: {
     "tabletop-displays": "/images/cat/displays/tabletop.jpg",
     "fabric-tube-displays": "/images/cat/displays/fabric-tube.jpg",
-    "silicon-edge-graphic-display": "/images/signs/displays.jpg",
+    // 2026-07-11: was falling back to the generic parent image -- "Silicon
+    // Edge" has no direct product page on 4over.com's CURRENT site (it's
+    // been rebranded there as "SEG Frame Displays"/"Silicone Edge
+    // Graphics"), but that current listing's own real photo shows the
+    // identical product (fabric graphic panel + frame), so reused it.
+    "silicon-edge-graphic-display": "/images/cat/displays/silicon-edge.jpg",
     "event-tents": "/images/cat/displays/event-tents.jpg",
     "fan-cutout": "/images/cat/displays/fan-cutout.jpg",
     "foam-core-counter-cards": "/images/cat/displays/foam-core-counter.jpg",
@@ -1740,6 +1745,11 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
     [/\bSales\s+Box\b/gi, "Sales Presentation Boxes"],
     [/\bCube\s+Box\b/gi, "Cube Boxes"],
     [/\bGolf\s+Ball\s+Box\b/gi, "Golf Ball Boxes"],
+    // 2026-07-11: raw text says "Print and Trim Flat Sheets" but 4over.com's
+    // own H1 for this exact product is "Print & Trim Boxes" (confirmed live
+    // at https://4over.com/print-and-trim-boxes) -- same bug class as
+    // vehicle-magnets/announcement-cards' raw-SKU-vs-public-name mismatches.
+    [/Print\s+and\s+Trim\s+Flat\s+Sheets/gi, "Print & Trim Boxes"],
   ],
   // 21 raw entries, all just 14PT — 3 coating variants ("with Full UV",
   // "Matte/Dull Finish", "Uncoated") merge into one "14PT Header Cards"
@@ -1799,7 +1809,15 @@ const CATEGORY_WORD_OVERRIDES: Record<string, [RegExp, string][]> = {
   // SHAPE_WORDS removal for the extra-sourced materials — without it, only
   // the non-Round-Corner half of e.g. Natural's products gets the word
   // stripped, leaving 2 near-duplicate "Natural Announcement Cards" cards.
-  "announcement-cards": [[/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""]],
+  "announcement-cards": [
+    [/\buncoated\s+(?=(?:round\s*corners?|ovals?|fold\s*overs?)?\s*announcement\s+cards)/gi, ""],
+    // 2026-07-11: raw product text says "Indoor Announcement Magnet" but
+    // 4over.com's own marketing/nav name for this exact product is "Magnet
+    // Announcement Cards" (confirmed live at
+    // https://4over.com/magnet-announcement-cards) -- same bug class as
+    // vehicle-magnets above.
+    [/Indoor\s+Announcement\s+Magnet/i, "Magnet Announcement Cards"],
+  ],
   // Same Foil Worx naming pattern as Trading Cards: Foil Worx UUID has
   // "14PT Uncoated Foiled Postcards" etc. — strip the stock prefix so all
   // foiled stocks merge into one card, then rename to match 4over's label.
