@@ -40,29 +40,11 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // their broader fold-type siblings to avoid misclassification.
   "flyers-and-brochures": [
     { label: "All Inclusive Flyers Brochures",               slug: "all-inclusive-flyers-brochures",              keywords: ["all inclusive", "all-inclusive"] },
-    // "EDDM Full Service - Half Folds"/"EDDM Print Only - Half Folds" removed
-    // 2026-07-09: confirmed 0 live products anywhere in the EDDM uuid contain
-    // "half fold" text, AND no product's own "Folding Options" ever offers a
-    // half-fold choice (only "Tri-Fold / Letter Fold") -- genuine account gap,
-    // not a code issue. Deliberately NOT re-added as a keyword-matched rule:
-    // classifyProduct() OR-matches keywords, so a rule like ["eddm","half fold"]
-    // would match on "eddm" ALONE and silently steal every other EDDM product
-    // (flyers, postcards, sell sheets) into this dead type instead of leaving
-    // them correctly classified elsewhere.
-    // "EDDM Full Service - Flyers" and "EDDM Flyers - Print Only" originally
-    // required "full service"/"print only" text that NEVER appears in any of
-    // the 55 genuine EDDM flyer descriptions (confirmed via raw API) -- both
-    // entries silently matched 0 products, and every real EDDM flyer fell
-    // through into the "Flat Flyers Brochures" catch-all instead. The true
-    // differentiator is "EDDM Service Option" (Full Service/Print Only), a
-    // genuine single-product option group. This "-base" entry classifies the
-    // shared product pool only -- it's excluded from the visible card grid
-    // (see the sortedTypes filter below) in favor of 2 OPTION_PRESET_TYPES
-    // virtual cards that pre-select Full Service / Print Only respectively,
-    // per Boss Dwayne's explicit request to keep them as 2 separate findable
-    // cards matching 4over.com's own literal listing (not merged into one
-    // card behind a dropdown, which was the first, wrong attempt at this).
-    { label: "EDDM Flyers",                                 slug: "eddm-flyers-base",                          keywords: ["eddm"] },
+    // EDDM Flyers/Half Folds removed entirely 2026-07-11 per Boss Dwayne's
+    // request -- EDDM's real checkout needs a map-based USPS route picker we
+    // don't have (see the "eddm" GROUPS removal comment in
+    // lib/print/categories.ts for the full reasoning). Its raw products still
+    // exist in 4over's data (this uuid) but are no longer surfaced anywhere.
     // "Direct Mail *" (6 entries) removed 2026-07-09: confirmed 0 live products
     // contain "direct mail" text anywhere in this category (account gap). The
     // "...Coated" variant was additionally an ACTIVE bug, not just dead: its
@@ -98,16 +80,8 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
   // "dual raised", "raised foil" before "foil", "eddm full service" before "eddm").
   "postcards": [
     { label: "All-Inclusive Postcards",       slug: "all-inclusive-postcards",       keywords: ["all inclusive", "all-inclusive"] },
-    // "EDDM Full Service Postcards"/"EDDM Print Only Postcards" removed
-    // 2026-07-09: confirmed via raw API that none of the 63 genuine EDDM
-    // postcard products contain "full service"/"print only" text anywhere
-    // (same root cause as Flyers & Brochures' identical EDDM split -- see
-    // [[flyers-brochures-audit]]). 2026-07-09: split into 2
-    // OPTION_PRESET_TYPES virtual cards (Full Service / Print Only,
-    // pre-selecting "EDDM Service Option") per Boss Dwayne's request to
-    // match 4over.com's separate listings -- this "-base" entry only
-    // classifies the shared product pool, excluded from the visible grid.
-    { label: "EDDM Postcards",               slug: "eddm-postcards-base",          keywords: ["eddm"] },
+    // EDDM Postcards removed entirely 2026-07-11 per Boss Dwayne's request --
+    // see the "eddm" GROUPS removal comment in lib/print/categories.ts.
     { label: "Dual Raised RSVP",             slug: "dual-raised-rsvp-postcards",   keywords: ["rsvp"] }, // account gap: 0 live matches
     { label: "Dual Raised Postcards",        slug: "dual-raised-postcards",        keywords: ["dual raised"] },
     { label: "Raised Foil Postcards",        slug: "raised-foil-postcards",        keywords: ["raised foil"] },
@@ -435,16 +409,8 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Akuafoil Sell Sheets", slug: "akuafoil-sell-sheets", keywords: ["akuafoil"] },
     { label: "Brown Kraft Sell Sheets", slug: "brown-kraft-sell-sheets", keywords: ["brown kraft"] },
     { label: "EndurACE Sell Sheets", slug: "endurace-sell-sheets", keywords: ["endurace"] },
-    // 2026-07-09: "EDDM Full Service - Sell Sheets"/"EDDM Sell Sheets - Print
-    // Only" (2 separate 4over.com listings) were missing entirely -- worse,
-    // the EDDM uuid wasn't even pulled into this category's EXTRA_PRODUCT_
-    // SOURCES at all, so its 45 genuine EDDM Sell Sheets products were never
-    // fetched in the first place (same 2-layer bug found in Flyers &
-    // Brochures/Postcards -- see [[flyers-brochures-audit]]/[[postcards-audit]]).
-    // Split into 2 OPTION_PRESET_TYPES virtual cards (Full Service / Print
-    // Only) per Boss Dwayne's request -- this "-base" entry only classifies
-    // the shared product pool, excluded from the visible grid.
-    { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets-base", keywords: ["eddm"] },
+    // EDDM Sell Sheets removed entirely 2026-07-11 per Boss Dwayne's request
+    // -- see the "eddm" GROUPS removal comment in lib/print/categories.ts.
     { label: "Pearl Sell Sheets", slug: "pearl-sell-sheets", keywords: ["pearl"] },
     { label: "Silk Sell Sheets", slug: "silk-sell-sheets", keywords: ["silk"] },
     { label: "Suede Sell Sheets", slug: "suede-sell-sheets", keywords: ["suede"] },
@@ -483,30 +449,6 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
     { label: "Door Hangers with Tear-Off Perforation", slug: "door-hangers-tear-off", keywords: ["door hangers"] },
     { label: "Flyers with Tear-Off Perforation", slug: "flyers-tear-off", keywords: ["flyers"] },
     { label: "Postcards with Tear-Off Perforation", slug: "postcards-tear-off", keywords: [] }, // catch-all
-  ],
-  // 2026-07-10: rebuilt against 4over.com's own actual `/direct-mail-services`
-  // page (the earlier version of this comment cited "fourprintshop", the
-  // stale pre-Boss-Dwayne reference site — see [[client-demo-reference-was-fourprintshop-not-v0]]).
-  // 4over.com's real page is a 16-card grid: 8 EDDM cards (4 product types x
-  // Full Service/Print Only) + 8 non-EDDM "Direct Mail *" cards. Confirmed
-  // via direct DB query: the 8 "Direct Mail *" cards are a genuine account
-  // gap (0 "direct mail" matches anywhere in the whole account, matching the
-  // identical gap already documented in flyers-and-brochures/postcards above)
-  // -- not reproduced here. The 8 EDDM cards reduce to 3 real product-type
-  // buckets in this uuid's own data (Postcards/Sell Sheets/Flyers -- "Half
-  // Folds" and "Booklet" have 0 matching text, they're not separate data,
-  // "Half Folds" is 4over's own name for the general Flyers line on this
-  // overview page specifically). Verified clean 3-way split across all 165
-  // raw entries (63 Postcards / 45 Sell Sheets / 55 Flyers + 2 unmatched
-  // Flyers, zero leftover). These "-base" entries only classify the shared
-  // product pools -- excluded from the visible grid in favor of the 6
-  // OPTION_PRESET_TYPES virtual cards below (Full Service / Print Only per
-  // type), matching 4over.com's own literal 2-cards-per-type split, same
-  // mechanism already used by flyers-and-brochures/postcards/sell-sheets.
-  eddm: [
-    { label: "EDDM Postcards", slug: "eddm-postcards-base", keywords: ["postcards"] },
-    { label: "EDDM Sell Sheets", slug: "eddm-sell-sheets-base", keywords: ["sell sheets"] },
-    { label: "EDDM Flyers", slug: "eddm-flyers-base", keywords: [] }, // catch-all
   ],
   // 4over.com's /signs-banners/display-events/table-covers page (the
   // canonical reference) is a 2-card grid: "Tablecloths", "Table Runners" —
@@ -757,19 +699,11 @@ const TYPE_RULES: Record<string, TypeRule[]> = {
 // merged "EDDM X" TYPE_RULES entries were removed and replaced by the 2
 // split presets below).
 const OPTION_PRESET_TYPES: Record<string, { label: string; slug: string; baseSlug: string; optionGroupMatch: RegExp; optionMatch: RegExp }[]> = {
+  // EDDM presets (Flyers/Half Folds/Postcards/Sell Sheets, plus the
+  // standalone "eddm" category's own overview page) removed entirely
+  // 2026-07-11 per Boss Dwayne's request -- see the "eddm" GROUPS removal
+  // comment in lib/print/categories.ts.
   "flyers-and-brochures": [
-    { label: "EDDM Full Service - Flyers", slug: "eddm-full-service-flyers", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Flyers - Print Only", slug: "eddm-flyers-print-only", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-    // 2026-07-10: 4over.com's own /marketing-products/flyers-brochures page
-    // lists FOUR EDDM cards, not 2 -- these 2 "Half Folds" entries use
-    // different photos than the "Flyers" pair above but draw from the
-    // exact same "eddm-flyers-base" pool (confirmed 0 "half fold" text
-    // anywhere in the raw data) -- 4over's own retail site lists the same
-    // wholesale product twice under 2 display names. Reuses the identical
-    // slugs/labels already built for the /print/eddm category's own Half
-    // Folds pair (same underlying data, same TYPE_LABELS/TYPE_IMAGES).
-    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
     { label: "Tri Fold Brochures", slug: "tri-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Tri-Fold/i },
     { label: "Z Fold Brochures", slug: "z-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Z-Fold/i },
     // Everything else that isn't Flat/Half-Fold/Tri-Fold/Z-Fold — matches
@@ -777,30 +711,6 @@ const OPTION_PRESET_TYPES: Record<string, { label: string; slug: string; baseSlu
     // Gatefold, French Fold, Roll Fold, Double Parallel Fold, Reverse Double
     // Parallel Fold, Half-Fold and then Tri-Fold).
     { label: "Specialty Folds Brochures", slug: "specialty-folds-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /gatefold|french fold|roll fold|parallel fold|half-fold and then/i },
-  ],
-  postcards: [
-    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-  ],
-  "sell-sheets": [
-    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-  ],
-  // 2026-07-10: the eddm category's own /direct-mail-services overview page.
-  // Postcards/Sell Sheets pairs reuse the SAME slugs (and therefore the same
-  // TYPE_LABELS/TYPE_IMAGES entries) as postcards'/sell-sheets' own EDDM
-  // cards above -- TYPE_LABELS is a flat, category-unaware Record<string,
-  // string>, so giving these a different label under a different slug here
-  // risked an inconsistent/colliding lookup for no real benefit (same
-  // product, same service). Only "Half Folds" is genuinely new (4over.com's
-  // own name for the Flyers pair on THIS specific overview page).
-  eddm: [
-    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
   ],
 }
 
@@ -827,11 +737,9 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   "flyers-and-brochures": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] }, // Tearoff Flyers
     { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE -- 0 live matches (account gap: this uuid only has BCs/Door Hangers/Menus/Mini Menus/Postcards/Sell Sheets, no Flyers/Brochures)
-    // Was `["flyer", "brochure", "half fold"]` (matchesAllKeywords = AND) --
-    // confirmed 2026-07-09 that NO product in this uuid contains "brochure"
-    // text at all, so the AND of all 3 was permanently false and this entire
-    // source silently contributed 0 products, no matter what TYPE_RULES said.
-    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "flyer" }, // EDDM Flyers (excludes the uuid's EDDM Postcards/Sell Sheets, which don't say "flyer")
+    // EDDM Flyers source removed entirely 2026-07-11 per Boss Dwayne's
+    // request -- see the "eddm" GROUPS removal comment in
+    // lib/print/categories.ts.
   ],
   // "Tearoff Door Hangers" (Tear Off Cards UUID) + "EndurACE Door Hangers"
   // (EndurACE UUID, same one used by EndurACE Business Cards/Flyers) — see
@@ -914,10 +822,9 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "4cb9f549-5376-4d43-8530-b04632d026a8", keyword: ["pearl", "sell sheet"] },
     { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: ["silk", "sell sheet"] },
     { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: ["suede", "sell sheet"] },
-    // 2026-07-09: was missing entirely -- the EDDM uuid's 45 genuine Sell
-    // Sheets products were never fetched into this category at all. See
-    // matching TYPE_RULES comment above.
-    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "sell sheet" },
+    // EDDM Sell Sheets source removed entirely 2026-07-11 per Boss Dwayne's
+    // request -- see the "eddm" GROUPS removal comment in
+    // lib/print/categories.ts.
   ],
   "table-tent-cards": [
     { uuid: "eec8345b-cfb4-4e5f-a0f4-60289fdd39ae", keyword: ["natural", "table tent"] },
@@ -965,8 +872,9 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   ],
   // Brand-stock materials for postcards live in their own shared category UUIDs
   // (same pattern as Announcement Cards/Trading Cards/Sell Sheets). Tearoff
-  // Postcards live in the Tear Off Cards UUID; Magnet Postcards in Magnets UUID;
-  // EDDM variants in the EDDM UUID.
+  // Postcards live in the Tear Off Cards UUID; Magnet Postcards in Magnets UUID.
+  // EDDM source removed entirely 2026-07-11 per Boss Dwayne's request -- see
+  // the "eddm" GROUPS removal comment in lib/print/categories.ts.
   "postcards": [
     { uuid: "6040759e-7cdb-4279-af4c-91f7c702e121", keyword: "postcard" }, // Silk
     { uuid: "819a2ebe-ce5a-495a-bb67-e23a28b8ace0", keyword: "postcard" }, // Suede
@@ -983,7 +891,6 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "postcard" }, // Plastic
     { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "postcard" }, // Magnets (Magnet Postcards)
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "postcard" }, // Tear Off Cards (Tearoff Postcards)
-    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "postcard" }, // EDDM (EDDM variants)
   ],
   "announcement-cards": [
     { uuid: "c5e697c7-0abd-4ca4-8ca4-44ac9872b569", keyword: "announcement" }, // Akuafoil
@@ -1089,8 +996,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   // Dual Raised RSVP use .png since that's the source format on 4over's CDN.
   "postcards": {
     "all-inclusive-postcards": "/images/cat/postcards/all-inclusive.jpg",
-    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
-    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
     "dual-raised-rsvp-postcards": "/images/cat/postcards/dual-raised-rsvp.png",
     "dual-raised-postcards": "/images/cat/postcards/dual-raised.png",
     "raised-foil-postcards": "/images/cat/postcards/raised-foil.jpg",
@@ -1148,10 +1053,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
-    "eddm-full-service-flyers": "/images/cat/flyers-and-brochures/eddm-full-service.jpg",
-    "eddm-flyers-print-only": "/images/cat/flyers-and-brochures/eddm-print-only.jpg",
-    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
-    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
     "tri-fold-brochures": "/images/cat/flyers-and-brochures/tri-fold.jpg",
     "z-fold-brochures": "/images/cat/flyers-and-brochures/z-fold.jpg",
     "specialty-folds-brochures": "/images/cat/flyers-and-brochures/specialty-folds.jpg",
@@ -1226,8 +1127,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     // 2026-07-10: was pointing at the generic parent image -- no dedicated
     // photo existed for this catch-all card at all.
     "standard-sell-sheets": "/images/cat/sell-sheets/common.jpg",
-    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
-    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
   },
   "table-tent-cards": {
     "natural-table-tents": "/images/cat/table-tent-cards/natural.jpg",
@@ -1254,20 +1153,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "endurace-door-hangers": "/images/cat/door-hangers/endurace.jpg",
     "tearoff-door-hangers": "/images/cat/door-hangers/tearoff.jpg",
     "standard-door-hangers": "/images/cat/door-hangers/standard.jpg",
-  },
-  // 2026-07-10: rebuilt for the 6 new OPTION_PRESET_TYPES cards (was 3 old
-  // "-base" slugs pointing at generic parent images, no longer rendered
-  // directly). Postcards/Sell Sheets pairs reuse the exact same photos
-  // already downloaded for postcards'/sell-sheets' own EDDM cards; Half
-  // Folds pair downloaded fresh from 4over.com's own /direct-mail-services
-  // CDN images.
-  eddm: {
-    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
-    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
-    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
-    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
-    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
-    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
   },
   "table-covers": {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
@@ -1963,6 +1848,43 @@ export default async function PrintCategoryPage({
   // env vars aren't configured.
   const group = GROUPS[category]
   if (group) {
+    // 2026-07-11: Boss Dwayne explicit feedback — 4over.com's own
+    // /boxes-packaging page shows all 19 individual PRODUCTS directly in one
+    // flat grid (confirmed live), not 3 subcategory tiles requiring an extra
+    // click. Scoped to boxes-packaging only (the other 5 parent pages also
+    // do this on 4over.com, but weren't part of this specific request — see
+    // [[boxes-packaging-flat-listing]] memory for the full investigation).
+    // Each entry links to its own REAL existing page (Packaging/Hang Tags/
+    // Header Cards leaves already have correct data+images+pricing,
+    // verified in prior audits) — this is purely a landing-page shortcut,
+    // no new product data. Hang Tags' Plastic material is excluded: 4over's
+    // own flat listing doesn't include it either (matches their page
+    // exactly, not our full 12-type /print/hang-tags list).
+    const boxesPackagingFlatItems =
+      category === "boxes-packaging"
+        ? [
+            { name: "Business Card Boxes", href: "/print/packaging/business-card-boxes", image: "/images/cat/packaging/business-card-boxes.jpg" },
+            { name: "Roll End Tuck Top Boxes", href: "/print/packaging/roll-end-tuck-top-boxes", image: "/images/cat/packaging/tuck-top-boxes.jpg" },
+            { name: "Sales Presentation Boxes", href: "/print/packaging/sales-presentation-boxes", image: "/images/cat/packaging/sales-presentation-boxes.jpg" },
+            { name: "Golf Ball Boxes", href: "/print/packaging/golf-ball-boxes", image: "/images/cat/packaging/golf-ball-boxes.jpg" },
+            { name: "Wine Boxes", href: "/print/packaging/wine-boxes", image: "/images/cat/packaging/wine-boxes.jpg" },
+            { name: "Cube Boxes", href: "/print/packaging/cube-boxes", image: "/images/cat/packaging/cube-boxes.jpg" },
+            { name: "Print & Trim Boxes", href: "/print/packaging/print-trim-boxes", image: "/images/cat/packaging/print-trim-boxes.jpg" },
+            { name: "Dual Raised Hang Tags", href: "/print/hang-tags/dual-raised-hang-tags", image: "/images/cat/hang-tags/dual-raised.png" },
+            { name: "Pearl Hang Tags", href: "/print/hang-tags/pearl-hang-tags", image: "/images/cat/hang-tags/pearl.jpg" },
+            { name: "Silk Hang Tags", href: "/print/hang-tags/silk-hang-tags", image: "/images/cat/hang-tags/silk.jpg" },
+            { name: "Brown Kraft Hang Tags", href: "/print/hang-tags/brown-kraft-hang-tags", image: "/images/cat/hang-tags/brown-kraft.jpg" },
+            { name: "Bottleneck Hang Tags", href: "/print/hang-tags/bottleneck-hang-tags", image: "/images/cat/hang-tags/bottleneck.jpg" },
+            { name: "Suede Hang Tags", href: "/print/hang-tags/suede-hang-tags", image: "/images/cat/hang-tags/suede.jpg" },
+            { name: "Foil Worx Hang Tags", href: "/print/hang-tags/foil-worx-hang-tags", image: "/images/cat/hang-tags/foil-worx.jpg" },
+            { name: "Natural Hang Tags", href: "/print/hang-tags/natural-hang-tags", image: "/images/cat/hang-tags/natural.jpg" },
+            { name: "Regular Hang Tags", href: "/print/hang-tags/regular-hang-tags", image: "/images/cat/hang-tags/regular.jpg" },
+            { name: "Akuafoil Hang Tags", href: "/print/hang-tags/akuafoil-hang-tags", image: "/images/cat/hang-tags/akuafoil.jpg" },
+            { name: "Raised Spot UV Hang Tags", href: "/print/hang-tags/raised-spot-uv-hang-tags", image: "/images/cat/hang-tags/raised-spot-uv.jpg" },
+            { name: "Header Cards", href: "/print/header-cards", image: "/images/cat/header-cards.jpg" },
+          ]
+        : null
+
     return (
       <div className="min-h-screen bg-white">
         <div className="border-b border-slate-200 py-2 px-4">
@@ -1980,22 +1902,39 @@ export default async function PrintCategoryPage({
           <hr className="border-slate-200 mb-8" />
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
-            {group.subcategories.map((sub) => (
-              <div key={sub.slug} className="group text-center">
-                <Link href={`/print/${sub.slug}`}>
-                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
-                    <img src={sub.image} alt={sub.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            {boxesPackagingFlatItems
+              ? boxesPackagingFlatItems.map((item) => (
+                  <div key={item.href} className="group text-center">
+                    <Link href={item.href}>
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    </Link>
+                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{item.name}</h2>
+                    <Link
+                      href={item.href}
+                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+                    >
+                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    </Link>
                   </div>
-                </Link>
-                <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
-                <Link
-                  href={`/print/${sub.slug}`}
-                  className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                >
-                  View details <span className="text-base leading-none">&rsaquo;</span>
-                </Link>
-              </div>
-            ))}
+                ))
+              : group.subcategories.map((sub) => (
+                  <div key={sub.slug} className="group text-center">
+                    <Link href={`/print/${sub.slug}`}>
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
+                        <img src={sub.image} alt={sub.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    </Link>
+                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
+                    <Link
+                      href={`/print/${sub.slug}`}
+                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+                    >
+                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    </Link>
+                  </div>
+                ))}
           </div>
         </div>
       </div>

@@ -15,7 +15,9 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
   "flyers-and-brochures": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: ["flyer", "tear-off perforation"] },
     { uuid: "d3010094-1b2c-4a72-846e-47a0ba37a0b8", keyword: ["flyer", "brochure"] }, // EndurACE -- 0 live matches (account gap)
-    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "flyer" }, // EDDM Flyers -- see print/[category]/page.tsx's matching entry for why this is a single keyword, not ["flyer","brochure","half fold"]
+    // EDDM Flyers source removed entirely 2026-07-11 per Boss Dwayne's
+    // request -- see the "eddm" GROUPS removal comment in
+    // lib/print/categories.ts.
   ],
   "door-hangers": [
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "door hanger" },
@@ -130,7 +132,6 @@ const EXTRA_PRODUCT_SOURCES: Record<string, { uuid: string; keyword: string | st
     { uuid: "b151fc42-a248-40cd-99a9-b81e8f034e9e", keyword: "postcard" }, // Plastic
     { uuid: "19a9a6c8-a8c8-4d0c-b4fc-8a231c1bdd53", keyword: "postcard" }, // Magnets (Magnet Postcards)
     { uuid: "f3b51933-ab79-4073-a13d-de03a8cf5cb1", keyword: "postcard" }, // Tear Off Cards (Tearoff Postcards)
-    { uuid: "50a1f1a2-3567-4618-a703-074471472e8d", keyword: "postcard" }, // EDDM (EDDM variants)
   ],
   // Kept in sync with print/[category]/page.tsx's own EXTRA_PRODUCT_SOURCES["social-cards"].
   "social-cards": [
@@ -208,8 +209,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
   // and hosted locally, see that entry's comment for the full story.
   "postcards": {
     "all-inclusive-postcards": "/images/cat/postcards/all-inclusive.jpg",
-    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
-    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
     "dual-raised-rsvp-postcards": "/images/cat/postcards/dual-raised-rsvp.png",
     "dual-raised-postcards": "/images/cat/postcards/dual-raised.png",
     "raised-foil-postcards": "/images/cat/postcards/raised-foil.jpg",
@@ -263,10 +262,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "half-fold-brochures": "/images/cat/flyers-and-brochures/half-fold.jpg",
     "tearoff-flyers": "/images/cat/flyers-and-brochures/tearoff.jpg",
     "flat-flyers-brochures": "/images/cat/flyers-and-brochures/flat.jpg",
-    "eddm-full-service-flyers": "/images/cat/flyers-and-brochures/eddm-full-service.jpg",
-    "eddm-flyers-print-only": "/images/cat/flyers-and-brochures/eddm-print-only.jpg",
-    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
-    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
     "tri-fold-brochures": "/images/cat/flyers-and-brochures/tri-fold.jpg",
     "z-fold-brochures": "/images/cat/flyers-and-brochures/z-fold.jpg",
     "specialty-folds-brochures": "/images/cat/flyers-and-brochures/specialty-folds.jpg",
@@ -334,8 +329,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "silk-sell-sheets": "/images/cat/sell-sheets/silk.jpg",
     "suede-sell-sheets": "/images/cat/sell-sheets/suede.jpg",
     "standard-sell-sheets": "/images/cat/sell-sheets/common.jpg",
-    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
-    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
   },
   "table-tent-cards": {
     "natural-table-tents": "/images/cat/table-tent-cards/natural.jpg",
@@ -354,15 +347,6 @@ const TYPE_IMAGES: Record<string, Record<string, string>> = {
     "endurace-door-hangers": "/images/cat/door-hangers/endurace.jpg",
     "tearoff-door-hangers": "/images/cat/door-hangers/tearoff.jpg",
     "standard-door-hangers": "/images/cat/door-hangers/standard.jpg",
-  },
-  // Kept in sync with print/[category]/page.tsx's own TYPE_IMAGES.eddm.
-  eddm: {
-    "eddm-full-service-postcards": "/images/cat/postcards/eddm-full-service.jpg",
-    "eddm-print-only-postcards": "/images/cat/postcards/eddm-print-only.jpg",
-    "eddm-full-service-sell-sheets": "/images/cat/sell-sheets/eddm-full-service.jpg",
-    "eddm-print-only-sell-sheets": "/images/cat/sell-sheets/eddm-print-only.jpg",
-    "eddm-full-service-half-folds": "/images/cat/eddm/full-service-half-folds.jpg",
-    "eddm-print-only-half-folds": "/images/cat/eddm/print-only-half-folds.jpg",
   },
   "table-covers": {
     "table-cloths": "/images/cat/table-covers/table-cloth.jpg",
@@ -488,11 +472,8 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // true catch-all).
   "flyers-and-brochures": {
     "all-inclusive-flyers-brochures": ["all inclusive", "all-inclusive"],
-    // EDDM Full Service/Print Only Half-Folds removed (2026-07-09, account gap).
-    // "eddm-flyers-base" classifies the shared EDDM Flyers product pool for
-    // OPTION_PRESET_TYPES' 2 split cards (Full Service / Print Only) to draw
-    // from — see the matching comment in print/[category]/page.tsx.
-    "eddm-flyers-base": ["eddm"],
+    // EDDM Flyers removed entirely 2026-07-11 per Boss Dwayne's request --
+    // see the "eddm" GROUPS removal comment in lib/print/categories.ts.
     // "direct-mail-*" (6 entries) removed 2026-07-09: confirmed 0 live products
     // anywhere in this category contain "direct mail" text — account gap. The
     // "...coated" variant was additionally an ACTIVE bug (OR-matched "coated"
@@ -510,10 +491,8 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
   // order is critical: more specific keywords before broader ones.
   "postcards": {
     "all-inclusive-postcards": ["all inclusive", "all-inclusive"],
-    // "eddm-postcards-base" classifies the shared EDDM Postcards product pool
-    // (all 63 genuine EDDM postcards) for OPTION_PRESET_TYPES' 2 split cards
-    // (Full Service / Print Only) -- see matching comment in print/[category]/page.tsx.
-    "eddm-postcards-base": ["eddm"],
+    // EDDM Postcards removed entirely 2026-07-11 per Boss Dwayne's request --
+    // see the "eddm" GROUPS removal comment in lib/print/categories.ts.
     "dual-raised-rsvp-postcards": ["rsvp"],
     "dual-raised-postcards": ["dual raised"],
     "raised-foil-postcards": ["raised foil"],
@@ -640,7 +619,8 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "akuafoil-sell-sheets": ["akuafoil"],
     "brown-kraft-sell-sheets": ["brown kraft"],
     "endurace-sell-sheets": ["endurace"],
-    "eddm-sell-sheets-base": ["eddm"], // classifies the shared pool for OPTION_PRESET_TYPES' 2 split cards -- see matching TYPE_RULES comment in print/[category]/page.tsx
+    // EDDM Sell Sheets removed entirely 2026-07-11 per Boss Dwayne's request
+    // -- see the "eddm" GROUPS removal comment in lib/print/categories.ts.
     "pearl-sell-sheets": ["pearl"],
     "silk-sell-sheets": ["silk"],
     "suede-sell-sheets": ["suede"],
@@ -656,12 +636,6 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
     "door-hangers-tear-off": ["door hangers"],
     "flyers-tear-off": ["flyers"],
     "postcards-tear-off": [], // catch-all
-  },
-  // Kept in sync with print/[category]/page.tsx's own TYPE_RULES.eddm.
-  eddm: {
-    "eddm-postcards-base": ["postcards"],
-    "eddm-sell-sheets-base": ["sell sheets"],
-    "eddm-flyers-base": [], // catch-all
   },
   // "table cloth" not "tablethrow" — this file's targeted reconstruction
   // above (right before classification) already renamed the raw
@@ -787,32 +761,12 @@ const TYPE_KEYWORDS: Record<string, Record<string, string[]>> = {
 // Kept in sync with print/[category]/page.tsx's own OPTION_PRESET_TYPES —
 // see that map's comment for the full explanation.
 const OPTION_PRESET_TYPES: Record<string, { label: string; slug: string; baseSlug: string; optionGroupMatch: RegExp; optionMatch: RegExp }[]> = {
+  // EDDM presets removed entirely 2026-07-11 per Boss Dwayne's request -- see
+  // the "eddm" GROUPS removal comment in lib/print/categories.ts.
   "flyers-and-brochures": [
-    { label: "EDDM Full Service - Flyers", slug: "eddm-full-service-flyers", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Flyers - Print Only", slug: "eddm-flyers-print-only", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-    // Kept in sync with print/[category]/page.tsx's own comment -- 4over.com
-    // lists these as 2 more EDDM cards beyond the Flyers pair above.
-    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
     { label: "Tri Fold Brochures", slug: "tri-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Tri-Fold/i },
     { label: "Z Fold Brochures", slug: "z-fold-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /^Z-Fold/i },
     { label: "Specialty Folds Brochures", slug: "specialty-folds-brochures", baseSlug: "flat-flyers-brochures", optionGroupMatch: /folding/i, optionMatch: /gatefold|french fold|roll fold|parallel fold|half-fold and then/i },
-  ],
-  postcards: [
-    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-  ],
-  "sell-sheets": [
-    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-  ],
-  eddm: [
-    { label: "EDDM Full Service Postcards", slug: "eddm-full-service-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Postcards Print Only", slug: "eddm-print-only-postcards", baseSlug: "eddm-postcards-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-    { label: "EDDM Full Service Sell Sheets", slug: "eddm-full-service-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Sell Sheets Print Only", slug: "eddm-print-only-sell-sheets", baseSlug: "eddm-sell-sheets-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
-    { label: "EDDM Full Service - Half Folds", slug: "eddm-full-service-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Full Service$/i },
-    { label: "EDDM Print Only - Half Folds", slug: "eddm-print-only-half-folds", baseSlug: "eddm-flyers-base", optionGroupMatch: /eddm service/i, optionMatch: /^Print Only$/i },
   ],
 }
 
@@ -843,16 +797,7 @@ const TYPE_LABELS: Record<string, string> = {
   "flat-flyers-brochures": "Flat Flyers Brochures",
   "half-fold-brochures": "Half Fold Brochures",
   "tearoff-flyers": "Tearoff Flyers",
-  "eddm-full-service-flyers": "EDDM Full Service - Flyers",
-  "eddm-flyers-print-only": "EDDM Flyers - Print Only",
-  "eddm-full-service-sell-sheets": "EDDM Full Service Sell Sheets",
-  "eddm-print-only-sell-sheets": "EDDM Sell Sheets Print Only",
-  "eddm-full-service-half-folds": "EDDM Full Service - Half Folds",
-  "eddm-print-only-half-folds": "EDDM Print Only - Half Folds",
   "all-inclusive-postcards": "All-Inclusive Postcards",
-  "eddm-full-service-postcards": "EDDM Full Service Postcards",
-  "eddm-print-only-postcards": "EDDM Postcards Print Only",
-  "eddm-postcards": "EDDM Postcards",
   "dual-raised-rsvp-postcards": "Dual Raised RSVP",
   "dual-raised-postcards": "Dual Raised Postcards",
   "raised-foil-postcards": "Raised Foil Postcards",
@@ -980,8 +925,6 @@ const TYPE_LABELS: Record<string, string> = {
   "door-hangers-tear-off": "Door Hangers with Tear-Off Perforation",
   "flyers-tear-off": "Flyers with Tear-Off Perforation",
   "postcards-tear-off": "Postcards with Tear-Off Perforation",
-  "eddm-sell-sheets": "EDDM Sell Sheets",
-  "eddm-flyers": "EDDM Flyers",
   "trading-cards": "Trading Cards",
   "table-cloths": "Tablecloths",
   "table-runners": "Table Runners",
