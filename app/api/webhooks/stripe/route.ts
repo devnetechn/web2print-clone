@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { stripe } from "@/lib/stripe"
 import { headers } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
@@ -16,7 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
   }
 
-  const supabase = await createClient()
+  // Stripe's server-to-server request carries no Supabase session cookie, so
+  // the cookie-bound client (createClient) would run as anonymous and RLS
+  // would silently drop these updates (0 rows affected, no error). The
+  // signature check above is the actual auth boundary here, so the admin
+  // client is the correct one to use.
+  const supabase = createAdminClient()
 
   try {
     switch (event.type) {
