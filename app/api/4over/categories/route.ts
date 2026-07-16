@@ -15,6 +15,7 @@ export async function GET(request: Request) {
         offset ? parseInt(offset) : 0
       )
       return NextResponse.json({
+        
         max: max ? parseInt(max) : 100,
         offset: offset ? parseInt(offset) : 0,
         ...result

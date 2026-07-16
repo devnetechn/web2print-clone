@@ -9,7 +9,7 @@ VALUES
 ('roll-labels',
  'Roll Labels offer full-color impact that sticks around. Perfect for a variety of packaging and promotional needs, our Roll Labels have a permanent adhesive that sticks to many different surfaces. Use as content labels, print labels, packaging seals, and more. White ink is offered as a fifth color option on Clear BOPP and bright silver metallic substrates.'),
 
-('stickers',
+('stickers', 
  'Our Custom Stickers have a permanent adhesive on paper material with slit backing—easy to peel and stick on a variety of clean flat surfaces. Ideal for use as product labels, box and envelope seals, and promotional campaigns. Add Akuafoil to achieve glittering multi-color foils for high-end appeal!'),
 
 -- Promo Products
