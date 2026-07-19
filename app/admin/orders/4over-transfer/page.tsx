@@ -1,19 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Send, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+
+type PaymentProfile = {
+  profile_token: string
+  last_four: string
+  valid_thru?: string
+  type: string
+}
 
 export default function FourOverTransferPage() {
   const [orderId, setOrderId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [profiles, setProfiles] = useState<PaymentProfile[]>([])
+  const [profilesLoading, setProfilesLoading] = useState(true)
+  const [profilesError, setProfilesError] = useState<string | null>(null)
+  const [selectedProfileToken, setSelectedProfileToken] = useState("")
   const { toast } = useToast()
+
+  const fetchProfiles = async () => {
+    setProfilesLoading(true)
+    setProfilesError(null)
+    try {
+      const response = await fetch("/api/print-providers/4over/payment-profiles")
+      const data = await response.json()
+      if (response.ok) {
+        setProfiles(data.profiles || [])
+      } else {
+        setProfilesError(data.error || "Failed to load payment profiles")
+      }
+    } catch {
+      setProfilesError("Failed to load payment profiles")
+    } finally {
+      setProfilesLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchProfiles()
+  }, [])
 
   const handleSubmitOrder = async () => {
     if (!orderId) {
@@ -25,13 +59,22 @@ export default function FourOverTransferPage() {
       return
     }
 
+    if (!selectedProfileToken) {
+      toast({
+        title: "Error",
+        description: "Please select a payment profile",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       const response = await fetch("/api/print-providers/4over/submit-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
+        body: JSON.stringify({ orderId, profileToken: selectedProfileToken }),
       })
 
       const data = await response.json()
@@ -42,6 +85,7 @@ export default function FourOverTransferPage() {
           description: `Order submitted to 4over. Order ID: ${data.fourOverOrderId}`,
         })
         setOrderId("")
+        setSelectedProfileToken("")
       } else {
         toast({
           title: "Error",
@@ -133,7 +177,36 @@ export default function FourOverTransferPage() {
                 onChange={(e) => setOrderId(e.target.value)}
                 className="mb-4"
               />
-              <Button onClick={handleSubmitOrder} disabled={isSubmitting} className="w-full gap-2">
+
+              {profilesError ? (
+                <div className="mb-4 flex items-center justify-between rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                  <span>{profilesError}</span>
+                  <Button variant="outline" size="sm" onClick={fetchProfiles}>
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                <Select value={selectedProfileToken} onValueChange={setSelectedProfileToken} disabled={profilesLoading}>
+                  <SelectTrigger className="w-full mb-4">
+                    <SelectValue placeholder={profilesLoading ? "Loading cards..." : "Select a payment profile"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {profiles.map((p) => (
+                      <SelectItem key={p.profile_token} value={p.profile_token}>
+                        {p.type} •••• {p.last_four}
+                        {p.valid_thru ? ` — exp ${p.valid_thru}` : ""}
+                        {p.type === "Dummy" ? " (Test)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              <Button
+                onClick={handleSubmitOrder}
+                disabled={isSubmitting || !orderId || !selectedProfileToken || profilesLoading || !!profilesError}
+                className="w-full gap-2"
+              >
                 <Send className="h-4 w-4" />
                 {isSubmitting ? "Submitting..." : "Submit to 4over"}
               </Button>
