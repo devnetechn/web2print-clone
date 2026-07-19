@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { getProductFeed, getAllProductsForCategory, getCategoryProductsList } from "@/lib/4over/client"
 import { ProductConfiguratorClient } from "@/components/print/product-configurator-client"
@@ -1868,11 +1869,14 @@ export default async function ProductTypePage({
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
-                <img
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
+                <Image
                   src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
                   alt={productName}
-                  className="w-full h-full object-contain"
+                  fill
+                  sizes="360px"
+                  priority
+                  className="object-contain"
                 />
               </div>
               <div className="mt-6">
@@ -2373,11 +2377,14 @@ export default async function ProductTypePage({
           <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image + info tabs */}
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200">
-                <img
+              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
+                <Image
                   src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
                   alt={typeLabel}
-                  className="w-full h-full object-contain"
+                  fill
+                  sizes="360px"
+                  priority
+                  className="object-contain"
                 />
               </div>
               <div className="mt-6">

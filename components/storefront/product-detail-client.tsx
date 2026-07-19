@@ -16,6 +16,7 @@ import {
   ChevronDown, ChevronUp, ArrowRight
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 type Product = {
   id: string
@@ -260,9 +261,16 @@ export function ProductDetailClient({ product, options }: { product: Product; op
             {/* Product Image */}
             <Card>
               <CardContent className="p-4">
-                <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center overflow-hidden">
+                <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center overflow-hidden relative">
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="h-full w-full object-contain" />
+                    <Image
+                      src={product.image_url}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                      priority
+                      className="object-contain"
+                    />
                   ) : (
                     <Package className="h-24 w-24 text-slate-300" />
                   )}

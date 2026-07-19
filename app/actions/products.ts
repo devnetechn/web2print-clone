@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 type ProductData = {
   id?: string
@@ -57,6 +57,7 @@ export async function saveProduct(data: ProductData) {
 
   revalidatePath("/admin/products")
   revalidatePath("/products")
+  revalidateTag("products")
 }
 
 export async function deleteProduct(id: string) {
@@ -68,6 +69,7 @@ export async function deleteProduct(id: string) {
 
   revalidatePath("/admin/products")
   revalidatePath("/products")
+  revalidateTag("products")
 }
 
 export async function toggleProductStatus(id: string, isActive: boolean) {
@@ -82,4 +84,5 @@ export async function toggleProductStatus(id: string, isActive: boolean) {
 
   revalidatePath("/admin/products")
   revalidatePath("/products")
+  revalidateTag("products")
 }

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getAllProductsForCategory } from "@/lib/4over/client"
@@ -1906,8 +1907,14 @@ export default async function PrintCategoryPage({
               ? boxesPackagingFlatItems.map((item) => (
                   <div key={item.href} className="group text-center">
                     <Link href={item.href}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
                     </Link>
                     <h2 className="text-sm font-semibold text-slate-900 mb-3">{item.name}</h2>
@@ -1922,8 +1929,14 @@ export default async function PrintCategoryPage({
               : group.subcategories.map((sub) => (
                   <div key={sub.slug} className="group text-center">
                     <Link href={`/print/${sub.slug}`}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
-                        <img src={sub.image} alt={sub.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                        <Image
+                          src={sub.image}
+                          alt={sub.name}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
                     </Link>
                     <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
@@ -2143,11 +2156,13 @@ export default async function PrintCategoryPage({
             {sortedTypes.map(({ rule, image }) => (
               <div key={rule.slug} className="group text-center">
                 <Link href={`/print/${category}/${rule.slug}`}>
-                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
-                    <img
+                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                    <Image
                       src={image}
                       alt={rule.label}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                 </Link>
@@ -2306,11 +2321,13 @@ export default async function PrintCategoryPage({
                 return (
                   <div key={product.product_uuid} className="group text-center">
                     <Link href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden">
-                        <img
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                        <Image
                           src={resolveProductImage(category, product.product_description, leaf.image)}
                           alt={product.product_description}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     </Link>
