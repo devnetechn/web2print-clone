@@ -1,5 +1,5 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server"
-import { submitOrder, attachFilesToJob, getPaymentProfiles, type FourOverJob } from "@/lib/4over/client"
+import { submitOrder, attachFilesToJob, type FourOverJob } from "@/lib/4over/client"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { orderId } = body
+    const { orderId, profileToken } = body
 
     const admin = createAdminClient()
 
@@ -106,10 +106,8 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const profilesResult = await getPaymentProfiles()
-    const profileToken = profilesResult.data?.entities?.[0]?.profile_token
     if (!profileToken) {
-      return NextResponse.json({ error: "No 4over payment profile is configured" }, { status: 502 })
+      return NextResponse.json({ error: "No payment profile selected" }, { status: 400 })
     }
 
     const result = await submitOrder({
