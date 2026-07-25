@@ -31,3 +31,6 @@ next-env.d.ts
 .playwright-mcp/
 /*.png
 ~$*
+
+# Claude Code local tooling
+.claude/
