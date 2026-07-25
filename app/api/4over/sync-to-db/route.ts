@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { 
-  getCategories, 
+import { createClient, requireAdmin } from "@/lib/supabase/server"
+import {
+  getCategories,
   getAllProducts as get4overProducts,
   getProductOptionGroups,
-  getProductBasePrices 
+  getProductBasePrices
 } from "@/lib/4over/client"
 
 // Sync 4over products to Supabase database
 export async function POST(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     const supabase = await createClient()
-    
+
+
     // Step 1: Fetch categories from 4over
     console.log("[v0] Fetching 4over categories...")
     const categoriesResult = await getCategories()

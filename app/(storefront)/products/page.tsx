@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import Image from "next/image"
+import { getActiveProducts } from "@/lib/products/cache"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -41,27 +42,13 @@ const subcategoryIcons: Record<string, any> = {
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ category?: string; parent?: string; search?: string }> }) {
   const params = await searchParams
-  const supabase = await createClient()
 
-  let query = supabase.from("products").select("*").eq("is_active", true).order("category").order("name")
-
-  if (params.category) {
-    query = query.eq("category", params.category)
-  }
-
-  if (params.search) {
-    query = query.ilike("name", `%${params.search}%`)
-  }
-
-  const { data: products } = await query
-
-  // Get unique subcategories from DB
-  const { data: allCategories } = await supabase
-    .from("products")
-    .select("category")
-    .eq("is_active", true)
-
-  const subcategories = [...new Set(allCategories?.map((c) => c.category).filter(Boolean))] as string[]
+  const allProducts = await getActiveProducts()
+  const products = allProducts.filter((p) => {
+    if (params.category && p.category !== params.category) return false
+    if (params.search && !p.name?.toLowerCase().includes(params.search.toLowerCase())) return false
+    return true
+  })
 
   // Group products by subcategory
   const productsBySubcategory: Record<string, any[]> = {}
@@ -346,10 +333,12 @@ function ProductCard({ product }: { product: any }) {
         <CardContent className="p-3">
           <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden relative">
             {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.name} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                className="object-cover group-hover:scale-105 transition-transform"
               />
             ) : (
               <IconComponent className="h-12 w-12 text-slate-300 group-hover:text-primary/50 transition-colors" />

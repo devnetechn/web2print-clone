@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server"
-import { 
-  getCategories, 
+import {
+  getCategories,
   getAllProducts,
   getProductOptionGroups,
   getProductBasePrices
 } from "@/lib/4over/client"
+import { requireAdmin } from "@/lib/supabase/server"
 
 // Fetch all 4over data and return organized structure
 export async function GET(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   const { searchParams } = new URL(request.url)
   const maxPages = parseInt(searchParams.get("pages") || "20") // Get up to 20 pages by default
-  
+
   try {
     // Step 1: Get ALL categories (paginated)
     const allCategories: any[] = []

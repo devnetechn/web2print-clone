@@ -62,6 +62,7 @@ const navigation = [
     icon: Truck,
     children: [
       { name: "Dashboard", href: "/admin/4over" },
+      { name: "Workflow Dashboard", href: "/admin/4over/workflow" },
       { name: "4over Orders", href: "/admin/4over/orders" },
       { name: "Product Catalog", href: "/admin/4over/products" },
     ],

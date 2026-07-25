@@ -3,11 +3,12 @@ import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, MapPin, CreditCard, FileText, Printer, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { OrderStatusCard } from "@/components/admin/order-status-card"
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
 
   const { data: order } = await supabase
@@ -28,7 +29,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
       )
     `,
     )
-    .eq("id", params.id)
+    .eq("id", id)
     .single()
 
   if (!order) {
@@ -46,12 +47,12 @@ export default async function OrderDetailPage({ params }: { params: { id: string
       )
     `,
     )
-    .eq("order_id", params.id)
+    .eq("order_id", id)
 
   const { data: statusLogs } = await supabase
     .from("order_status_logs")
     .select("*")
-    .eq("order_id", params.id)
+    .eq("order_id", id)
     .order("created_at", { ascending: false })
 
   return (
@@ -71,9 +72,12 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Print Invoice</Button>
-          <Button variant="outline">Send Email</Button>
-          <Button>Process Order</Button>
+          <Button variant="outline" asChild>
+            <Link href={`/admin/orders/${order.id}/invoice`}>Print Invoice</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/admin/orders/4over-transfer">Submit to 4over</Link>
+          </Button>
         </div>
       </div>
 
@@ -89,10 +93,18 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {orderItems?.map((item) => (
+                {orderItems?.map((item) => {
+                  const isPreviewableImage = item.design_file_url && /\.(jpe?g|png|gif|webp)(\?|$)/i.test(item.design_file_url)
+                  const opts = (item.options && typeof item.options === "object" ? item.options : {}) as Record<string, unknown>
+                  const optionSummary = [opts.size, opts.colorspec, opts.turnaround].filter(Boolean).join(" • ")
+                  return (
                   <div key={item.id} className="flex gap-4 rounded-lg border p-4">
-                    <div className="flex h-20 w-20 items-center justify-center rounded bg-slate-100">
-                      {item.products?.image_url ? (
+                    <div className="flex h-20 w-20 items-center justify-center rounded bg-slate-100 overflow-hidden shrink-0">
+                      {isPreviewableImage ? (
+                        <img src={item.design_file_url} alt={item.product_name} className="h-full w-full object-cover" />
+                      ) : item.design_file_url ? (
+                        <FileText className="h-8 w-8 text-slate-400" />
+                      ) : item.products?.image_url ? (
                         <img
                           src={item.products.image_url || "/placeholder.svg"}
                           alt={item.product_name}
@@ -105,10 +117,17 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                     <div className="flex-1">
                       <h3 className="font-medium">{item.product_name}</h3>
                       <p className="text-sm text-slate-600">Quantity: {item.quantity}</p>
-                      {item.options && (
-                        <p className="text-sm text-slate-600">
-                          Options: {typeof item.options === "object" ? JSON.stringify(item.options) : item.options}
-                        </p>
+                      {optionSummary && <p className="text-sm text-slate-600">{optionSummary}</p>}
+                      {item.design_file_url && (
+                        <a
+                          href={item.design_file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          View artwork
+                        </a>
                       )}
                       {item.print_provider && (
                         <Badge variant="outline" className="mt-2">
@@ -122,7 +141,8 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                       <p className="text-sm text-slate-600">${Number(item.unit_price).toFixed(2)} each</p>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="mt-6 space-y-2 border-t pt-4">
@@ -187,37 +207,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Order Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium">Current Status</label>
-                <Select defaultValue={order.status}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="production">Production</SelectItem>
-                    <SelectItem value="shipped">Shipped</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium">Payment Status</label>
-                <Badge variant={order.payment_status === "paid" ? "default" : "destructive"} className="capitalize">
-                  {order.payment_status}
-                </Badge>
-              </div>
-              <Button className="w-full">Update Status</Button>
-            </CardContent>
-          </Card>
+          <OrderStatusCard orderId={order.id} initialStatus={order.status} initialPaymentStatus={order.payment_status} />
 
           {/* Customer Info */}
           <Card>
@@ -233,16 +223,41 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                 <p className="text-slate-600">{order.customer_email}</p>
                 {order.profiles?.phone && <p className="text-slate-600">{order.profiles.phone}</p>}
               </div>
-              {order.shipping_address && (
+              {order.shipping_address?.method === "multiple" ? (
                 <div>
-                  <p className="mb-1 font-medium">Shipping Address</p>
+                  <p className="mb-1 font-medium">Shipping Addresses ({order.shipping_address.addresses?.length})</p>
+                  <div className="space-y-2">
+                    {order.shipping_address.addresses?.map((addr: any, i: number) => (
+                      <div key={i} className="border-l-2 border-slate-200 pl-2">
+                        <p className="text-slate-900">
+                          {addr.firstName} {addr.lastName} — {Number(addr.quantity).toLocaleString()} units
+                        </p>
+                        <p className="text-slate-600">
+                          {addr.address}, {addr.city}, {addr.state} {addr.postalCode}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : order.shipping_address?.method === "pickup" ? (
+                <div>
+                  <p className="mb-1 font-medium">Pickup</p>
+                  <p className="text-slate-600">{order.shipping_address.location}</p>
                   <p className="text-slate-600">
-                    {typeof order.shipping_address === "object" && order.shipping_address !== null
-                      ? JSON.stringify(order.shipping_address)
-                      : order.shipping_address}
+                    {order.shipping_address.firstName} {order.shipping_address.lastName} •{" "}
+                    {order.shipping_address.mobileNumber}
                   </p>
                 </div>
-              )}
+              ) : order.shipping_address ? (
+                <div>
+                  <p className="mb-1 font-medium">Shipping Address</p>
+                  <p className="text-slate-600">{order.shipping_address.name}</p>
+                  <p className="text-slate-600">
+                    {order.shipping_address.address}, {order.shipping_address.city}, {order.shipping_address.state}{" "}
+                    {order.shipping_address.postalCode}
+                  </p>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 

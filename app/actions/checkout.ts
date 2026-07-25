@@ -32,7 +32,11 @@ export async function createCheckoutSession(items: {
   return session.client_secret
 }
 
-export async function createSimpleCheckoutSession(totalInCents: number, description: string = "Print Order") {
+export async function createSimpleCheckoutSession(
+  totalInCents: number,
+  description: string = "Print Order",
+  customerEmail?: string,
+) {
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
     redirect_on_completion: "never",
@@ -49,6 +53,10 @@ export async function createSimpleCheckoutSession(totalInCents: number, descript
       },
     ],
     mode: "payment",
+    // Pre-fills Stripe's own email field; shipping/billing address is
+    // already collected on the Shipping step, so it's deliberately NOT
+    // requested again here via shipping_address_collection.
+    ...(customerEmail ? { customer_email: customerEmail } : {}),
   })
 
   return session.client_secret

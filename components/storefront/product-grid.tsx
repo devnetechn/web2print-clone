@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Package } from "lucide-react"
@@ -30,12 +31,14 @@ export function ProductGrid({ products }: { products: Product[] }) {
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => (
         <Card key={product.id} className="overflow-hidden transition-shadow hover:shadow-lg">
-          <div className="aspect-square bg-slate-100">
+          <div className="aspect-square bg-slate-100 relative">
             {product.image_url ? (
-              <img
-                src={product.image_url || "/placeholder.svg"}
+              <Image
+                src={product.image_url}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                fill
+                sizes="(max-width: 640px) 50vw, 33vw"
+                className="object-cover"
               />
             ) : (
               <div className="flex h-full items-center justify-center">

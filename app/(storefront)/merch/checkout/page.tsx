@@ -14,7 +14,10 @@ import { Separator } from "@/components/ui/separator"
 import { ChevronLeft, Truck, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+// Guard: only initialize Stripe if a publishable key is configured, so an empty
+// NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY doesn't crash the page during local testing.
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 function CheckoutInner() {
   const params = useSearchParams()
@@ -202,7 +205,7 @@ function CheckoutInner() {
 
           {/* RIGHT: Stripe Embedded Checkout */}
           <div className="md:col-span-3">
-            {ready ? (
+            {ready && stripePromise ? (
               <Card className="overflow-hidden">
                 <CardContent className="p-0">
                   <EmbeddedCheckoutProvider
@@ -212,6 +215,14 @@ function CheckoutInner() {
                     <EmbeddedCheckout />
                   </EmbeddedCheckoutProvider>
                 </CardContent>
+              </Card>
+            ) : ready && !stripePromise ? (
+              <Card className="flex items-center justify-center min-h-[400px] border-dashed">
+                <div className="text-center text-slate-400">
+                  <AlertCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p className="font-medium text-slate-600">Payments are not configured</p>
+                  <p className="text-sm">Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to enable checkout</p>
+                </div>
               </Card>
             ) : (
               <Card className="flex items-center justify-center min-h-[400px] border-dashed">

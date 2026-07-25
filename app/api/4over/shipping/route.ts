@@ -76,29 +76,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: result.error }, { status: 500 })
     }
     
-    // Parse the response and return formatted shipping options
+    // Parse the response. 4over nests the options under
+    // data.job.facilities[].shipping_options[] with fields service_code,
+    // service_name, service_price, in_hand_delivery, shipping_time.
     const data = result.data
-    
-    // Response format from 4over includes:
-    // - box_weight, box_count, box_length, box_width, box_height
-    // - shipping_options array with carrier_name, service_name, shipping_price, delivery_days, ship_from_facility
-    
-    const shippingOptions = data.shipping_options?.map((opt: any) => ({
-      carrier: opt.carrier_name || opt.carrier || "Standard",
-      service: opt.service_name || opt.service || "Ground",
-      price: parseFloat(opt.shipping_price || opt.price || "0"),
-      estimatedDays: parseInt(opt.delivery_days || "5"),
-      facility: opt.ship_from_facility || opt.facility,
-      uuid: opt.shipping_option_uuid
-    })) || []
-    
-    return NextResponse.json({ 
+    const job = data?.job || data
+    const facilities: any[] = job?.facilities || []
+
+    const shippingOptions = facilities.flatMap((f: any) =>
+      (f.shipping_options || []).map((opt: any) => ({
+        code: opt.service_code || opt.shipping_code,
+        service: opt.service_name || opt.carrier_name || "Shipping",
+        price: parseFloat(opt.service_price || opt.shipping_price || opt.price || "0"),
+        inHandDate: opt.in_hand_delivery || null,
+        estimatedDays: parseInt(opt.shipping_time || opt.delivery_days || "0") || null,
+        facility: f.address?.code || f.ship_from_facility || null,
+      })),
+    )
+
+    // De-duplicate by service code, keeping the cheapest, and sort by price.
+    const byCode = new Map<string, any>()
+    for (const o of shippingOptions) {
+      const key = o.code || o.service
+      if (!byCode.has(key) || o.price < byCode.get(key).price) byCode.set(key, o)
+    }
+    const options = [...byCode.values()].sort((a, b) => a.price - b.price)
+
+    return NextResponse.json({
       success: true,
-      box_weight: data.box_weight,
-      box_count: data.box_count,
-      options: shippingOptions,
-      shipping_options: data.shipping_options, // Raw response
-      data: data
+      box_weight: job?.product_info?.box_weight,
+      box_count: job?.product_info?.box_count,
+      options,
     })
   } catch (error) {
     console.error("Shipping quote error:", error)

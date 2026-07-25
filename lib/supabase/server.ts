@@ -29,3 +29,22 @@ export function createAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 }
+
+// Server Actions are directly callable endpoints regardless of which page
+// imports them - a logged-in customer can invoke an "admin" action just by
+// knowing its name unless the action itself checks is_admin. This is that
+// check, meant to be the first line of every admin-only action.
+export async function requireAdmin(): Promise<
+  { user: { id: string; email?: string }; error: null } | { user: null; error: string }
+> {
+  const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) {
+    return { user: null, error: "Not logged in" }
+  }
+  const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", userData.user.id).single()
+  if (!profile?.is_admin) {
+    return { user: null, error: "Forbidden: admin access required" }
+  }
+  return { user: userData.user, error: null }
+}

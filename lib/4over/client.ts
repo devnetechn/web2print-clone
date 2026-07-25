@@ -1,8 +1,22 @@
 import { createHmac, createHash } from "crypto"
 
-const FOUROVER_PUBLIC_KEY = process.env.FOUROVER_PUBLIC_KEY || "web2printusa"
-const FOUROVER_PRIVATE_KEY = process.env.FOUROVER_API_SECRET || "3KHNXZFZ"
+// Base URL is not a secret, so a sensible default is fine.
 const FOUROVER_BASE_URL = process.env.FOUROVER_API_URL || "https://api.4over.com"
+
+// Credentials are resolved at call time (not at import time) so a missing
+// env var fails the actual request with a clear error instead of crashing the
+// build or a module import. No hardcoded fallback keys — secrets must come from
+// the environment only (.env.local locally, project env vars in production).
+function getCredentials(): { publicKey: string; privateKey: string } {
+  const publicKey = process.env.FOUROVER_PUBLIC_KEY
+  const privateKey = process.env.FOUROVER_API_SECRET
+  if (!publicKey || !privateKey) {
+    throw new Error(
+      "Missing 4over credentials. Set FOUROVER_PUBLIC_KEY and FOUROVER_API_SECRET in your environment (.env.local or your hosting provider's env vars).",
+    )
+  }
+  return { publicKey, privateKey }
+}
 
 interface FourOverResponse<T> {
   success: boolean
@@ -14,9 +28,10 @@ interface FourOverResponse<T> {
 // Per docs: hash_hmac("sha256", HTTP_METHOD, hash('sha256', $privateKey))
 // PHP hash_hmac(algo, data, key) -> Node createHmac(algo, key).update(data)
 function generateSignature(httpMethod: string): string {
+  const { privateKey } = getCredentials()
   const upperMethod = httpMethod.toUpperCase()
   // First: hash the private key with SHA256
-  const hashedPrivateKey = createHash("sha256").update(FOUROVER_PRIVATE_KEY).digest("hex")
+  const hashedPrivateKey = createHash("sha256").update(privateKey).digest("hex")
   // Then: HMAC-SHA256 with HTTP method as the data, hashed private key as the key
   const signature = createHmac("sha256", hashedPrivateKey).update(upperMethod).digest("hex")
   return signature
@@ -24,17 +39,19 @@ function generateSignature(httpMethod: string): string {
 
 // Generate authentication query string for GET/DELETE requests
 function getAuthParams(httpMethod: string = "GET"): string {
+  const { publicKey } = getCredentials()
   const signature = generateSignature(httpMethod)
-  return `apikey=${FOUROVER_PUBLIC_KEY}&signature=${signature}`
+  return `apikey=${publicKey}&signature=${signature}`
 }
 
 // Generate auth headers for POST/PUT/PATCH requests
 function getAuthHeaders(httpMethod: string = "POST"): Record<string, string> {
+  const { publicKey } = getCredentials()
   const signature = generateSignature(httpMethod)
   return {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "publicapikey": FOUROVER_PUBLIC_KEY,
+    "publicapikey": publicKey,
     "signature": signature,
   }
 }
@@ -209,6 +226,31 @@ export async function getProducts(categoryId: string, max: number = 100, offset:
     }
     const data = await response.json()
     return { success: true, data }
+  } catch (error) {
+    return { success: false, error: String(error) }
+  }
+}
+
+// Get ALL products for one category (loops pages) — some categories (e.g.
+// Custom Boxes: 792 products) exceed a single max=200 page, silently hiding
+// everything past the cutoff (entire coating variants missing) if callers use
+// a single getProducts() call instead.
+export async function getAllProductsForCategory(categoryId: string): Promise<FourOverResponse<{ entities: any[] }>> {
+  try {
+    const all: any[] = []
+    let offset = 0
+    const max = 200
+    while (true) {
+      const result = await getProducts(categoryId, max, offset)
+      if (!result.success) return { success: false, error: result.error }
+      const entities = result.data?.entities || result.data || []
+      if (entities.length === 0) break
+      all.push(...entities)
+      if (entities.length < max) break
+      offset += max
+      if (offset > 5000) break // safety limit
+    }
+    return { success: true, data: { entities: all } }
   } catch (error) {
     return { success: false, error: String(error) }
   }
@@ -423,6 +465,17 @@ export async function getCategoryProductsList(params: CategoryProductsListParams
       {
         method: "GET",
         headers: { "Accept": "application/json" },
+        // Pure catalog structure (which sizes/stocks/coatings/products
+        // exist for a category) — no pricing fields, so caching is safe.
+        // This call is the dominant cost of every product page: the
+        // server-side anchor resolution alone fires 3-4 sequential rounds
+        // of it (confirmed ~350-950ms each against 4over's sandbox), and
+        // the client's live Size/Stock/Coating cascade calls it again on
+        // every selection change. A 1-hour cache turns repeat hits (same
+        // category+size+stock+coating combo, common across visitors AND
+        // across the anchor probe's own near-duplicate calls) into
+        // near-instant responses instead of round-tripping every time.
+        next: { revalidate: 3600 },
       }
     )
     if (!response.ok) {
@@ -746,7 +799,14 @@ export interface FourOverJob {
   colorspec_uuid: string
   option_uuids: string[] // Required but can be empty array
   dropship: boolean
+  // Verified against the live sandbox: required at the job's top level (a
+  // job_name nested under `files` alone is NOT enough - 4over returns a
+  // "Job Name missing" 409 without this).
+  job_name: string
   sets?: number // For group shipping - multiple sets with different files
+  // Submitting `files` inline on the job 500s on 4over's sandbox regardless
+  // of shape. skip_files: true + a separate POST /jobs/{id}/files call via
+  // attachFilesToJob() after the order succeeds is the path that works.
   skip_files?: boolean // If true, files can be submitted later
   files?: {
     [setKey: string]: { // e.g. "set_001", "set_002"
@@ -799,6 +859,10 @@ export interface FourOverJob {
 }
 
 // Submit order to 4over - POST /orders
+// Verified against the live sandbox: omitting `payment` gets the order
+// rejected with "You must post a payment at the time of order" even when
+// is_test_order is true, so despite being typed optional it's effectively
+// required - call getPaymentProfiles() for a profile_token first.
 export async function submitOrder(orderData: {
   order_id: string // Customer's order ID (required)
   is_test_order?: boolean // Test orders don't go to production
@@ -939,6 +1003,7 @@ export const fourOverClient = {
   getAllProductsPaginated,
   getAllProductsByCategory,
   getProducts,
+  getAllProductsForCategory,
   getProductOptionGroups,
   getProductBasePrices,
   getProductColorspecs,

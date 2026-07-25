@@ -1,10 +1,15 @@
-import { createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient, requireAdmin } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import { fourOverClient } from "@/lib/4over/client"
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 export async function POST(request: Request) {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
     // Use admin client with service role key for bulk inserts
     const supabase = createAdminClient()

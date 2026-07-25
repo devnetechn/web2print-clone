@@ -1,18 +1,33 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { requireAdmin } from "@/lib/supabase/server"
 
-// Use Supabase service role for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-)
+// This route must never be statically evaluated at build time.
+export const dynamic = "force-dynamic"
+
+// Create the service-role client lazily (inside the handlers) instead of at
+// module scope. Instantiating it at import time made the Next.js build fail to
+// "collect page data" because createClient throws when the env vars are absent
+// during the build.
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  )
+}
 
 export async function POST() {
+  const { user, error: authError } = await requireAdmin()
+  if (!user) {
+    return NextResponse.json({ error: authError }, { status: authError === "Not logged in" ? 401 : 403 })
+  }
+
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     // Execute each SQL statement separately using Supabase's rpc or direct query
     // Since Supabase JS client can't run raw DDL, we'll use the REST API
-    
+
     const statements = [
       // Drop existing tables
       `DROP TABLE IF EXISTS fourover_sync_status CASCADE`,
@@ -159,6 +174,7 @@ export async function POST() {
 export async function GET() {
   // Check if tables exist and their row counts
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const tables = ['fourover_categories', 'fourover_products', 'fourover_option_groups', 'fourover_base_prices', 'fourover_sync_status']
     const result: Record<string, { exists: boolean; count: number }> = {}
     let anyExists = false

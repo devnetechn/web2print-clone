@@ -1,6 +1,7 @@
-import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
+import { getActiveProducts } from "@/lib/products/cache"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -44,61 +45,40 @@ export default async function CategoryPage({
 }) {
   const { slug } = await params
   const { sort = "name", view = "grid" } = await searchParams
-  const supabase = await createClient()
 
   // Convert slug to category name (e.g., "business-cards" -> "Business Cards")
   const categoryName = slugToName(slug)
 
-  // Build query with sorting
-  let query = supabase
-    .from("products")
-    .select("*")
-    .eq("is_active", true)
-    .ilike("category", categoryName)
+  const allProducts = await getActiveProducts()
 
-  // Apply sorting
+  let actualProducts = allProducts.filter(
+    (p) => p.category?.toLowerCase() === categoryName.toLowerCase() || nameToSlug(p.category || "") === slug
+  )
+
+  if (actualProducts.length === 0) {
+    notFound()
+  }
+
   switch (sort) {
     case "price-low":
-      query = query.order("base_price", { ascending: true })
+      actualProducts = [...actualProducts].sort((a, b) => (a.base_price || 0) - (b.base_price || 0))
       break
     case "price-high":
-      query = query.order("base_price", { ascending: false })
+      actualProducts = [...actualProducts].sort((a, b) => (b.base_price || 0) - (a.base_price || 0))
       break
     case "newest":
-      query = query.order("created_at", { ascending: false })
+      actualProducts = [...actualProducts].sort(
+        (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+      )
       break
     default:
-      query = query.order("name")
+      actualProducts = [...actualProducts].sort((a, b) => (a.name || "").localeCompare(b.name || ""))
   }
 
-  const { data: products, error } = await query
-
-  if (error || !products || products.length === 0) {
-    // Try a more flexible match
-    const { data: allProducts } = await supabase
-      .from("products")
-      .select("*")
-      .eq("is_active", true)
-    
-    const matchedProducts = allProducts?.filter(p => 
-      nameToSlug(p.category || "") === slug
-    )
-    
-    if (!matchedProducts || matchedProducts.length === 0) {
-      notFound()
-    }
-  }
-
-  const actualProducts = products || []
   const actualCategory = actualProducts[0]?.category || categoryName
 
   // Get all categories for sidebar
-  const { data: allCategories } = await supabase
-    .from("products")
-    .select("category")
-    .eq("is_active", true)
-  
-  const categories = [...new Set(allCategories?.map(c => c.category).filter(Boolean))] as string[]
+  const categories = [...new Set(allProducts.map(c => c.category).filter(Boolean))] as string[]
 
   // Calculate price range
   const prices = actualProducts.map(p => p.base_price || 0).filter(p => p > 0)
@@ -289,10 +269,12 @@ function ProductCard({ product }: { product: any }) {
         <CardContent className="p-4">
           <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative">
             {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.name} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover group-hover:scale-105 transition-transform"
               />
             ) : (
               <Printer className="h-12 w-12 text-slate-300" />
@@ -317,12 +299,14 @@ function ProductListItem({ product }: { product: any }) {
     <Link href={`/products/${product.id}`}>
       <Card className="group hover:shadow-md transition-all hover:border-primary">
         <CardContent className="p-4 flex gap-4">
-          <div className="w-32 h-32 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-32 h-32 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg flex items-center justify-center overflow-hidden shrink-0 relative">
             {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.name} 
-                className="w-full h-full object-cover"
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                sizes="128px"
+                className="object-cover"
               />
             ) : (
               <Printer className="h-10 w-10 text-slate-300" />

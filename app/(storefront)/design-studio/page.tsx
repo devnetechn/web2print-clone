@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   ArrowLeft, Save, Download, ShoppingCart, Undo2, Redo2, 
-  Eye, FileText, HelpCircle, Layers, Settings, ChevronDown,
+  Eye, FileText, HelpCircle, Layers, Settings,
   CheckCircle2, AlertCircle, Loader2
 } from "lucide-react"
 import Link from "next/link"
@@ -259,12 +259,9 @@ export default function DesignStudioPage() {
           </Button>
           
           <Select onValueChange={(v) => handleExport(v as any)}>
-            <SelectTrigger className="w-auto gap-1" asChild>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4" />
-                Export
-                <ChevronDown className="h-3 w-3" />
-              </Button>
+            <SelectTrigger className="h-8 w-auto gap-1 px-3 text-sm font-medium" size="sm">
+              <Download className="h-4 w-4" />
+              Export
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="png">PNG (High Res)</SelectItem>
