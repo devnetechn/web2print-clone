@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { DESIGN_STUDIO_ENABLED } from "@/lib/feature-flags"
 
 type Product = {
   id: string
@@ -526,13 +527,13 @@ export function ProductDetailClient({ product, options }: { product: Product; op
                           <div>
                             <p className="font-semibold">Upload Your Design</p>
                             <p className="text-sm text-muted-foreground font-normal">
-                              Upload files or design online
+                              {DESIGN_STUDIO_ENABLED ? "Upload files or design online" : "Upload your print-ready files"}
                             </p>
                           </div>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pb-6">
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className={DESIGN_STUDIO_ENABLED ? "grid md:grid-cols-2 gap-4" : "grid gap-4"}>
                           <Card className="border-2 border-dashed hover:border-primary transition-colors cursor-pointer">
                             <CardContent className="p-6 text-center">
                               <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
@@ -545,20 +546,22 @@ export function ProductDetailClient({ product, options }: { product: Product; op
                               </Button>
                             </CardContent>
                           </Card>
-                          <Card className="border-2 hover:border-primary transition-colors cursor-pointer" asChild>
-                            <Link href={`/design-studio?product=${product.id}`}>
-                              <CardContent className="p-6 text-center">
-                                <Palette className="h-10 w-10 text-primary mx-auto mb-3" />
-                                <p className="font-semibold">Design Online</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Use our free design studio
-                                </p>
-                                <Button className="mt-4">
-                                  Start Designing
-                                </Button>
-                              </CardContent>
-                            </Link>
-                          </Card>
+                          {DESIGN_STUDIO_ENABLED && (
+                            <Card className="border-2 hover:border-primary transition-colors cursor-pointer" asChild>
+                              <Link href={`/design-studio?product=${product.id}`}>
+                                <CardContent className="p-6 text-center">
+                                  <Palette className="h-10 w-10 text-primary mx-auto mb-3" />
+                                  <p className="font-semibold">Design Online</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    Use our free design studio
+                                  </p>
+                                  <Button className="mt-4">
+                                    Start Designing
+                                  </Button>
+                                </CardContent>
+                              </Link>
+                            </Card>
+                          )}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
@@ -715,17 +718,19 @@ export function ProductDetailClient({ product, options }: { product: Product; op
                     {priceError && <p className="text-xs text-red-500 mt-1">{priceError}</p>}
                   </div>
                   <div className="flex gap-3">
-                    <Button 
-                      variant="outline" 
-                      size="lg"
-                      asChild
-                    >
-                      <Link href={`/design-studio?product=${product.id}`}>
-                        <Palette className="h-5 w-5 mr-2" />
-                        Design Online
-                      </Link>
-                    </Button>
-                    <Button 
+                    {DESIGN_STUDIO_ENABLED && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        asChild
+                      >
+                        <Link href={`/design-studio?product=${product.id}`}>
+                          <Palette className="h-5 w-5 mr-2" />
+                          Design Online
+                        </Link>
+                      </Button>
+                    )}
+                    <Button
                       size="lg"
                       onClick={handleAddToCart}
                       disabled={!price || priceLoading}

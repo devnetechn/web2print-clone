@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Phone, ShoppingCart } from "lucide-react"
 import { useState, useEffect } from "react"
+import { APPAREL_ENABLED } from "@/lib/feature-flags"
 
 export function StorefrontHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -101,7 +102,8 @@ export function StorefrontHeader() {
         <div className="container mx-auto px-4">
           <ul className="flex justify-center text-sm font-medium">
             {/* Custom Apparel - Primary CTA */}
-            <li 
+            {APPAREL_ENABLED && (
+            <li
               className="border-r border-white/30 relative"
               onMouseEnter={() => setOpenMenu("merch")}
               onMouseLeave={() => setOpenMenu(null)}
@@ -127,6 +129,7 @@ export function StorefrontHeader() {
                 </div>
               )}
             </li>
+            )}
             {/* Industries We Serve */}
             <li 
               className="border-r border-white/30 relative"

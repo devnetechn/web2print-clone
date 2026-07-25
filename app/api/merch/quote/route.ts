@@ -1,7 +1,15 @@
 import { createClient } from "@/lib/supabase/server"
+import { APPAREL_ENABLED } from "@/lib/feature-flags"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
+  // The apparel pages are gated behind APPAREL_ENABLED, but this endpoint is
+  // reachable on its own — without this check a disabled section could still
+  // take quote requests that nobody is watching for.
+  if (!APPAREL_ENABLED) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
   try {
     const body = await request.json()
     

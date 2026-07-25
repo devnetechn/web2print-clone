@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { uploadDesignFile } from "@/app/actions/design-upload"
 import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName, translateTurnaroundName } from "@/lib/4over/option-labels"
+import { DESIGN_STUDIO_ENABLED } from "@/lib/feature-flags"
 
 interface ListItem {
   name: string
@@ -1816,18 +1817,20 @@ export function ProductConfiguratorClient({
       <div className="mt-6">
         <h3 className="text-base font-semibold text-slate-900 mb-3">What would you like to do?</h3>
         <div className="space-y-3">
-          <Link
-            href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
-            className="flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-              <Palette className="h-5 w-5" />
-            </span>
-            <span>
-              <span className="block font-medium text-slate-900">Custom Design</span>
-              <span className="block text-xs text-slate-500">Design online in our Design Studio</span>
-            </span>
-          </Link>
+          {DESIGN_STUDIO_ENABLED && (
+            <Link
+              href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
+              className="flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
+                <Palette className="h-5 w-5" />
+              </span>
+              <span>
+                <span className="block font-medium text-slate-900">Custom Design</span>
+                <span className="block text-xs text-slate-500">Design online in our Design Studio</span>
+              </span>
+            </Link>
+          )}
           <button
             type="button"
             className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left"

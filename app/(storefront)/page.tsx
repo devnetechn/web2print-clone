@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Truck, Shield, Tag, Headphones } from "lucide-react"
 import { HeroSlider } from "@/components/storefront/hero-slider"
 import { TrustindexReviews } from "@/components/storefront/trustindex-reviews"
+import { APPAREL_ENABLED } from "@/lib/feature-flags"
 
 export default async function HomePage() {
   return (
@@ -30,7 +31,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Category Grid Section */}
+      {/* Category Grid Section — every tile links into /merch, so the whole
+          section goes when apparel is off rather than leaving dead tiles. */}
+      {APPAREL_ENABLED && (
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-[#2c327a] mb-10 text-balance">
@@ -71,15 +74,18 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Trusted Brands Section */}
       <section className="py-12 bg-white border-t border-slate-200">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-slate-900">Trusted by Leading Brands</h2>
-            <Link href="/merch/brands" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-              See All Brands
-            </Link>
+            {APPAREL_ENABLED && (
+              <Link href="/merch/brands" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                See All Brands
+              </Link>
+            )}
           </div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8">
             {[
