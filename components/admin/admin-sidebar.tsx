@@ -25,6 +25,10 @@ const navigation = [
     children: [
       { name: "List Orders", href: "/admin/orders" },
       { name: "Add New Order", href: "/admin/orders/new" },
+      // The page this points at has existed and worked for a while, but was
+      // reachable only by typing the URL - it is how an order actually gets
+      // sent to 4over for printing, so it belongs next to the rest of Orders.
+      { name: "4over Transfer", href: "/admin/orders/4over-transfer" },
       { name: "Payment Request", href: "/admin/orders/payment-request" },
       { name: "Order Status", href: "/admin/orders/status" },
       { name: "Coupons / Discount", href: "/admin/orders/coupons" },
