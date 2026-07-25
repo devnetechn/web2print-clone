@@ -29,6 +29,7 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react"
+import { AdminUsersTab } from "@/components/admin/admin-users-tab"
 
 export default function SettingsPage() {
   const [storeSettings, setStoreSettings] = useState({
@@ -80,22 +81,22 @@ export default function SettingsPage() {
         </Badge>
       </div>
 
-      {/* This page is still the original v0 mock-up: none of the fields below
-          are wired to the database, and there is no settings table to write to
-          yet. It previously shipped a "Save Changes" button that waited a
+      {/* Every tab except Admin Users is still the original v0 mock-up: no
+          server action, no supabase client, and no settings table to write to.
+          The page previously shipped a "Save Changes" button that waited a
           second and then showed "Saved" without persisting anything, which is
-          worse than no button at all - it invites someone to change tax rates
-          or payment terms and walk away believing it took. The button is gone
+          worse than no button at all - it invites someone to change a tax rate
+          or payment term and walk away believing it took. The button is gone
           until each tab has a real backend. */}
       <div className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
         <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
         <div className="space-y-1 text-sm">
-          <p className="font-medium text-amber-900">These settings are not connected yet</p>
+          <p className="font-medium text-amber-900">Only the Admin Users tab is live</p>
           <p className="text-amber-800">
-            The fields below show the intended layout, but nothing on this page saves. Values shown
-            are placeholders, not your live configuration. Real settings currently live in the
-            Vercel environment variables (API keys, feature flags) and in the Supabase dashboard
-            (users and access).
+            Store, Payment, Shipping, Email and Integrations show the intended layout but do not
+            save — the values there are placeholders, not your live configuration. Those settings
+            currently live in the Vercel environment variables. Admin Users is connected and its
+            changes take effect immediately.
           </p>
         </div>
       </div>
@@ -478,48 +479,13 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* Admin Users
-            The two accounts this tab used to list (admin@web2printusa.com and
-            manager@web2printusa.com) were hardcoded and do not exist in the
-            database - showing them meant an admin could not tell who actually
-            had access. The "Super Admin"/"Store Manager" badges implied a role
-            system that also does not exist: profiles.is_admin is a boolean, so
-            an admin is either on or off. Until this is wired to Supabase, the
-            tab documents the real process instead of imitating it. */}
+        {/* Admin Users - the one tab on this page backed by real data. It
+            previously listed two hardcoded accounts that are not in the
+            database, behind "Super Admin"/"Store Manager" badges implying a
+            role system that does not exist. Roles are a separate piece of
+            work; this covers who has access and their credentials. */}
         <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <CardTitle>Admin Users</CardTitle>
-              <CardDescription>Managed in Supabase until this tab is connected</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-medium mb-1">How admin access works</h3>
-                <p className="text-sm text-slate-600">
-                  Anyone whose row in the <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">profiles</code>{" "}
-                  table has <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">is_admin = true</code> can
-                  reach every page under /admin. There are no partial roles — access is all or nothing.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-medium mb-1">Grant or revoke admin</h3>
-                <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-600">
-                  <li>The person signs up normally on the storefront first, so their account exists.</li>
-                  <li>Supabase dashboard → Table Editor → <span className="font-medium">profiles</span></li>
-                  <li>Find their row and set <span className="font-medium">is_admin</span> to true (or false to revoke).</li>
-                </ol>
-              </div>
-
-              <div>
-                <h3 className="font-medium mb-1">Reset a password</h3>
-                <p className="text-sm text-slate-600">
-                  Supabase dashboard → Authentication → Users → select the account → Reset password.
-                  The app itself has no password-change screen yet, for admins or customers.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <AdminUsersTab />
         </TabsContent>
 
         {/* Integrations */}
