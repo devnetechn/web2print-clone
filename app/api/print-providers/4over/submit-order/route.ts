@@ -110,9 +110,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No payment profile selected" }, { status: 400 })
     }
 
+    // Real 4over orders (actual charges + production print/ship) are gated
+    // behind an explicit env flag so TEST mode stays the safe default. Only
+    // FOUROVER_LIVE_ORDERS=true (set once the funded 4over account is
+    // verified) submits real orders — flipping it back needs no redeploy of
+    // code, just the env var. Anything other than the literal "true" = test.
+    const liveOrders = process.env.FOUROVER_LIVE_ORDERS === "true"
+
     const result = await submitOrder({
       order_id: order.order_number.toString(),
-      is_test_order: true,
+      is_test_order: !liveOrders,
       jobs,
       payment: { profile_token: profileToken },
     })
