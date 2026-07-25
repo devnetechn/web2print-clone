@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 const montserrat = Montserrat({ 
@@ -41,6 +42,12 @@ export default function RootLayout({
     <html lang="en" className={montserrat.variable}>
       <body className="font-sans antialiased">
         {children}
+        {/* Nothing rendered <Toaster />, so every toast() in the app resolved
+            into an empty state update and the user saw nothing. The 4over
+            transfer page raises nine of them - push succeeded, push rejected,
+            sync failed - and all of them were silent, which reads exactly like
+            a button that does nothing. */}
+        <Toaster />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
