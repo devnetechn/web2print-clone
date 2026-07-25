@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback, type ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,6 +18,8 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 import { DESIGN_STUDIO_ENABLED } from "@/lib/feature-flags"
+import { uploadDesignFile } from "@/app/actions/design-upload"
+import { useToast } from "@/hooks/use-toast"
 
 type Product = {
   id: string
@@ -64,6 +66,45 @@ export function ProductDetailClient({ product, options }: { product: Product; op
   const [priceError, setPriceError] = useState<string | null>(null)
   const [activeStep, setActiveStep] = useState<string>("step-1")
   const [viewMode, setViewMode] = useState<"accordion" | "tabs">("accordion")
+
+  // Artwork upload. This page previously rendered an "Upload Files" card with
+  // a "Choose Files" button and no file input, no handler, and no state behind
+  // it - clicking it did nothing. Ported from the /print configurator, which
+  // is the path that already worked.
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<
+    { fileName: string; url: string; path: string; contentType: string } | null
+  >(null)
+  const { toast } = useToast()
+
+  const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const result = await uploadDesignFile(formData)
+      if (result.success) {
+        setUploadedFile({
+          fileName: result.fileName!,
+          url: result.url!,
+          path: result.path!,
+          contentType: result.contentType!,
+        })
+      } else {
+        setUploadError(result.error || "Upload failed")
+      }
+    } catch {
+      setUploadError("Upload failed")
+    } finally {
+      setUploading(false)
+      e.target.value = ""
+    }
+  }, [])
   
   const is4over = product.fourover_id && product.print_provider === "4over"
 
@@ -171,22 +212,61 @@ export function ProductDetailClient({ product, options }: { product: Product; op
     fetchPrice()
   }, [is4over, product.fourover_id, selectedColorspec, selectedRunsize, product.base_price, quantity])
 
+  // The shape here has to match what the /print configurator writes, because
+  // app/actions/orders.ts reads these exact keys when it builds order_items,
+  // and app/api/print-providers/4over/submit-order/route.ts drops any item
+  // missing productUuid/colorspecUuid/runsizeUuid as "not 4over-eligible".
+  // This used to store option *names* and no uuids at all, so every order
+  // placed from this page was silently impossible to send to 4over.
   const handleAddToCart = () => {
-    const orderDetails = {
-      productId: product.id,
-      productName: product.name,
-      colorspec: parsedOptions.colorspecs.find(c => c.uuid === selectedColorspec)?.name,
-      quantity: parsedOptions.runsizes.find(r => r.uuid === selectedRunsize)?.name,
-      turnaround: parsedOptions.turnarounds.find(t => t.uuid === selectedTurnaround)?.name,
-      price: price?.toFixed(2)
+    const productUuid = product.fourover_id
+    if (!productUuid) {
+      toast({
+        title: "This product can't be ordered online yet",
+        description: "It isn't mapped to a print provider. Please request a quote instead.",
+        variant: "destructive",
+      })
+      return
     }
-    
-    // Store in localStorage cart
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]")
-    cart.push(orderDetails)
-    localStorage.setItem("cart", JSON.stringify(cart))
-    
-    alert(`Added to cart!\nProduct: ${product.name}\nPrice: $${price?.toFixed(2)}`)
+
+    const runsizeName = parsedOptions.runsizes.find((r) => r.uuid === selectedRunsize)?.name
+    const parsedQuantity = runsizeName ? parseInt(runsizeName.replace(/[^0-9]/g, ""), 10) : NaN
+
+    const cartItem = {
+      id: `${productUuid}-${Date.now()}`,
+      // Slug, not the display name: the cart builds an "Edit Options" link as
+      // /print/{productType}/edit, so "Raised Foil" would produce a URL with a
+      // space and capitals that 404s. The /print routes are slugs already.
+      productType: product.category?.toLowerCase().replace(/\s+/g, "-"),
+      productName: product.name,
+      colorspec: parsedOptions.colorspecs.find((c) => c.uuid === selectedColorspec)?.name,
+      quantity: Number.isNaN(parsedQuantity) ? undefined : parsedQuantity,
+      turnaround: parsedOptions.turnarounds.find((t) => t.uuid === selectedTurnaround)?.name,
+      price,
+      productUuid,
+      colorspecUuid: selectedColorspec || undefined,
+      runsizeUuid: selectedRunsize || undefined,
+      turnaroundUuid: selectedTurnaround || undefined,
+      optionUuids: [],
+      designFile: uploadedFile
+        ? { fileName: uploadedFile.fileName, url: uploadedFile.url, contentType: uploadedFile.contentType }
+        : undefined,
+    }
+
+    // "print_cart", not "cart". app/(storefront)/cart/page.tsx:84-85 keeps the
+    // two apart by whether an item has a productUuid, and the header's badge
+    // (storefront-header.tsx:18) only counts print_cart - so writing a
+    // provider-backed item to "cart" would leave it out of the count.
+    const cart = JSON.parse(localStorage.getItem("print_cart") || "[]")
+    cart.push(cartItem)
+    localStorage.setItem("print_cart", JSON.stringify(cart))
+
+    toast({
+      title: "Added to cart",
+      description: uploadedFile
+        ? `${product.name} — artwork attached`
+        : `${product.name} — no artwork yet, you can upload it before checkout`,
+    })
   }
 
   const goToNextStep = () => {
@@ -534,16 +614,38 @@ export function ProductDetailClient({ product, options }: { product: Product; op
                       </AccordionTrigger>
                       <AccordionContent className="px-6 pb-6">
                         <div className={DESIGN_STUDIO_ENABLED ? "grid md:grid-cols-2 gap-4" : "grid gap-4"}>
-                          <Card className="border-2 border-dashed hover:border-primary transition-colors cursor-pointer">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            className="hidden"
+                            accept=".pdf,.ai,.eps,.indd,.jpg,.jpeg,.png,.tif,.tiff"
+                            onChange={handleFileSelected}
+                          />
+                          <Card
+                            className="border-2 border-dashed hover:border-primary transition-colors cursor-pointer"
+                            onClick={() => !uploading && fileInputRef.current?.click()}
+                          >
                             <CardContent className="p-6 text-center">
-                              <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                              <p className="font-semibold">Upload Files</p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                PDF, JPG, PNG, EPS, TIFF
+                              {uploading ? (
+                                <Loader2 className="h-10 w-10 text-muted-foreground mx-auto mb-3 animate-spin" />
+                              ) : (
+                                <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                              )}
+                              <p className="font-semibold">
+                                {uploading ? "Uploading…" : uploadedFile ? "Replace Design File" : "Upload Files"}
                               </p>
-                              <Button variant="outline" className="mt-4">
-                                Choose Files
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {uploadedFile ? uploadedFile.fileName : "PDF, JPG, PNG, EPS, TIFF"}
+                              </p>
+                              <Button variant="outline" className="mt-4" disabled={uploading}>
+                                {uploadedFile ? "Choose a different file" : "Choose Files"}
                               </Button>
+                              {uploadError && <p className="mt-3 text-sm text-red-600">{uploadError}</p>}
+                              {uploadedFile && !uploading && (
+                                <p className="mt-3 text-sm text-green-700">
+                                  File ready — it will be attached when you add this to your cart.
+                                </p>
+                              )}
                             </CardContent>
                           </Card>
                           {DESIGN_STUDIO_ENABLED && (
