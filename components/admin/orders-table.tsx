@@ -22,6 +22,14 @@ import {
 import { Eye, Edit, Copy, RotateCcw, MoreVertical, Search, Filter, Download, Loader2 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { refundOrder } from "@/app/actions/orders"
+import { SendTo4overButton } from "@/components/admin/send-to-4over-button"
+
+type OrderItem = {
+  id: string
+  provider_order_id: string | null
+  provider_status: string | null
+  options: Record<string, unknown> | null
+}
 
 type Order = {
   id: string
@@ -38,6 +46,26 @@ type Order = {
     company_name: string | null
     email: string
   } | null
+  order_items: OrderItem[] | null
+}
+
+// Same rule the push itself applies (lib/4over/push-order.ts): an item is only
+// sendable if it carries all three uuids. Showing the button on an order that
+// would be rejected just moves the failure later.
+function fourOverState(order: Order): { eligible: boolean; jobIds: string[] } {
+  const items = order.order_items || []
+  const eligible = items.some(
+    (i) => i.options?.productUuid && i.options?.colorspecUuid && i.options?.runsizeUuid,
+  )
+  const jobIds = items.map((i) => i.provider_order_id).filter((id): id is string => !!id)
+  return { eligible, jobIds }
+}
+
+const PAYMENT_BADGE: Record<string, { label: string; className: string }> = {
+  paid: { label: "Paid", className: "bg-green-100 text-green-800 hover:bg-green-100" },
+  unpaid: { label: "Unpaid", className: "bg-slate-100 text-slate-700 hover:bg-slate-100" },
+  failed: { label: "Failed", className: "bg-red-100 text-red-800 hover:bg-red-100" },
+  refunded: { label: "Refunded", className: "bg-amber-100 text-amber-900 hover:bg-amber-100" },
 }
 
 export function OrdersTable({ orders }: { orders: Order[] }) {
@@ -103,14 +131,6 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
     return (
       <Badge variant={variants[status] || "outline"} className="capitalize">
         {status.replace("_", " ")}
-      </Badge>
-    )
-  }
-
-  const getPaymentBadge = (status: string) => {
-    return (
-      <Badge variant={status === "paid" ? "default" : "destructive"} className="bg-green-500 capitalize">
-        {status}
       </Badge>
     )
   }
@@ -197,14 +217,16 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
               <th className="p-3 text-left">Order Details</th>
               <th className="p-3 text-left">Order Date & Amount</th>
               <th className="p-3 text-left">Order Due Date</th>
+              <th className="p-3 text-left">Payment</th>
               <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">4over</th>
               <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-500">
+                <td colSpan={9} className="p-8 text-center text-slate-500">
                   No orders found
                 </td>
               </tr>
@@ -239,7 +261,6 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">${Number(order.total).toFixed(2)}</span>
-                        {getPaymentBadge(order.payment_status)}
                       </div>
                     </div>
                   </td>
@@ -268,7 +289,42 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                     </div>
                   </td>
                   <td className="p-3">
+                    {(() => {
+                      const badge = PAYMENT_BADGE[order.payment_status] ?? {
+                        label: order.payment_status || "—",
+                        className: "bg-slate-100 text-slate-700 hover:bg-slate-100",
+                      }
+                      return <Badge className={badge.className}>{badge.label}</Badge>
+                    })()}
+                  </td>
+                  <td className="p-3">
                     <div>{getStatusBadge(order.status)}</div>
+                  </td>
+                  <td className="p-3">
+                    {(() => {
+                      const { eligible, jobIds } = fourOverState(order)
+                      if (jobIds.length > 0) {
+                        return (
+                          <div className="space-y-0.5">
+                            {jobIds.map((id) => (
+                              <div key={id} className="font-mono text-xs text-slate-600">
+                                {id}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      }
+                      if (!eligible) {
+                        return <span className="text-xs text-slate-400">Not a 4over order</span>
+                      }
+                      return (
+                        <SendTo4overButton
+                          orderId={order.id}
+                          orderNumber={order.order_number}
+                          isPaid={order.payment_status === "paid"}
+                        />
+                      )
+                    })()}
                   </td>
                   <td className="p-3">
                     <DropdownMenu>

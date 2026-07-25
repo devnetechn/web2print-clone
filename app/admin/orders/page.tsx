@@ -21,6 +21,12 @@ export default async function OrdersPage({
         full_name,
         company_name,
         email
+      ),
+      order_items (
+        id,
+        provider_order_id,
+        provider_status,
+        options
       )
     `,
     )
