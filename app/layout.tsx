@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Montserrat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/toaster'
@@ -10,9 +10,16 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#2c327a',
+}
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Web2Print USA Solutions | Online Printing & Custom Apparel',
+  description:
+    'Your A-Z online print source. Business cards, marketing materials, signs, banners, packaging, custom apparel and more.',
   generator: 'v0.app',
   icons: {
     icon: [
