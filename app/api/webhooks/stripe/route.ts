@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server"
 import { stripe } from "@/lib/stripe"
 import { pushOrderToFourOver } from "@/lib/4over/push-order"
+import { getFourOverPaymentProfile } from "@/lib/settings"
 import { headers } from "next/headers"
 import { after, type NextRequest, NextResponse } from "next/server"
 
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
           // deliberate: a retry risks a second charge and a second print job.
           // Failures are recorded against the order for an admin to retry from
           // /admin/orders/4over-transfer instead.
-          const profileToken = process.env.FOUROVER_DEFAULT_PAYMENT_PROFILE
+          const profileToken = await getFourOverPaymentProfile()
           if (profileToken) {
             after(async () => {
               try {
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
               order_id: order.id,
               status: "processing",
               notes:
-                "Awaiting manual 4over submission (FOUROVER_DEFAULT_PAYMENT_PROFILE is not set, so automatic hand-off is off).",
+                "Awaiting manual 4over submission (no default payment card is set in Settings, so automatic hand-off is off).",
             })
           }
         }

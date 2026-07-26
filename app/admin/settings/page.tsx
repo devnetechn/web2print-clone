@@ -30,6 +30,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { AdminUsersTab } from "@/components/admin/admin-users-tab"
+import { FourOverDefaultCard } from "@/components/admin/fourover-default-card"
 
 export default function SettingsPage() {
   const [storeSettings, setStoreSettings] = useState({
@@ -91,12 +92,13 @@ export default function SettingsPage() {
       <div className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
         <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
         <div className="space-y-1 text-sm">
-          <p className="font-medium text-amber-900">Only the Admin Users tab is live</p>
+          <p className="font-medium text-amber-900">Most of this page is not connected yet</p>
           <p className="text-amber-800">
-            Store, Payment, Shipping, Email and Integrations show the intended layout but do not
-            save — the values there are placeholders, not your live configuration. Those settings
-            currently live in the Vercel environment variables. Admin Users is connected and its
-            changes take effect immediately.
+            Store, Payment, Shipping and Email show the intended layout but do not save — the values
+            there are placeholders, not your live configuration, and those settings currently live in
+            the Vercel environment variables. <span className="font-medium">Admin Users</span> and the
+            automatic 4over hand-off under <span className="font-medium">Integrations</span> are
+            connected, and changes to them take effect immediately.
           </p>
         </div>
       </div>
@@ -490,6 +492,10 @@ export default function SettingsPage() {
 
         {/* Integrations */}
         <TabsContent value="integrations">
+          {/* Unlike the cards below it, this one is wired to the database. */}
+          <div className="mb-6">
+            <FourOverDefaultCard />
+          </div>
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
