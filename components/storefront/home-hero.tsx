@@ -37,7 +37,7 @@ export function HomeHero() {
               renders below the headline (order-3); on desktop it continues the
               left column. */}
           <div className="order-3 max-w-xl lg:order-none lg:col-start-1 lg:row-start-2">
-            <p className="text-base leading-relaxed text-slate-600 text-pretty lg:text-lg">
+            <p className="hidden text-base leading-relaxed text-slate-600 text-pretty lg:block lg:text-lg">
               Business cards, banners, packaging, and custom apparel — plus the
               business services that get you launched and found. National print
               power, first-name service.

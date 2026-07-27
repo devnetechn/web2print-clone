@@ -100,8 +100,14 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
       <form onSubmit={handleSubmit} className="relative">
         <Input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            const value = e.target.value
+            setQuery(value)
+            // Only reveal the dropdown once the user has typed something; it
+            // collapses again the moment they clear the field. Clicking/focusing
+            // the empty input no longer opens it.
+            setOpen(value.trim().length > 0)
+          }}
           placeholder={isMobile ? "Search postcards, flyers, apparel and…" : "Search products"}
           className={`w-full border-slate-300 rounded-full bg-white ${
             isMobile ? "h-12 pl-11 pr-4 text-base" : "h-10 pr-10"
