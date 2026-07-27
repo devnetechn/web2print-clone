@@ -153,13 +153,18 @@ export function ProductInfoTabs({
     <>
     <Tabs defaultValue="description" onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0 overflow-x-auto">
-        {(["description", "specs", "templates"] as const).map(tab => (
+        {([
+          { value: "description", label: "Description" },
+          { value: "specs", label: "Specs" },
+          { value: "templates", label: "Templates" },
+          { value: "faq", label: "FAQ" },
+        ] as const).map(tab => (
           <TabsTrigger
-            key={tab}
-            value={tab}
+            key={tab.value}
+            value={tab.value}
             className="flex-shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] px-3 sm:px-6 py-3 text-sm font-medium bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -218,23 +223,31 @@ export function ProductInfoTabs({
       <TabsContent value="templates" className="mt-6">
         <ProductTemplatesPanel product={templateProduct} />
       </TabsContent>
-    </Tabs>
 
-    {/* Visible FAQ — kept in sync with the FAQPage JSON-LD (§5). Google
-        requires the same Q&A text to be present on the page. */}
-    <section aria-labelledby="product-faq-heading" className="mt-10 border-t border-slate-200 pt-8">
-      <h2 id="product-faq-heading" className="text-lg font-bold text-[#2c327a] mb-4">
-        Frequently Asked Questions
-      </h2>
-      <dl className="divide-y divide-slate-200">
-        {DEFAULT_PRODUCT_FAQS.map((faq) => (
-          <div key={faq.question} className="py-4">
-            <dt className="font-semibold text-slate-800">{faq.question}</dt>
-            <dd className="mt-1 text-sm leading-relaxed text-slate-600">{faq.answer}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
+      {/* FAQ — forceMount keeps the Q&A text in the DOM even when the tab is
+          inactive, so it stays in sync with the FAQPage JSON-LD (§5) that
+          Google requires present on the page. data-[state=inactive]:hidden
+          handles the show/hide via CSS instead of unmounting. */}
+      <TabsContent
+        value="faq"
+        forceMount
+        className="mt-6 data-[state=inactive]:hidden"
+      >
+        <section aria-labelledby="product-faq-heading">
+          <h2 id="product-faq-heading" className="sr-only">
+            Frequently Asked Questions
+          </h2>
+          <dl className="divide-y divide-slate-200">
+            {DEFAULT_PRODUCT_FAQS.map((faq) => (
+              <div key={faq.question} className="py-4">
+                <dt className="font-semibold text-slate-800">{faq.question}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-slate-600">{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </TabsContent>
+    </Tabs>
     </>
   )
 }
