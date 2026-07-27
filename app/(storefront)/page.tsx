@@ -1,15 +1,35 @@
 import Link from "next/link"
-import { Truck, Shield, Tag, Headphones } from "lucide-react"
-import { HeroSlider } from "@/components/storefront/hero-slider"
+import { Truck, Shield, Tag, Headphones, ArrowRight } from "lucide-react"
+import { HomeHero } from "@/components/storefront/home-hero"
 import { TrustindexReviews } from "@/components/storefront/trustindex-reviews"
 import { APPAREL_ENABLED } from "@/lib/feature-flags"
+
+// 8 category tiles. All route to existing pages (six /print categories,
+// trading cards, and apparel). The apparel tile points at /merch when the
+// apparel catalogue is live, otherwise it pre-selects Custom Apparel on the
+// quote form so it never 404s. Tile art shares one studio background treatment.
+const CATEGORY_TILES = [
+  { label: "Business Cards", img: "/images/home/tile-business-cards.png", href: "/print/business-cards" },
+  { label: "Marketing Materials", img: "/images/home/tile-marketing.png", href: "/print/marketing-materials" },
+  { label: "Signs & Banners", img: "/images/home/tile-signs-banners.png", href: "/print/signs-banners" },
+  { label: "Boxes & Packaging", img: "/images/home/tile-boxes-packaging.png", href: "/print/boxes-packaging" },
+  { label: "Roll Labels & Stickers", img: "/images/home/tile-labels-stickers.png", href: "/print/roll-labels-stickers" },
+  { label: "Promo Products", img: "/images/home/tile-promo.png", href: "/print/promo-products" },
+  { label: "Trading Cards", img: "/images/home/tile-trading-cards.png", href: "/print/trading-cards" },
+  {
+    label: "Custom Apparel",
+    img: "/images/home/tile-apparel.png",
+    href: APPAREL_ENABLED ? "/merch" : "/quote?product=custom-apparel",
+  },
+]
 
 export default async function HomePage() {
   return (
     <div>
-      <HeroSlider />
+      {/* 1 + 2. New split hero (replaces the retired slide carousel) */}
+      <HomeHero />
 
-      {/* Trust Bar - directly below hero */}
+      {/* 3. Value-prop badge strip (unchanged) */}
       <section className="bg-white border-b border-slate-200">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200">
@@ -31,42 +51,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Category Grid Section — every tile links into /merch, so the whole
-          section goes when apparel is off rather than leaving dead tiles. */}
-      {APPAREL_ENABLED && (
+      {/* 4. Category grid */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-[#2c327a] mb-10 text-balance">
-            Custom T-shirts &amp; Promotional Products for Your Brand
+          <h2 className="mb-10 text-center text-3xl font-extrabold tracking-[-0.015em] text-[#2c327a] text-balance md:text-4xl">
+            What are we printing for you?
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { label: "T-shirts",             img: "/categories/tshirts.jpg",    href: "/merch?category=tshirts" },
-              { label: "Sweatshirts",          img: "/categories/sweatshirts.jpg", href: "/merch?category=sweatshirts" },
-              { label: "Hats",                 img: "/categories/hats.jpg",       href: "/merch?category=hats" },
-              { label: "Tradeshow & Signage",  img: "/categories/tradeshow.jpg",  href: "/merch?category=tradeshow" },
-              { label: "Bags",                 img: "/categories/bags.jpg",       href: "/merch?category=bags" },
-              { label: "Drinkware",            img: "/categories/drinkware.jpg",  href: "/merch?category=drinkware" },
-              { label: "Polos & Business Wear",img: "/categories/polos.jpg",      href: "/merch?category=polos" },
-              { label: "Workwear & Uniforms",  img: "/categories/workwear.jpg",   href: "/merch?category=workwear" },
-              { label: "Office Supplies",      img: "/categories/office.jpg",     href: "/merch?category=office" },
-              { label: "Technology",           img: "/categories/technology.jpg", href: "/merch?category=technology" },
-              { label: "Signage",              img: "/categories/signage.jpg",    href: "/merch?category=signage" },
-              { label: "Activewear",           img: "/categories/activewear.jpg", href: "/merch?category=activewear" },
-            ].map((cat) => (
-              <Link
-                key={cat.label}
-                href={cat.href}
-                className="group flex flex-col gap-2"
-              >
-                <div className="aspect-square rounded-xl overflow-hidden bg-slate-100">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+            {CATEGORY_TILES.map((cat) => (
+              <Link key={cat.label} href={cat.href} className="group flex flex-col gap-3">
+                <div className="aspect-square overflow-hidden rounded-xl bg-slate-100">
                   <img
-                    src={cat.img}
+                    src={cat.img || "/placeholder.svg"}
                     alt={cat.label}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
-                <span className="text-sm md:text-base font-semibold text-[#2c327a] group-hover:text-[#e42a27] transition-colors">
+                <span className="text-center text-sm font-bold text-[#2c327a] transition-colors group-hover:text-[#e42a27] md:text-base">
                   {cat.label}
                 </span>
               </Link>
@@ -74,20 +75,14 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      )}
 
-      {/* Trusted Brands Section */}
+      {/* 5. Trusted by Leading Brands */}
       <section className="py-12 bg-white border-t border-slate-200">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Trusted by Leading Brands</h2>
-            {APPAREL_ENABLED && (
-              <Link href="/merch/brands" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                See All Brands
-              </Link>
-            )}
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-extrabold tracking-[-0.015em] text-[#2c327a]">Trusted by leading brands</h2>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8">
+          <div className="grid grid-cols-3 gap-6 md:grid-cols-6 md:gap-8">
             {[
               { src: "https://assets.cdn.filesafe.space/U4CkfN7E9nFSDPTegc9M/media/6979be31bd9bc47e637f6b1f.svg", alt: "Mom's Kitchen" },
               { src: "https://assets.cdn.filesafe.space/U4CkfN7E9nFSDPTegc9M/media/6979c3971fbd2c4a66368b75.png", alt: "DC Prep" },
@@ -104,31 +99,52 @@ export default async function HomePage() {
             ].map((logo, i) => (
               <div
                 key={i}
-                className="flex items-center justify-center h-16 md:h-20 grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-200"
+                className="flex h-16 items-center justify-center opacity-60 grayscale transition-all duration-200 hover:opacity-100 hover:grayscale-0 md:h-20"
               >
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  className="max-h-full max-w-full object-contain"
-                />
+                <img src={logo.src || "/placeholder.svg"} alt={logo.alt} className="max-h-full max-w-full object-contain" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Reviews Section */}
+      {/* 6. Beyond Print banner */}
+      <section className="bg-[#1f2430] py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#f0b429]">Beyond Print</p>
+              <h2 className="text-3xl font-extrabold tracking-[-0.015em] text-white text-balance md:text-4xl">
+                Make it official.
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-slate-300 text-pretty">
+                LLC registration, web design, and getting found on Google. We help you
+                build the business behind the brand — not just the print.
+              </p>
+            </div>
+            <Link
+              href="/services"
+              className="inline-flex flex-shrink-0 items-center gap-2 rounded-md bg-[#f0b429] px-8 py-4 text-base font-bold text-[#1f2430] transition-colors hover:bg-[#d99e1f]"
+            >
+              Explore business services
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. What our customers say (live Google reviews via Trustindex) */}
       <section className="py-16 bg-slate-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#2c327a] mb-3">WHAT OUR CUSTOMERS SAY</h2>
-            <div className="w-24 h-1 bg-[#e42a27] mx-auto" />
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 text-3xl font-extrabold tracking-[-0.015em] text-[#2c327a] md:text-4xl">
+              What our customers say
+            </h2>
+            <div className="mx-auto h-1 w-24 bg-[#e42a27]" />
           </div>
           <TrustindexReviews />
         </div>
       </section>
-
-
     </div>
   )
 }
