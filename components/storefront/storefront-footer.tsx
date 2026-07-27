@@ -218,6 +218,9 @@ export function StorefrontFooter() {
                 </svg>
               </a>
             </div>
+            <p className="text-sm text-slate-600">
+              Powered by <span className="font-semibold text-[#2c327a]">Born for Prosperity Inc.</span>
+            </p>
             <p className="text-sm text-slate-600">Copyright ©2026 Web2Print USA Solution. All Rights Reserved.</p>
           </div>
         </div>

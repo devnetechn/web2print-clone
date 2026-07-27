@@ -30,10 +30,6 @@ export function HomeHero() {
           <div className="relative lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start">
             <CropMarks />
             <HeroProductSlider />
-            {/* Powered by chip */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-5 py-2 text-xs font-semibold text-slate-600 shadow-md">
-              Powered by <span className="text-[#2c327a]">Born for Prosperity</span>
-            </div>
           </div>
 
           {/* Block C: supporting copy + CTAs + social proof. On mobile this
