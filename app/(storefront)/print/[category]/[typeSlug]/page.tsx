@@ -9,7 +9,7 @@ import { ProductInfoTabs } from "@/components/print/product-info-tabs"
 import type { ProductContent } from "@/lib/print/product-content"
 import { matchTemplateProduct } from "@/lib/print/template-match"
 import { JsonLd } from "@/components/seo/json-ld"
-import { canonical, categoryDescription, breadcrumbSchema, productSchema } from "@/lib/seo"
+import { canonical, categoryDescription, breadcrumbSchema, productSchema, faqSchema, DEFAULT_PRODUCT_FAQS } from "@/lib/seo"
 
 // Only includes TYPE_RULES (hasTypeRules) categories — the OTHER entries in
 // print/[category]/page.tsx's EXTRA_PRODUCT_SOURCES (e.g. announcement-cards)
@@ -1903,6 +1903,7 @@ export default async function ProductTypePage({
               ...(leaf && leaf.name !== productName ? [{ name: leaf.name, path: `/print/${category}` }] : []),
               { name: productName, path: `/print/${category}/${typeSlug}` },
             ]),
+            faqSchema(DEFAULT_PRODUCT_FAQS),
           ]}
         />
         <div className="border-b border-slate-200 py-2 px-4">
@@ -2422,6 +2423,7 @@ export default async function ProductTypePage({
             ...(leaf && leaf.name !== typeLabel ? [{ name: leaf.name, path: `/print/${category}` }] : []),
             { name: typeLabel, path: `/print/${category}/${typeSlug}` },
           ]),
+          faqSchema(DEFAULT_PRODUCT_FAQS),
         ]}
       />
       <div className="border-b border-slate-200 py-2 px-4">

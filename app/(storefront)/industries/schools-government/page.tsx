@@ -1,10 +1,13 @@
 import Link from "next/link"
 import { ArrowRight, Download, ShieldCheck, FileText, Building2, GraduationCap } from "lucide-react"
+import { JsonLd } from "@/components/seo/json-ld"
+import { canonical, credentialedOrganizationSchema } from "@/lib/seo"
 
 export const metadata = {
   title: "Certified Print Vendor for Schools & Government | MBE/SBE | Web2Print USA",
   description:
     "SAM.gov-registered, Florida MBE, and Broward County/BCPS MBE, SBE & CBE certified print vendor serving school districts, government agencies, and public institutions.",
+  ...canonical("/industries/schools-government"),
 }
 
 const QUOTE_HREF = "/quote?industry=government"
@@ -46,6 +49,7 @@ function CapabilityStatementCard() {
 export default function SchoolsGovernmentPage() {
   return (
     <div className="bg-white">
+      <JsonLd data={credentialedOrganizationSchema(CERTIFICATIONS.map((c) => c.label))} />
       {/* Hero */}
       <section className="border-b border-slate-200 bg-slate-50">
         <div className="container mx-auto px-4 py-14 md:py-20">

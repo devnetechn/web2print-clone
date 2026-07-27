@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ProductContent } from "@/lib/print/product-content"
 import type { TemplateProduct } from "@/lib/print/templates"
 import { ProductTemplatesPanel } from "@/components/print/product-templates-panel"
+import { DEFAULT_PRODUCT_FAQS } from "@/lib/seo"
 
 // Mirrors the same regex used in product-configurator-client — display-only cleanup
 const BC_SIZE_SUFFIX = /\s*\((Oval|Fold\s*Over|Round\s*Corners?)\)\s*$/i
@@ -149,6 +150,7 @@ export function ProductInfoTabs({
   }
 
   return (
+    <>
     <Tabs defaultValue="description" onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0 overflow-x-auto">
         {(["description", "specs", "templates"] as const).map(tab => (
@@ -217,6 +219,23 @@ export function ProductInfoTabs({
         <ProductTemplatesPanel product={templateProduct} />
       </TabsContent>
     </Tabs>
+
+    {/* Visible FAQ — kept in sync with the FAQPage JSON-LD (§5). Google
+        requires the same Q&A text to be present on the page. */}
+    <section aria-labelledby="product-faq-heading" className="mt-10 border-t border-slate-200 pt-8">
+      <h2 id="product-faq-heading" className="text-lg font-bold text-[#2c327a] mb-4">
+        Frequently Asked Questions
+      </h2>
+      <dl className="divide-y divide-slate-200">
+        {DEFAULT_PRODUCT_FAQS.map((faq) => (
+          <div key={faq.question} className="py-4">
+            <dt className="font-semibold text-slate-800">{faq.question}</dt>
+            <dd className="mt-1 text-sm leading-relaxed text-slate-600">{faq.answer}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+    </>
   )
 }
 
