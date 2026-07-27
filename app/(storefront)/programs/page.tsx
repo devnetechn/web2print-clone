@@ -1,3 +1,13 @@
+import type { Metadata } from "next"
+import { canonical } from "@/lib/seo"
+
+export const metadata: Metadata = {
+  title: "Business Programs",
+  description:
+    "Web2Print USA business programs help you save time and money on recurring print orders — built for teams, franchises, and growing brands.",
+  ...canonical("/programs"),
+}
+
 export default function ProgramsPage() {
   return (
     <div className="container mx-auto px-4 py-16">

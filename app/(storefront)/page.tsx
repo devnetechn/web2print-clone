@@ -1,8 +1,15 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Truck, Shield, Tag, Headphones, ArrowRight } from "lucide-react"
 import { HomeHero } from "@/components/storefront/home-hero"
 import { TrustindexReviews } from "@/components/storefront/trustindex-reviews"
 import { APPAREL_ENABLED } from "@/lib/feature-flags"
+import { JsonLd } from "@/components/seo/json-ld"
+import { organizationSchema, websiteSchema, canonical } from "@/lib/seo"
+
+export const metadata: Metadata = {
+  ...canonical("/"),
+}
 
 // 8 category tiles. All route to existing pages (six /print categories,
 // trading cards, and apparel). The apparel tile points at /merch when the
@@ -27,6 +34,7 @@ const CATEGORY_TILES = [
 export default async function HomePage() {
   return (
     <div>
+      <JsonLd data={[organizationSchema(), websiteSchema()]} />
       {/* 1 + 2. New split hero (replaces the retired slide carousel) */}
       <HomeHero />
 

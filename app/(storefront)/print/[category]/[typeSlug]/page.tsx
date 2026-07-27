@@ -8,6 +8,8 @@ import { resolveProductImage } from "@/lib/print/product-images"
 import { ProductInfoTabs } from "@/components/print/product-info-tabs"
 import type { ProductContent } from "@/lib/print/product-content"
 import { matchTemplateProduct } from "@/lib/print/template-match"
+import { JsonLd } from "@/components/seo/json-ld"
+import { canonical, categoryDescription, breadcrumbSchema, productSchema } from "@/lib/seo"
 
 // Only includes TYPE_RULES (hasTypeRules) categories — the OTHER entries in
 // print/[category]/page.tsx's EXTRA_PRODUCT_SOURCES (e.g. announcement-cards)
@@ -1444,15 +1446,30 @@ export async function generateMetadata({
 }: {
   params: Promise<{ category: string; typeSlug: string }>
 }) {
-  const { typeSlug } = await params
+  const { category, typeSlug } = await params
   const label =
     TYPE_LABELS[typeSlug] ||
     typeSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  const description = categoryDescription(typeSlug, label)
+  const image =
+    TYPE_IMAGES[category]?.[typeSlug] ||
+    SLUG_TO_CATEGORY[category]?.image ||
+    "/images/products/product-default.jpg"
+  const path = `/print/${category}/${typeSlug}`
   return {
-  title: label,
-  description: `Configure and order custom ${label.toLowerCase()} at Web2Print USA — live pricing, premium stocks, and fast nationwide shipping.`,
+    title: label,
+    description,
+    // Clean canonical drops the ?uuid= query so every variant of this page
+    // consolidates to one indexable URL.
+    ...canonical(path),
+    openGraph: {
+      title: `${label} | Web2Print USA`,
+      description,
+      url: path,
+      images: [{ url: image, alt: label }],
+    },
   }
-  }
+}
 
 export default async function ProductTypePage({
   params,
@@ -1871,12 +1888,29 @@ export default async function ProductTypePage({
 
     return (
       <div className="min-h-screen bg-white">
+        <JsonLd
+          data={[
+            productSchema({
+              name: productName,
+              description: categoryDescription(typeSlug, productName),
+              image: resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg"),
+              path: `/print/${category}/${typeSlug}`,
+              sku: product?.product_code || undefined,
+            }),
+            breadcrumbSchema([
+              { name: "Home", path: "/" },
+              ...(leaf ? [{ name: leaf.parentLabel, path: `/print/${leaf.parentSlug}` }] : []),
+              ...(leaf && leaf.name !== productName ? [{ name: leaf.name, path: `/print/${category}` }] : []),
+              { name: productName, path: `/print/${category}/${typeSlug}` },
+            ]),
+          ]}
+        />
         <div className="border-b border-slate-200 py-2 px-4">
           <div className="container mx-auto">
             <p className="text-sm text-slate-500">
-              <Link href="/" className="hover:text-[#e42a27]">Home</Link>
-              <span className="mx-2">&gt;</span>
-              {leaf && <><Link href={`/print/${leaf.parentSlug}`} className="hover:text-[#e42a27]">{leaf.parentLabel}</Link><span className="mx-2">&gt;</span></>}
+  <Link href="/" className="hover:text-[#e42a27]">Home</Link>
+  <span className="mx-2">&gt;</span>
+  {leaf && <><Link href={`/print/${leaf.parentSlug}`} className="hover:text-[#e42a27]">{leaf.parentLabel}</Link><span className="mx-2">&gt;</span></>}
               {leaf && leaf.name !== productName && <><Link href={`/print/${category}`} className="hover:text-[#e42a27]">{leaf.name}</Link><span className="mx-2">&gt;</span></>}
               <span className="text-[#e07b39]">{productName}</span>
             </p>
@@ -2374,6 +2408,22 @@ export default async function ProductTypePage({
 
   return (
     <div className="min-h-screen bg-white">
+      <JsonLd
+        data={[
+          productSchema({
+            name: typeLabel,
+            description: categoryDescription(typeSlug, typeLabel),
+            image: TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg",
+            path: `/print/${category}/${typeSlug}`,
+          }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            ...(leaf ? [{ name: leaf.parentLabel, path: `/print/${leaf.parentSlug}` }] : []),
+            ...(leaf && leaf.name !== typeLabel ? [{ name: leaf.name, path: `/print/${category}` }] : []),
+            { name: typeLabel, path: `/print/${category}/${typeSlug}` },
+          ]),
+        ]}
+      />
       <div className="border-b border-slate-200 py-2 px-4">
         <div className="container mx-auto">
           <p className="text-sm text-slate-500">
