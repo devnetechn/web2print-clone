@@ -1,4 +1,11 @@
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Professional Printing",
+  description:
+    "Order business cards, marketing materials, signs & banners, packaging, labels, and promo products online at Web2Print USA — live pricing and fast nationwide shipping.",
+}
 
 const TOP_CATEGORIES = [
   { name: "Business Cards", slug: "business-cards", description: "Premium quality business cards in various stocks and finishes" },
@@ -9,13 +16,15 @@ const TOP_CATEGORIES = [
   { name: "Promo Products", slug: "promo-products", description: "T-shirts, tote bags, mugs, and promotional items" },
 ]
 
+// Real site product photography (same assets used on the homepage grid),
+// replacing the earlier generic placeholder images.
 const CATEGORY_IMAGES: Record<string, string> = {
-  "business-cards": "/images/categories/business-cards.jpg",
-  "marketing-materials": "/images/categories/flyers.jpg",
-  "signs-banners": "/images/categories/posters.jpg",
-  "boxes-packaging": "/images/categories/notepads.jpg",
-  "roll-labels-stickers": "/images/categories/postcards.jpg",
-  "promo-products": "/images/categories/magnets.jpg",
+  "business-cards": "/images/cat/business-cards/foil-worx.jpg",
+  "marketing-materials": "/images/cat/flyers-and-brochures.jpg",
+  "signs-banners": "/images/cat/outdoor-banners/scrim-vinyl.jpg",
+  "boxes-packaging": "/images/cat/packaging.jpg",
+  "roll-labels-stickers": "/images/cat/roll-labels.jpg",
+  "promo-products": "/images/cat/mugs.jpg",
 }
 
 export default function PrintShopHome() {

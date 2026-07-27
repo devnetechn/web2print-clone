@@ -1449,10 +1449,10 @@ export async function generateMetadata({
     TYPE_LABELS[typeSlug] ||
     typeSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
   return {
-    title: `${label} | Custom Printing`,
-    description: `Configure and order custom ${label.toLowerCase()} at Web2Print USA — live pricing, premium stocks, and fast nationwide shipping.`,
+  title: label,
+  description: `Configure and order custom ${label.toLowerCase()} at Web2Print USA — live pricing, premium stocks, and fast nationwide shipping.`,
   }
-}
+  }
 
 export default async function ProductTypePage({
   params,
