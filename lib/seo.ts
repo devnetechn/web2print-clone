@@ -95,12 +95,13 @@ export function categoryDescription(slug: string, label: string): string {
 // with the <JsonLd> component.
 // ---------------------------------------------------------------------------
 export function organizationSchema() {
-  return {
+  const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
     url: SITE_URL,
     logo: SITE_LOGO,
+    email: SITE_EMAIL,
     contactPoint: {
       "@type": "ContactPoint",
       telephone: SITE_PHONE,
@@ -108,6 +109,35 @@ export function organizationSchema() {
       areaServed: "US",
       availableLanguage: "English",
     },
+  }
+  if (SITE_SAME_AS.filter(Boolean).length) schema.sameAs = SITE_SAME_AS.filter(Boolean)
+  return schema
+}
+
+/**
+ * LocalBusiness schema for a Service-Area Business (§4). We publish the city +
+ * served counties, not a storefront street address, since Web2Print USA ships
+ * nationwide from a Fort Lauderdale base rather than serving walk-ins.
+ */
+export function localBusinessSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: SITE_LOGO,
+    image: SITE_LOGO,
+    telephone: SITE_PHONE,
+    email: SITE_EMAIL,
+    priceRange: "$$",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE_CITY,
+      addressRegion: SITE_REGION,
+      addressCountry: "US",
+    },
+    areaServed: SERVICE_AREAS.map((name) => ({ "@type": "AdministrativeArea", name })),
+    ...(SITE_SAME_AS.filter(Boolean).length ? { sameAs: SITE_SAME_AS.filter(Boolean) } : {}),
   }
 }
 
@@ -170,3 +200,64 @@ export function productSchema(opts: {
   }
   return schema
 }
+
+export type Faq = { question: string; answer: string }
+
+/** FAQPage schema (§5). Returns null when there are no questions to render. */
+export function faqSchema(faqs: Faq[]) {
+  const clean = faqs.filter((f) => f.question && f.answer)
+  if (!clean.length) return null
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: clean.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  }
+}
+
+/**
+ * Organization schema carrying certifications/registrations as hasCredential
+ * (§6, Schools & Government). Names only — no fabricated numbers.
+ */
+export function credentialedOrganizationSchema(credentials: string[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: SITE_LOGO,
+    hasCredential: credentials.filter(Boolean).map((name) => ({
+      "@type": "EducationalOccupationalCredential",
+      credentialCategory: "certification",
+      name,
+    })),
+  }
+}
+
+// Default product FAQs applied to every print product page (§5) unless the
+// product supplies its own set.
+export const DEFAULT_PRODUCT_FAQS: Faq[] = [
+  {
+    question: "What file format should I upload?",
+    answer:
+      "We recommend a print-ready PDF at 300 DPI with a 1/8\" (0.125\") bleed on all sides and all fonts embedded or outlined. We also accept high-resolution JPG, PNG, TIFF, AI, and EPS files.",
+  },
+  {
+    question: "How fast can I get my order?",
+    answer:
+      "Turnaround times are shown live in the price calculator for each product and typically start at 2–4 business days for production, plus shipping transit time. Rush options are available on many products.",
+  },
+  {
+    question: "Do you offer free design help?",
+    answer:
+      "Yes. Free downloadable templates are available for most products, and our team can review your artwork before it goes to press. Full graphic design services are also available on request.",
+  },
+  {
+    question: "Where do you ship?",
+    answer:
+      "We ship nationwide across the United States. Live shipping estimates are calculated at checkout based on your quantity and delivery address.",
+  },
+]

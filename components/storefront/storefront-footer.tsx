@@ -1,8 +1,12 @@
 import Link from "next/link"
+import { JsonLd } from "@/components/seo/json-ld"
+import { localBusinessSchema } from "@/lib/seo"
 
 export function StorefrontFooter() {
   return (
     <footer>
+      {/* Sitewide LocalBusiness structured data (renders on every storefront page). */}
+      <JsonLd data={localBusinessSchema()} />
       {/* Newsletter Section - Single Row Layout */}
       <section className="bg-[#3a3f4d] py-10">
         <div className="container mx-auto px-4">
@@ -171,9 +175,9 @@ export function StorefrontFooter() {
                 </div>
                 <div className="pt-2">
                   <div className="font-semibold text-slate-800">📍 Web2Print USA</div>
-                  <div>7901 4th St. N #27125.</div>
-                  <div>St. Petersburg, FL 33702</div>
-                  <div>USA</div>
+                  <div>Fort Lauderdale, FL</div>
+                  <div>Serving Broward, Miami-Dade &amp; Palm Beach</div>
+                  <div>Nationwide shipping across the USA</div>
                 </div>
 
                 <div className="flex gap-2 pt-3">
@@ -214,6 +218,9 @@ export function StorefrontFooter() {
                 </svg>
               </a>
             </div>
+            <p className="text-sm text-slate-600">
+              Powered by <span className="font-semibold text-[#2c327a]">Born for Prosperity Inc.</span>
+            </p>
             <p className="text-sm text-slate-600">Copyright ©2026 Web2Print USA Solution. All Rights Reserved.</p>
           </div>
         </div>
