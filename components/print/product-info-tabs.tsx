@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, ChevronRight } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { ProductContent, FAQ } from "@/lib/print/product-content"
+import type { ProductContent } from "@/lib/print/product-content"
 import type { TemplateProduct } from "@/lib/print/templates"
 import { ProductTemplatesPanel } from "@/components/print/product-templates-panel"
 
@@ -72,7 +71,6 @@ export function ProductInfoTabs({
   templateProduct = null,
 }: ProductInfoTabsProps) {
   const [specsState, setSpecsState] = useState<SpecsState>({ status: "idle" })
-  const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set())
 
   const handleTabChange = (tab: string) => {
     if (tab === "specs" && (specsState.status === "idle" || specsState.status === "error")) {
@@ -150,25 +148,16 @@ export function ProductInfoTabs({
     }
   }
 
-  const toggleFaq = (i: number) =>
-    setOpenFaqs(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
-      return next
-    })
-
-  const faqs: FAQ[] = content?.faqs ?? []
-
   return (
     <Tabs defaultValue="description" onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0 overflow-x-auto">
-        {(["description", "specs", "templates", "faqs"] as const).map(tab => (
+        {(["description", "specs", "templates"] as const).map(tab => (
           <TabsTrigger
             key={tab}
             value={tab}
             className="flex-shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] px-3 sm:px-6 py-3 text-sm font-medium bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
-            {tab === "faqs" ? "FAQs" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -226,37 +215,6 @@ export function ProductInfoTabs({
       {/* Templates */}
       <TabsContent value="templates" className="mt-6">
         <ProductTemplatesPanel product={templateProduct} />
-      </TabsContent>
-
-      {/* FAQs */}
-      <TabsContent value="faqs" className="mt-6">
-        {faqs.length > 0 ? (
-          <div className="divide-y border rounded-lg overflow-hidden">
-            {faqs.map((faq, i) => (
-              <div key={i}>
-                <button
-                  onClick={() => toggleFaq(i)}
-                  aria-expanded={openFaqs.has(i)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <span className="font-medium text-slate-800">{faq.q}</span>
-                  {openFaqs.has(i) ? (
-                    <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  )}
-                </button>
-                {openFaqs.has(i) && (
-                  <div className="px-4 py-4 bg-slate-50 border-t text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">FAQs coming soon.</p>
-        )}
       </TabsContent>
     </Tabs>
   )
