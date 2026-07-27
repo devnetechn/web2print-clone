@@ -1837,6 +1837,22 @@ function groupKey(desc: string, isBusinessCards = false): string {
     .join(" ")
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>
+}) {
+  const { category } = await params
+  const label =
+    GROUPS[category]?.label ||
+    SLUG_TO_CATEGORY[category]?.name ||
+    category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  return {
+    title: `${label} Printing`,
+    description: `Order custom ${label.toLowerCase()} online at Web2Print USA. Live pricing, fast turnaround, and free design templates.`,
+  }
+}
+
 export default async function PrintCategoryPage({
   params,
 }: {
@@ -1985,8 +2001,8 @@ export default async function PrintCategoryPage({
     if (!rows || rows.length === 0) {
       console.log("[v0] No products in DB for", label, "- fetching from 4over API...")
       const apiResult = await getAllProductsForCategory(categoryUuid)
-      if (apiResult.success && apiResult.data?.entities?.length > 0) {
-        const apiProducts = apiResult.data.entities
+      if (apiResult.success && (apiResult.data?.entities?.length ?? 0) > 0) {
+        const apiProducts = apiResult.data!.entities!
         console.log("[v0] Got", apiProducts.length, "products from 4over API for", label)
 
         const productsToInsert = apiProducts.map((p: any) => ({
