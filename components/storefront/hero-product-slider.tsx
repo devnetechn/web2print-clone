@@ -1,22 +1,24 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 // Eye-catching REAL product photos (copied from the 4over source, living in
 // /public/images/cat). Each slide is assigned an entrance direction so the
 // sequence feels lively: some rise up, some come from the left, some from the
-// right, with a couple zooming in.
+// right, with a couple zooming in. `href` points to the matching print
+// category/subcategory page so the whole slide is clickable.
 type Dir = "up" | "left" | "right" | "zoom"
 
-const SLIDES: { src: string; label: string; dir: Dir }[] = [
-  { src: "/images/cat/business-cards/foil-worx.jpg", label: "Foil Business Cards", dir: "right" },
-  { src: "/images/cat/trading-cards/akuafoil.jpg", label: "Akuafoil Trading Cards", dir: "up" },
-  { src: "/images/cat/t-shirts.jpg", label: "Custom Apparel", dir: "left" },
-  { src: "/images/cat/outdoor-banners/scrim-vinyl.jpg", label: "Vinyl Banners", dir: "zoom" },
-  { src: "/images/cat/packaging.jpg", label: "Custom Packaging", dir: "up" },
-  { src: "/images/cat/stickers.jpg", label: "Die-Cut Stickers", dir: "right" },
-  { src: "/images/cat/roll-labels.jpg", label: "Roll Labels", dir: "left" },
-  { src: "/images/cat/presentation-folders.jpg", label: "Presentation Folders", dir: "zoom" },
+const SLIDES: { src: string; label: string; dir: Dir; href: string }[] = [
+  { src: "/images/cat/business-cards/foil-worx.jpg", label: "Foil Business Cards", dir: "right", href: "/print/business-cards/foil-worx" },
+  { src: "/images/cat/trading-cards/akuafoil.jpg", label: "Akuafoil Trading Cards", dir: "up", href: "/print/marketing-materials/trading-cards" },
+  { src: "/images/cat/t-shirts.jpg", label: "Custom Apparel", dir: "left", href: "/print/promo-products/t-shirts" },
+  { src: "/images/cat/outdoor-banners/scrim-vinyl.jpg", label: "Vinyl Banners", dir: "zoom", href: "/print/signs-banners" },
+  { src: "/images/cat/packaging.jpg", label: "Custom Packaging", dir: "up", href: "/print/boxes-packaging" },
+  { src: "/images/cat/stickers.jpg", label: "Die-Cut Stickers", dir: "right", href: "/print/roll-labels-stickers/stickers" },
+  { src: "/images/cat/roll-labels.jpg", label: "Roll Labels", dir: "left", href: "/print/roll-labels-stickers/roll-labels" },
+  { src: "/images/cat/presentation-folders.jpg", label: "Presentation Folders", dir: "zoom", href: "/print/marketing-materials/presentation-folders" },
 ]
 
 const INTERVAL = 3200
@@ -62,13 +64,24 @@ export function HeroProductSlider() {
         )
       })}
 
-      {/* Product label chip for the active slide */}
-      <div className="absolute bottom-3 left-3 rounded-md bg-black/55 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+      {/* Full-slide clickable overlay → the active product's category page.
+          Sits above the images but below the dots/label so those stay usable. */}
+      <Link
+        href={SLIDES[active].href}
+        aria-label={`Shop ${SLIDES[active].label}`}
+        className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+      />
+
+      {/* Product label chip for the active slide (also links) */}
+      <Link
+        href={SLIDES[active].href}
+        className="absolute bottom-3 left-3 z-20 rounded-md bg-black/55 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+      >
         {SLIDES[active].label}
-      </div>
+      </Link>
 
       {/* Progress dots */}
-      <div className="absolute bottom-3 right-3 flex gap-1.5">
+      <div className="absolute bottom-3 right-3 z-20 flex gap-1.5">
         {SLIDES.map((_, i) => (
           <button
             key={i}
