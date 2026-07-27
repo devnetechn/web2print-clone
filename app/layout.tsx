@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Montserrat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/toaster'
+import { SITE_URL } from '@/lib/seo'
 import './globals.css'
 
 const montserrat = Montserrat({ 
@@ -17,7 +18,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://web2printusa.com'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default:
       'Web2Print USA | Print That Means Business — Cards, Banners, Apparel & Business Services',

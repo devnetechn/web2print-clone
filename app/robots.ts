@@ -16,6 +16,11 @@ export default function robots(): MetadataRoute.Robots {
           "/account",
           "/merch/checkout",
           "/tracking",
+          "/design-studio",
+          "/auth",
+          // Feature-flagged sections, hidden until client sign-off. Remove the
+          // matching line here once a section is enabled for customers.
+          "/merch",
         ],
       },
     ],
