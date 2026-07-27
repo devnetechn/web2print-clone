@@ -12,16 +12,34 @@ export function HomeHero() {
     <section className="bg-white border-b border-slate-200">
       <div className="container mx-auto px-4 pt-6 pb-12 md:pt-8 md:pb-16 lg:pt-10 lg:pb-20">
         <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* Left: copy — nudged down slightly so it aligns near the top of the
-              image panel rather than vertically centering. */}
-          <div className="max-w-xl lg:pt-12">
+          {/* Block A: kicker + headline. On mobile this sits above the image;
+              on desktop it's the top of the left copy column. */}
+          <div className="max-w-xl lg:col-start-1 lg:row-start-1 lg:pt-12">
             <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#e42a27]">
               Their job ends at checkout. Ours starts there.
             </p>
             <h1 className="text-4xl font-extrabold leading-[1.05] tracking-[-0.015em] text-[#2c327a] text-balance sm:text-5xl lg:text-6xl">
               Print that means business.
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-slate-600 text-pretty">
+          </div>
+
+          {/* Image: framed product slider with crop marks. DOM-ordered between
+              the headline and the supporting copy so it appears right below the
+              headline on mobile; grid placement keeps it in the right column,
+              spanning both rows, on desktop. */}
+          <div className="relative lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start">
+            <CropMarks />
+            <HeroProductSlider />
+            {/* Powered by chip */}
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-5 py-2 text-xs font-semibold text-slate-600 shadow-md">
+              Powered by <span className="text-[#2c327a]">Born for Prosperity</span>
+            </div>
+          </div>
+
+          {/* Block C: supporting copy + CTAs + social proof. On mobile this
+              renders below the image; on desktop it continues the left column. */}
+          <div className="max-w-xl lg:col-start-1 lg:row-start-2">
+            <p className="text-lg leading-relaxed text-slate-600 text-pretty">
               Business cards, banners, packaging, and custom apparel — plus the
               business services that get you launched and found. National print
               power, first-name service.
@@ -64,16 +82,6 @@ export function HomeHero() {
             <p className="mt-4 text-sm text-slate-500">
               Trusted by schools, government agencies, and growing brands nationwide.
             </p>
-          </div>
-
-          {/* Right: framed product slider with crop marks */}
-          <div className="relative">
-            <CropMarks />
-            <HeroProductSlider />
-            {/* Powered by chip */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-5 py-2 text-xs font-semibold text-slate-600 shadow-md">
-              Powered by <span className="text-[#2c327a]">Born for Prosperity</span>
-            </div>
           </div>
         </div>
       </div>

@@ -120,10 +120,10 @@ export function StorefrontHeader() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden -ml-2 text-slate-700"
+                  className="lg:hidden -ml-2 h-11 w-11 text-[#2c327a] hover:text-[#2c327a] hover:bg-[#2c327a]/10"
                   aria-label="Open menu"
                 >
-                  <Menu className="h-6 w-6" />
+                  <Menu className="h-7 w-7" strokeWidth={2.75} />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
