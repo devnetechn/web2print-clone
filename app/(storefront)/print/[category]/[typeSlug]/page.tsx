@@ -1886,6 +1886,9 @@ export default async function ProductTypePage({
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             <div>
+              {/* Spacer matches the configurator's "Price Calculator" header
+                  height so the image lines up with the calculator card. */}
+              <div className="hidden lg:block mb-4 h-7" aria-hidden="true" />
               <div className="w-full max-w-[520px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="group aspect-square relative overflow-hidden rounded-lg bg-slate-100">
                   <Image
@@ -2399,6 +2402,9 @@ export default async function ProductTypePage({
           <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image + info tabs */}
             <div>
+              {/* Spacer matches the configurator's "Price Calculator" header
+                  height so the image lines up with the calculator card. */}
+              <div className="hidden lg:block mb-4 h-7" aria-hidden="true" />
               <div className="w-full max-w-[520px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <div className="group aspect-square relative overflow-hidden rounded-lg bg-slate-100">
                   <Image

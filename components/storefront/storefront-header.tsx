@@ -226,18 +226,18 @@ export function StorefrontHeader() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-16 md:h-20" />
+              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-20 md:h-24" />
             </Link>
 
+            {/* Spacer pushes the search + right-side cluster together toward the
+                right, so the search sits next to the phone number. */}
+            <div className="flex-1" />
+
             {/* Search Box - hidden on small screens (available in mobile menu).
-                Self-contained: recent searches, categories, trending.
-                Left margin keeps it clear of the logo. */}
-            <div className="hidden md:block md:ml-8 lg:ml-12">
+                Self-contained: recent searches, categories, trending. */}
+            <div className="hidden md:block md:mr-6 lg:mr-8">
               <HeaderSearch variant="desktop" />
             </div>
-
-            {/* Spacer pushes right-side items to the edge */}
-            <div className="flex-1" />
 
             {/* Phone - hidden below lg */}
             <div className="hidden lg:flex items-center gap-2 text-sm">
