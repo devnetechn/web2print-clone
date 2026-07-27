@@ -133,11 +133,6 @@ export function StorefrontHeader() {
                   </SheetTitle>
                 </SheetHeader>
 
-                {/* Mobile search */}
-                <div className="p-4 border-b">
-                  <HeaderSearch variant="mobile" />
-                </div>
-
                 {/* Mobile accordion navigation */}
                 <nav className="px-2 py-2">
                   <Accordion type="single" collapsible className="w-full">
@@ -285,6 +280,12 @@ export function StorefrontHeader() {
                 </span>
               )}
             </Link>
+          </div>
+
+          {/* Always-visible full-width mobile search (like the reference).
+              Hidden on md+ where the inline top-bar search is used instead. */}
+          <div className="md:hidden pb-3">
+            <HeaderSearch variant="mobile" />
           </div>
         </div>
       </div>

@@ -42,23 +42,8 @@ export const metadata: Metadata = {
       'Business cards, banners, custom apparel, and business services — national print power, first-name service.',
     images: ['/og-image.png'],
   },
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+  // Favicons are provided by the app/icon.png and app/apple-icon.png file
+  // conventions (Web2Print "W2P" mark), which Next.js wires up automatically.
 }
 
 export default function RootLayout({

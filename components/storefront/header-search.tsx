@@ -102,18 +102,22 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder="Search products"
-          className="w-full pr-10 h-10 border-slate-300 rounded-full bg-white"
+          placeholder={isMobile ? "Search postcards, flyers, apparel and…" : "Search products"}
+          className={`w-full border-slate-300 rounded-full bg-white ${
+            isMobile ? "h-12 pl-11 pr-4 text-base" : "h-10 pr-10"
+          }`}
           aria-label="Search products"
         />
         <Button
           type="submit"
           size="icon"
           variant="ghost"
-          className="absolute right-1 top-1 h-8 w-8 rounded-full text-slate-500 hover:text-[#2c327a]"
+          className={`absolute rounded-full text-slate-500 hover:text-[#2c327a] ${
+            isMobile ? "left-1.5 top-1.5 h-9 w-9" : "right-1 top-1 h-8 w-8"
+          }`}
           aria-label="Search"
         >
-          <Search className="h-4 w-4" />
+          <Search className={isMobile ? "h-5 w-5" : "h-4 w-4"} />
         </Button>
       </form>
 
