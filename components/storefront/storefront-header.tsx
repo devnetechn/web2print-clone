@@ -217,8 +217,11 @@ export function StorefrontHeader() {
             </Link>
 
             {/* Search Box - hidden on small screens (available in mobile menu).
-                Self-contained: recent searches, categories, trending. */}
-            <HeaderSearch variant="desktop" />
+                Self-contained: recent searches, categories, trending.
+                Left margin keeps it clear of the logo. */}
+            <div className="hidden md:block md:ml-8 lg:ml-12">
+              <HeaderSearch variant="desktop" />
+            </div>
 
             {/* Spacer pushes right-side items to the edge */}
             <div className="flex-1" />

@@ -7,6 +7,7 @@ import Image from "next/image"
 import { Search, X, Clock, ChevronRight, TrendingUp, LayoutGrid } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { resolveSearch } from "@/lib/print/search-resolver"
 
 const RECENT_KEY = "w2p-recent-searches"
 const MAX_RECENT = 6
@@ -79,7 +80,8 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
     persistRecent(next)
     setOpen(false)
     setQuery("")
-    router.push(`/products?search=${encodeURIComponent(q)}`)
+    // Route to the best real, 4over-backed catalog page for this query.
+    router.push(resolveSearch(q))
   }
 
   function removeRecent(term: string) {
@@ -120,7 +122,7 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
           className={`z-[120] rounded-xl border border-slate-200 bg-white shadow-2xl ${
             isMobile
               ? "mt-3"
-              : "absolute left-0 top-full mt-2 w-[540px] max-w-[calc(100vw-15rem)] max-h-[70vh] overflow-y-auto"
+              : "absolute left-0 top-full mt-2 w-[440px] max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto"
           }`}
         >
           {/* Recent searches */}
@@ -152,7 +154,7 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
             </div>
           )}
 
-          <div className={`gap-4 p-4 ${isMobile ? "flex flex-col" : "grid grid-cols-[200px_1fr]"}`}>
+          <div className={`gap-4 p-4 ${isMobile ? "flex flex-col" : "grid grid-cols-[150px_1fr]"}`}>
             {/* Categories */}
             <div className={isMobile ? "" : "border-r border-slate-100 pr-4"}>
               <div className="mb-3 flex items-center gap-2 text-sm font-bold text-[#2c327a]">
@@ -181,7 +183,7 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
                 <TrendingUp className="h-4 w-4" />
                 Trending Products
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-1">
                 {TRENDING.map((p) => (
                   <Link
                     key={p.href}
@@ -193,7 +195,7 @@ export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "m
                       <Image src={p.img || "/placeholder.svg"} alt={p.name} fill className="object-cover" sizes="48px" />
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-slate-800">{p.name}</div>
+                      <div className="text-sm font-medium leading-snug text-slate-800 line-clamp-2">{p.name}</div>
                       <div className="truncate text-xs text-slate-400">{p.category}</div>
                     </div>
                   </Link>
