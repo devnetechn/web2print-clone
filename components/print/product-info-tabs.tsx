@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Download } from "lucide-react"
+import { ChevronDown, ChevronRight } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { ProductContent, FAQ, FilePrepInfo, TemplateLink } from "@/lib/print/product-content"
+import type { ProductContent, FAQ } from "@/lib/print/product-content"
+import type { TemplateProduct } from "@/lib/print/templates"
+import { ProductTemplatesPanel } from "@/components/print/product-templates-panel"
 
 // Mirrors the same regex used in product-configurator-client — display-only cleanup
 const BC_SIZE_SUFFIX = /\s*\((Oval|Fold\s*Over|Round\s*Corners?)\)\s*$/i
