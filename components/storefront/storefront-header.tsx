@@ -286,6 +286,12 @@ export function StorefrontHeader() {
               )}
             </Link>
           </div>
+
+          {/* Always-visible full-width mobile search (like the reference).
+              Hidden on md+ where the inline top-bar search is used instead. */}
+          <div className="md:hidden pb-3">
+            <HeaderSearch variant="mobile" />
+          </div>
         </div>
       </div>
 
