@@ -22,17 +22,17 @@ const CATEGORIES: { label: string; href: string }[] = [
   { label: "Promo Products", href: "/print/promo-products" },
 ]
 
-// Trending products — real product-type pages (/print/[category]/[typeSlug])
+// Trending products — real single-segment product pages (/print/[leaf-slug])
 // with the catalog's own images.
 const TRENDING: { name: string; category: string; href: string; img: string }[] = [
-  { name: "Silk Business Cards", category: "Business Cards", href: "/print/business-cards/silk-cards", img: "/images/cat/business-cards/silk.jpg" },
-  { name: "Raised Foil Cards", category: "Business Cards", href: "/print/business-cards/raised-foil", img: "/images/cat/business-cards/raised-foil.jpg" },
-  { name: "Foil Worx Trading Cards", category: "Marketing Products", href: "/print/marketing-materials/trading-cards", img: "/images/cat/trading-cards.jpg" },
-  { name: "Postcards", category: "Marketing Products", href: "/print/marketing-materials/postcards", img: "/images/cat/postcards.jpg" },
-  { name: "Outdoor Banners", category: "Signs & Banners", href: "/print/signs-banners/outdoor-banners", img: "/images/signs/outdoor-banners.jpg" },
-  { name: "Roll Labels", category: "Roll Labels & Stickers", href: "/print/roll-labels-stickers/roll-labels", img: "/images/cat/roll-labels.jpg" },
-  { name: "Custom T-Shirts", category: "Promo Products", href: "/print/promo-products/t-shirts", img: "/images/cat/t-shirts.jpg" },
-  { name: "Custom Packaging", category: "Boxes & Packaging", href: "/print/boxes-packaging/packaging", img: "/images/cat/packaging.jpg" },
+  { name: "Silk Business Cards", category: "Business Cards", href: "/print/silk-cards", img: "/images/cat/business-cards/silk.jpg" },
+  { name: "Raised Foil Cards", category: "Business Cards", href: "/print/raised-foil", img: "/images/cat/business-cards/raised-foil.jpg" },
+  { name: "Foil Worx Trading Cards", category: "Marketing Products", href: "/print/trading-cards", img: "/images/cat/trading-cards.jpg" },
+  { name: "Postcards", category: "Marketing Products", href: "/print/postcards", img: "/images/cat/postcards.jpg" },
+  { name: "Outdoor Banners", category: "Signs & Banners", href: "/print/outdoor-banners", img: "/images/signs/outdoor-banners.jpg" },
+  { name: "Roll Labels", category: "Roll Labels & Stickers", href: "/print/roll-labels", img: "/images/cat/roll-labels.jpg" },
+  { name: "Custom T-Shirts", category: "Promo Products", href: "/print/t-shirts", img: "/images/cat/t-shirts.jpg" },
+  { name: "Custom Packaging", category: "Boxes & Packaging", href: "/print/packaging", img: "/images/cat/packaging.jpg" },
 ]
 
 export function HeaderSearch({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {

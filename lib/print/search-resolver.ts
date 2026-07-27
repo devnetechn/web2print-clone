@@ -2,11 +2,15 @@ import { GROUPS } from "@/lib/print/categories"
 
 // Resolves a free-text search query to the best REAL catalog route.
 //
+// The live catalog uses SINGLE-SEGMENT leaf routes:
+//   - Category listing:  /print/[leaf-slug]   (e.g. /print/postcards)
+//   - Product type:      /print/[leaf-slug]    (also single segment)
+//
 // Priority order (most specific wins):
-//   1. Exact product-type match  -> /print/[category]/[typeSlug]
+//   1. Exact product-type match  -> /print/[typeSlug]
 //   2. Exact category match      -> /print/[category]
 //   3. Category label contains q -> /print/[category]
-//   4. Product-type name contains q (shortest wins) -> /print/[category]/[typeSlug]
+//   4. Product-type name contains q (shortest wins) -> /print/[typeSlug]
 //   5. Fallback -> /products?search=q  (still backed by the 4over catalog)
 //
 // This DOES NOT touch the 4over API — it only picks which already-built,
@@ -40,12 +44,12 @@ for (const [catKey, group] of Object.entries(GROUPS)) {
   })
   for (const sub of group.subcategories) {
     TYPE_ENTRIES.push({
-      route: `/print/${catKey}/${sub.slug}`,
+      route: `/print/${sub.slug}`,
       name: norm(sub.name),
       kind: "type",
     })
     TYPE_ENTRIES.push({
-      route: `/print/${catKey}/${sub.slug}`,
+      route: `/print/${sub.slug}`,
       name: norm(sub.slug),
       kind: "type",
     })
