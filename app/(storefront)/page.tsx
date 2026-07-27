@@ -7,18 +7,19 @@ import { APPAREL_ENABLED } from "@/lib/feature-flags"
 // 8 category tiles. All route to existing pages (six /print categories,
 // trading cards, and apparel). The apparel tile points at /merch when the
 // apparel catalogue is live, otherwise it pre-selects Custom Apparel on the
-// quote form so it never 404s. Tile art shares one studio background treatment.
+// quote form so it never 404s. Tile art uses the REAL product photos already
+// in /public/images/cat (copied from the 4over source), not generated art.
 const CATEGORY_TILES = [
-  { label: "Business Cards", img: "/images/home/tile-business-cards.png", href: "/print/business-cards" },
-  { label: "Marketing Materials", img: "/images/home/tile-marketing.png", href: "/print/marketing-materials" },
-  { label: "Signs & Banners", img: "/images/home/tile-signs-banners.png", href: "/print/signs-banners" },
-  { label: "Boxes & Packaging", img: "/images/home/tile-boxes-packaging.png", href: "/print/boxes-packaging" },
-  { label: "Roll Labels & Stickers", img: "/images/home/tile-labels-stickers.png", href: "/print/roll-labels-stickers" },
-  { label: "Promo Products", img: "/images/home/tile-promo.png", href: "/print/promo-products" },
-  { label: "Trading Cards", img: "/images/home/tile-trading-cards.png", href: "/print/trading-cards" },
+  { label: "Business Cards", img: "/images/cat/business-cards/foil-worx.jpg", href: "/print/business-cards" },
+  { label: "Marketing Materials", img: "/images/cat/flyers-and-brochures.jpg", href: "/print/marketing-materials" },
+  { label: "Signs & Banners", img: "/images/cat/outdoor-banners/scrim-vinyl.jpg", href: "/print/signs-banners" },
+  { label: "Boxes & Packaging", img: "/images/cat/packaging.jpg", href: "/print/boxes-packaging" },
+  { label: "Roll Labels & Stickers", img: "/images/cat/roll-labels.jpg", href: "/print/roll-labels-stickers" },
+  { label: "Promo Products", img: "/images/cat/mugs.jpg", href: "/print/promo-products" },
+  { label: "Trading Cards", img: "/images/cat/trading-cards.jpg", href: "/print/trading-cards" },
   {
     label: "Custom Apparel",
-    img: "/images/home/tile-apparel.png",
+    img: "/images/cat/t-shirts.jpg",
     href: APPAREL_ENABLED ? "/merch" : "/quote?product=custom-apparel",
   },
 ]

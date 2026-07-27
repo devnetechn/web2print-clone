@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { HeroProductSlider } from "@/components/storefront/hero-product-slider"
 
 // New homepage hero — replaces the retired slide carousel. Split layout:
 // copy on the left, framed product image with crop marks on the right.
@@ -45,16 +46,10 @@ export function HomeHero() {
             </p>
           </div>
 
-          {/* Right: framed image with crop marks */}
+          {/* Right: framed product slider with crop marks */}
           <div className="relative">
             <CropMarks />
-            <div className="overflow-hidden rounded-lg bg-slate-100 shadow-xl">
-              <img
-                src="/images/home/hero-print.png"
-                alt="Premium printed business cards, brochures, flyers, and a banner arranged on a studio background"
-                className="h-full w-full object-cover"
-              />
-            </div>
+            <HeroProductSlider />
             {/* Powered by chip */}
             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-5 py-2 text-xs font-semibold text-slate-600 shadow-md">
               Powered by <span className="text-[#2c327a]">Born for Prosperity</span>

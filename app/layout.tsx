@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: 'Web2Print USA | Print That Means Business',
     description:
       'Business cards, banners, custom apparel, and business services — national print power, first-name service.',
-    images: [{ url: '/images/home/hero-print.png', width: 1200, height: 630, alt: 'Web2Print USA' }],
+    images: [{ url: '/images/cat/business-cards/foil-worx.jpg', width: 600, height: 600, alt: 'Web2Print USA' }],
   },
   icons: {
     icon: [
