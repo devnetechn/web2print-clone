@@ -234,7 +234,7 @@ export function StorefrontHeader() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-10 md:h-14" />
+              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-14 md:h-16" />
             </Link>
 
             {/* Search Box - hidden on small screens (available in mobile menu) */}
