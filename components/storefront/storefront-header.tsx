@@ -208,13 +208,6 @@ export function StorefrontHeader() {
                   {/* Mobile utility links */}
                   <div className="mt-2 flex flex-col gap-1 border-t border-slate-100 pt-2">
                     <Link
-                      href="/templates"
-                      onClick={() => setMobileOpen(false)}
-                      className="px-2 py-3 text-sm text-slate-700 hover:text-[#e42a27]"
-                    >
-                      Free Design Templates
-                    </Link>
-                    <Link
                       href="/tracking"
                       onClick={() => setMobileOpen(false)}
                       className="px-2 py-3 text-sm text-slate-700 hover:text-[#e42a27]"
@@ -383,7 +376,6 @@ export function StorefrontHeader() {
                       Direct Mail Services removed entirely (not just this nav
                       link) per Boss Dwayne's follow-up request -- the
                       underlying "/print/eddm" page no longer exists. */}
-                  <Link href="/templates" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Free Design Templates</Link>
                   <Link href="/print" className="block px-4 py-3 text-[#e42a27] hover:bg-[#e42a27] hover:text-white font-semibold">View All</Link>
                 </div>
               )}

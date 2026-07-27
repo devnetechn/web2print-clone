@@ -95,11 +95,7 @@ export function StorefrontFooter() {
                     Artwork Guidelines
                   </Link>
                 </li>
-                <li>
-                  <Link href="/templates" className="hover:text-[#e42a27]">
-                    Download Templates
-                  </Link>
-                </li>
+
                 <li>
                   <Link href="/testimonials" className="hover:text-[#e42a27]">
                     Testimonials
