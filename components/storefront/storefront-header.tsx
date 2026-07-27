@@ -70,7 +70,8 @@ const NAV_GROUPS: NavGroup[] = [
     links: [
       { label: "Start a Business", href: "/services" },
       { label: "Web Design", href: "/services/website-design" },
-      { label: "Get Found on Google", href: "/services" },
+      { label: "Get Found on Google", href: "/services", comingSoon: true },
+      { label: "Graphic Design", href: "/services", comingSoon: true },
       { label: "Storefront Makeover", href: "/services/storefront-makeover" },
       { label: "Request a Quote", href: "/quote", accent: true },
     ],
@@ -171,18 +172,30 @@ export function StorefrontHeader() {
                                   {group.label} Home
                                 </Link>
                               )}
-                              {group.links.map((link) => (
-                                <Link
-                                  key={link.href + link.label}
-                                  href={link.href}
-                                  onClick={() => setMobileOpen(false)}
-                                  className={`px-4 py-2 text-sm hover:text-[#e42a27] ${
-                                    link.accent ? "text-[#e42a27] font-semibold" : "text-slate-600"
-                                  }`}
-                                >
-                                  {link.label}
-                                </Link>
-                              ))}
+                              {group.links.map((link) =>
+                                link.comingSoon ? (
+                                  <span
+                                    key={link.href + link.label}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 cursor-not-allowed"
+                                  >
+                                    {link.label}
+                                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                      Coming Soon
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <Link
+                                    key={link.href + link.label}
+                                    href={link.href}
+                                    onClick={() => setMobileOpen(false)}
+                                    className={`px-4 py-2 text-sm hover:text-[#e42a27] ${
+                                      link.accent ? "text-[#e42a27] font-semibold" : "text-slate-600"
+                                    }`}
+                                  >
+                                    {link.label}
+                                  </Link>
+                                ),
+                              )}
                             </div>
                           </AccordionContent>
                         </AccordionItem>
@@ -303,17 +316,31 @@ export function StorefrontHeader() {
                   )}
                   {hasDropdown && openMenu === group.id && (
                     <div className="absolute left-0 top-full bg-white shadow-lg min-w-[240px] z-[100]">
-                      {group.links.map((link, i) => (
-                        <Link
-                          key={link.href + link.label}
-                          href={link.href}
-                          className={`block px-4 py-3 hover:bg-[#2c327a] hover:text-white ${
-                            i < group.links.length - 1 ? "border-b border-slate-100" : ""
-                          } ${link.accent ? "text-[#e42a27] font-semibold hover:bg-[#e42a27]" : "text-slate-700"}`}
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
+                      {group.links.map((link, i) =>
+                        link.comingSoon ? (
+                          <span
+                            key={link.href + link.label}
+                            className={`flex items-center justify-between gap-2 px-4 py-3 text-slate-400 cursor-not-allowed ${
+                              i < group.links.length - 1 ? "border-b border-slate-100" : ""
+                            }`}
+                          >
+                            {link.label}
+                            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                              Coming Soon
+                            </span>
+                          </span>
+                        ) : (
+                          <Link
+                            key={link.href + link.label}
+                            href={link.href}
+                            className={`block px-4 py-3 hover:bg-[#2c327a] hover:text-white ${
+                              i < group.links.length - 1 ? "border-b border-slate-100" : ""
+                            } ${link.accent ? "text-[#e42a27] font-semibold hover:bg-[#e42a27]" : "text-slate-700"}`}
+                          >
+                            {link.label}
+                          </Link>
+                        ),
+                      )}
                     </div>
                   )}
                 </li>
