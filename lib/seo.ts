@@ -2,14 +2,28 @@
 // per-category marketing descriptions. Presentation-layer only — this file
 // never touches the 4over API, env vars, or order/checkout logic.
 
+// Canonical host is the www subdomain (per SEO spec §1/§4). Non-www and http
+// should 301 to this at the DNS/Vercel level.
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://web2printusa.com"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.web2printusa.com"
 ).replace(/\/$/, "")
 
 export const SITE_NAME = "Web2Print USA"
 export const SITE_PHONE = "+1-888-843-6867"
+export const SITE_EMAIL = "info@web2printusa.com"
 export const SITE_LOGO = `${SITE_URL}/logo.png`
-export const DEFAULT_OG_IMAGE = "/images/cat/business-cards/foil-worx.jpg"
+export const DEFAULT_OG_IMAGE = "/og-image.png"
+
+// NAP (§4): Service-Area Business based in Fort Lauderdale. The public
+// geographic identity is Fort Lauderdale + the three South Florida counties;
+// the St. Petersburg address is a registered-agent mailing address only.
+export const SITE_CITY = "Fort Lauderdale"
+export const SITE_REGION = "FL"
+export const SERVICE_AREAS = ["Broward County", "Miami-Dade County", "Palm Beach County"]
+
+// Public social/citation profiles (§1.6 sameAs). Add real profile URLs here as
+// they go live; empty entries are omitted from the schema.
+export const SITE_SAME_AS: string[] = []
 
 /** Build an absolute URL from a site-relative path. */
 export function absoluteUrl(path = "/"): string {
