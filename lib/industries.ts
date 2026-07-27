@@ -31,6 +31,24 @@ export function quoteHref(slug: string) {
   return `/quote?industry=${encodeURIComponent(slug)}`
 }
 
+// Builds the page metadata for an industry, including an OpenGraph image that
+// reuses the page's own real hero product photo (relative URLs resolve against
+// metadataBase). Keeps every industry page consistent from a single source.
+export function industryMetadata(data: IndustryData) {
+  const path = `/industries/${data.slug}`
+  return {
+    title: data.metaTitle,
+    description: data.metaDescription,
+    alternates: { canonical: path },
+    openGraph: {
+      title: data.metaTitle,
+      description: data.metaDescription,
+      url: path,
+      images: [{ url: data.heroImage, alt: data.name }],
+    },
+  }
+}
+
 // Shared closing band shown at the bottom of every builder page.
 export const BEYOND_PRINT_BAND = {
   heading: "Print is step one.",
