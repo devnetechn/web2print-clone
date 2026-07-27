@@ -47,14 +47,10 @@ export default function PrintShopHome() {
                   />
                 </div>
               </Link>
-              <h2 className="text-base font-semibold text-slate-900 mb-1">{cat.name}</h2>
-              <p className="text-xs text-slate-500 mb-3">{cat.description}</p>
-              <Link
-                href={`/print/${cat.slug}`}
-                className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-              >
-                View details <span className="text-base leading-none">&rsaquo;</span>
+              <Link href={`/print/${cat.slug}`} className="hover:text-[#e07b39]">
+                <h2 className="text-base font-semibold text-slate-900 mb-1">{cat.name}</h2>
               </Link>
+              <p className="text-xs text-slate-500">{cat.description}</p>
             </div>
           ))}
         </div>

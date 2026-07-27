@@ -1917,12 +1917,8 @@ export default async function PrintCategoryPage({
                         />
                       </div>
                     </Link>
-                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{item.name}</h2>
-                    <Link
-                      href={item.href}
-                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
-                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    <Link href={item.href} className="hover:text-[#e07b39]">
+                      <h2 className="text-sm font-semibold text-slate-900">{item.name}</h2>
                     </Link>
                   </div>
                 ))
@@ -1939,12 +1935,8 @@ export default async function PrintCategoryPage({
                         />
                       </div>
                     </Link>
-                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
-                    <Link
-                      href={`/print/${sub.slug}`}
-                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
-                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    <Link href={`/print/${sub.slug}`} className="hover:text-[#e07b39]">
+                      <h2 className="text-sm font-semibold text-slate-900">{sub.name}</h2>
                     </Link>
                   </div>
                 ))}
@@ -2166,12 +2158,8 @@ export default async function PrintCategoryPage({
                     />
                   </div>
                 </Link>
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 text-balance">{rule.label}</h3>
-                <Link
-                  href={`/print/${category}/${rule.slug}`}
-                  className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                >
-                  View details <span className="text-base leading-none">&rsaquo;</span>
+                <Link href={`/print/${category}/${rule.slug}`} className="hover:text-[#e07b39]">
+                  <h3 className="text-sm font-semibold text-slate-900 text-balance">{rule.label}</h3>
                 </Link>
               </div>
             ))}
@@ -2331,12 +2319,8 @@ export default async function PrintCategoryPage({
                         />
                       </div>
                     </Link>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3 text-balance">{product.product_description}</h3>
-                    <Link
-                      href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}
-                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
-                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    <Link href={`/print/${category}/${slug}?uuid=${product.product_uuid}`} className="hover:text-[#e07b39]">
+                      <h3 className="text-sm font-semibold text-slate-900 text-balance">{product.product_description}</h3>
                     </Link>
                   </div>
                 )

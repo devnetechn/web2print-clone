@@ -164,12 +164,12 @@ export function ProductInfoTabs({
 
   return (
     <Tabs defaultValue="description" onValueChange={handleTabChange} className="w-full">
-      <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0">
+      <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0 overflow-x-auto">
         {(["description", "specs", "templates", "faqs"] as const).map(tab => (
           <TabsTrigger
             key={tab}
             value={tab}
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] px-6 py-3 text-sm font-medium bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            className="flex-shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] px-3 sm:px-6 py-3 text-sm font-medium bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
             {tab === "faqs" ? "FAQs" : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </TabsTrigger>

@@ -1865,16 +1865,16 @@ export default async function ProductTypePage({
             </p>
           </div>
         </div>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
+              <div className="aspect-square w-full max-w-[520px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
                 <Image
                   src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
                   alt={productName}
                   fill
-                  sizes="360px"
+                  sizes="520px"
                   priority
                   className="object-contain"
                 />
@@ -2365,7 +2365,7 @@ export default async function ProductTypePage({
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">{typeLabel}</h1>
 
         {matchedProducts.length === 0 ? (
@@ -2374,15 +2374,15 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image + info tabs */}
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
+              <div className="aspect-square w-full max-w-[520px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
                 <Image
                   src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
                   alt={typeLabel}
                   fill
-                  sizes="360px"
+                  sizes="520px"
                   priority
                   className="object-contain"
                 />
