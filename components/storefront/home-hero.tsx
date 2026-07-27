@@ -69,13 +69,19 @@ export function HomeHero() {
                 height={24}
                 className="h-6 w-auto"
               />
-              <div className="flex items-center gap-1" aria-label="Rated 4 out of 5 stars on Google">
+              <div className="flex items-center gap-1" aria-label="Rated 4.8 out of 5 stars on Google">
                 {[0, 1, 2, 3].map((i) => (
                   <Star key={i} className="h-4 w-4 fill-[#fbbc05] text-[#fbbc05]" />
                 ))}
-                <Star className="h-4 w-4 text-[#fbbc05]" />
+                {/* Fifth star filled to ~80% to represent the .8 */}
+                <span className="relative inline-block h-4 w-4">
+                  <Star className="absolute inset-0 h-4 w-4 text-[#fbbc05]" />
+                  <span className="absolute inset-0 overflow-hidden" style={{ width: "80%" }}>
+                    <Star className="h-4 w-4 fill-[#fbbc05] text-[#fbbc05]" />
+                  </span>
+                </span>
               </div>
-              <span className="text-sm font-semibold text-slate-700">4.0</span>
+              <span className="text-sm font-semibold text-slate-700">4.8</span>
             </div>
 
             <p className="mt-4 text-sm text-slate-500">

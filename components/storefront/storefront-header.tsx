@@ -136,7 +136,7 @@ export function StorefrontHeader() {
                 {/* Mobile accordion navigation */}
                 <nav className="px-2 py-2">
                   <Accordion type="single" collapsible className="w-full">
-                    {NAV_GROUPS.map((group) =>
+                    {NAV_GROUPS.filter((group) => group.id !== "beyond-print").map((group) =>
                       group.links.length === 0 ? (
                         // No dropdown (e.g. About) -> render as a direct link
                         <Link
