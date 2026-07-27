@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Phone, ShoppingCart, Menu } from "lucide-react"
@@ -75,9 +76,19 @@ const NAV_GROUPS: NavGroup[] = [
 ]
 
 export function StorefrontHeader() {
+  const router = useRouter()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    if (!q) return
+    setMobileOpen(false)
+    router.push(`/products?search=${encodeURIComponent(q)}`)
+  }
 
   // Listen for cart changes
   useEffect(() => {
@@ -131,12 +142,15 @@ export function StorefrontHeader() {
 
                 {/* Mobile search */}
                 <div className="p-4 border-b">
-                  <div className="relative">
+                  <form onSubmit={handleSearch} className="relative">
                     <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search our products here"
                       className="w-full pr-10 h-10 border-slate-300 rounded-full bg-white"
                     />
                     <Button
+                      type="submit"
                       size="icon"
                       variant="ghost"
                       className="absolute right-1 top-1 h-8 w-8 rounded-full text-slate-500"
@@ -144,7 +158,7 @@ export function StorefrontHeader() {
                     >
                       <Search className="h-4 w-4" />
                     </Button>
-                  </div>
+                  </form>
                 </div>
 
                 {/* Mobile accordion navigation */}
@@ -223,16 +237,20 @@ export function StorefrontHeader() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-14 md:h-16" />
+              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-16 md:h-20" />
             </Link>
 
-            {/* Search Box - hidden on small screens (available in mobile menu) */}
-            <div className="relative hidden md:block flex-1 max-w-md">
+            {/* Search Box - hidden on small screens (available in mobile menu).
+                Narrower fixed width so it no longer dominates the header. */}
+            <form onSubmit={handleSearch} className="relative hidden md:block w-48 lg:w-56">
               <Input
-                placeholder="Search our products here"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products"
                 className="w-full pr-10 h-10 border-slate-300 rounded-full bg-white"
               />
               <Button
+                type="submit"
                 size="icon"
                 variant="ghost"
                 className="absolute right-1 top-1 h-8 w-8 rounded-full text-slate-500 hover:text-[#2c327a]"
@@ -240,10 +258,10 @@ export function StorefrontHeader() {
               >
                 <Search className="h-4 w-4" />
               </Button>
-            </div>
+            </form>
 
-            {/* Spacer pushes right-side items to the edge on mobile */}
-            <div className="flex-1 md:hidden" />
+            {/* Spacer pushes right-side items to the edge */}
+            <div className="flex-1" />
 
             {/* Phone - hidden below lg */}
             <div className="hidden lg:flex items-center gap-2 text-sm">
