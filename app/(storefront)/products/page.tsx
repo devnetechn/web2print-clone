@@ -1,6 +1,15 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { getActiveProducts } from "@/lib/products/cache"
+import { canonical } from "@/lib/seo"
+
+export const metadata: Metadata = {
+  title: "All Print Products",
+  description:
+    "Browse the full Web2Print USA catalog — business cards, banners, packaging, labels, and promo products with live pricing and fast shipping.",
+  ...canonical("/products"),
+}
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"

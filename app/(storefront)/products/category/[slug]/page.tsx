@@ -1,12 +1,26 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import { getActiveProducts } from "@/lib/products/cache"
+import { canonical } from "@/lib/seo"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronRight, Grid3X3, List, SlidersHorizontal, Printer, Package, FileText, CreditCard, Tag, Megaphone, MapPin, Gift, Palette } from "lucide-react"
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const name = slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+  const description = `Shop ${name.toLowerCase()} at Web2Print USA — live pricing, premium quality, and fast nationwide shipping.`
+  return {
+    title: name,
+    description,
+    ...canonical(`/products/category/${slug}`),
+    openGraph: { title: `${name} | Web2Print USA`, description, url: `/products/category/${slug}` },
+  }
+}
 
 // Category icons mapping
 const categoryIcons: Record<string, any> = {

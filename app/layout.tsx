@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Montserrat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/toaster'
+import { SITE_URL } from '@/lib/seo'
 import './globals.css'
 
 const montserrat = Montserrat({ 
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-montserrat",
 });
 
@@ -17,10 +18,23 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Web2Print USA Solutions | Online Printing & Custom Apparel',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default:
+      'Web2Print USA | Print That Means Business — Cards, Banners, Apparel & Business Services',
+    template: '%s | Web2Print USA',
+  },
   description:
-    'Your A-Z online print source. Business cards, marketing materials, signs, banners, packaging, custom apparel and more.',
+    'Business cards, banners, custom apparel, and business services — LLC registration, web design, and getting found on Google. National print power, first-name service.',
   generator: 'v0.app',
+  openGraph: {
+    type: 'website',
+    siteName: 'Web2Print USA',
+    title: 'Web2Print USA | Print That Means Business',
+    description:
+      'Business cards, banners, custom apparel, and business services — national print power, first-name service.',
+    images: [{ url: '/images/cat/business-cards/foil-worx.jpg', width: 600, height: 600, alt: 'Web2Print USA' }],
+  },
   icons: {
     icon: [
       {

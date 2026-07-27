@@ -78,31 +78,37 @@ export function StorefrontFooter() {
             </div>
 
             <div>
-              <h4 className="font-bold text-[#2c327a] mb-4">Quick Links</h4>
+              <h4 className="font-bold text-[#2c327a] mb-4">Beyond Print</h4>
               <ul className="space-y-2 text-sm text-slate-600">
                 <li>
-                  <Link href="/blog" className="hover:text-[#e42a27]">
-                    Blog
+                  <Link href="/services" className="hover:text-[#e42a27]">
+                    Start a Business
                   </Link>
+                </li>
+                <li>
+                  <Link href="/services/website-design" className="hover:text-[#e42a27]">
+                    Web Design
+                  </Link>
+                </li>
+                <li>
+                  <span className="flex items-center gap-2 text-slate-400 cursor-not-allowed">
+                    Get Found on Google
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Coming Soon
+                    </span>
+                  </span>
+                </li>
+                <li>
+                  <span className="flex items-center gap-2 text-slate-400 cursor-not-allowed">
+                    Graphic Design
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Coming Soon
+                    </span>
+                  </span>
                 </li>
                 <li>
                   <Link href="/quote" className="hover:text-[#e42a27]">
                     Request a Quote
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/artwork" className="hover:text-[#e42a27]">
-                    Artwork Guidelines
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/templates" className="hover:text-[#e42a27]">
-                    Download Templates
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/testimonials" className="hover:text-[#e42a27]">
-                    Testimonials
                   </Link>
                 </li>
               </ul>
@@ -114,6 +120,16 @@ export function StorefrontFooter() {
                 <li>
                   <Link href="/about" className="hover:text-[#e42a27]">
                     About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/industries" className="hover:text-[#e42a27]">
+                    Industries We Serve
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tracking" className="hover:text-[#e42a27]">
+                    Order Tracking
                   </Link>
                 </li>
                 <li>
@@ -135,17 +151,29 @@ export function StorefrontFooter() {
             </div>
 
             <div>
-              <h4 className="font-bold text-[#2c327a] mb-4">Contact Us</h4>
+              <h4 className="font-bold text-[#2c327a] mb-4">Talk to a Real Person</h4>
               <div className="space-y-2 text-sm text-slate-600">
-                <div>
+                <div className="space-y-1">
+                  <a href="tel:+18888436867" className="block font-semibold text-slate-800 hover:text-[#e42a27]">
+                    📞 +1.888.843.6867
+                  </a>
+                  <a
+                    href="https://wa.me/18888436867"
+                    className="block hover:text-[#e42a27]"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    💬 WhatsApp us
+                  </a>
+                  <a href="mailto:info@web2printusa.com" className="block hover:text-[#e42a27]">
+                    ✉️ info@web2printusa.com
+                  </a>
+                </div>
+                <div className="pt-2">
                   <div className="font-semibold text-slate-800">📍 Web2Print USA</div>
                   <div>7901 4th St. N #27125.</div>
                   <div>St. Petersburg, FL 33702</div>
                   <div>USA</div>
-                </div>
-                <div className="pt-2">
-                  <div>📞 +1.888.843.6867</div>
-                  <div>✉️ info@web2printusa.com</div>
                 </div>
 
                 <div className="flex gap-2 pt-3">
