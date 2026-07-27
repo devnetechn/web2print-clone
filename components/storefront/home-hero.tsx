@@ -16,14 +16,11 @@ export function HomeHero() {
               below the image (order-2); on desktop it's the top of the left
               copy column via explicit grid placement. */}
           <div className="order-2 max-w-xl text-center lg:order-none lg:col-start-1 lg:row-start-1 lg:pt-12 lg:text-left">
-            <p className="mb-4 hidden text-sm font-semibold uppercase tracking-wide text-[#e42a27] lg:block">
-              Their job ends at checkout. Ours starts there.
-            </p>
             <h1 className="text-4xl font-extrabold leading-[1.05] tracking-[-0.015em] text-[#2c327a] text-balance sm:text-5xl lg:text-6xl">
               Print that means business.
             </h1>
-            {/* Mobile-only kicker, sits small directly under the headline */}
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#e42a27] lg:hidden">
+            {/* Kicker sits directly below the title on both mobile and desktop */}
+            <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#e42a27] lg:mt-4 lg:text-sm">
               Their job ends at checkout. Ours starts there.
             </p>
           </div>
@@ -32,7 +29,7 @@ export function HomeHero() {
               the headline and the supporting copy so it appears right below the
               headline on mobile; grid placement keeps it in the right column,
               spanning both rows, on desktop. */}
-          <div className="relative order-1 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start">
+          <div className="relative order-1 mx-auto w-full max-w-[78%] lg:order-none lg:mx-0 lg:max-w-none lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start">
             <CropMarks />
             <HeroProductSlider />
           </div>
