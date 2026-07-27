@@ -15,13 +15,17 @@ export function HomeHero() {
           {/* Block A: kicker + headline. On mobile the headline sits directly
               below the image (order-2); on desktop it's the top of the left
               copy column via explicit grid placement. */}
-          <div className="order-2 max-w-xl lg:order-none lg:col-start-1 lg:row-start-1 lg:pt-12">
+          <div className="order-2 max-w-xl text-center lg:order-none lg:col-start-1 lg:row-start-1 lg:pt-12 lg:text-left">
             <p className="mb-4 hidden text-sm font-semibold uppercase tracking-wide text-[#e42a27] lg:block">
               Their job ends at checkout. Ours starts there.
             </p>
-            <h1 className="text-3xl font-extrabold leading-[1.05] tracking-[-0.015em] text-[#2c327a] text-balance sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-[-0.015em] text-[#2c327a] text-balance sm:text-5xl lg:text-6xl">
               Print that means business.
             </h1>
+            {/* Mobile-only kicker, sits small directly under the headline */}
+            <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#e42a27] lg:hidden">
+              Their job ends at checkout. Ours starts there.
+            </p>
           </div>
 
           {/* Image: framed product slider with crop marks. DOM-ordered between
