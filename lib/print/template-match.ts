@@ -100,3 +100,17 @@ export function resolveTemplateProduct(slug: string): TemplateProduct | null {
   }
   return null
 }
+
+/**
+ * Resolves the template family for a product page. Tries the specific type
+ * slug first (e.g. a "postcards" type inside a broader category), then falls
+ * back to the [category] slug. The productName is accepted for future
+ * name-based disambiguation but the slug map is authoritative today.
+ */
+export function matchTemplateProduct(
+  category: string,
+  typeSlug: string,
+  _productName?: string,
+): TemplateProduct | null {
+  return resolveTemplateProduct(typeSlug) ?? resolveTemplateProduct(category)
+}

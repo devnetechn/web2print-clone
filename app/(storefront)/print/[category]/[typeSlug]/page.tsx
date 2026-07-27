@@ -7,6 +7,7 @@ import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/li
 import { resolveProductImage } from "@/lib/print/product-images"
 import { ProductInfoTabs } from "@/components/print/product-info-tabs"
 import type { ProductContent } from "@/lib/print/product-content"
+import { matchTemplateProduct } from "@/lib/print/template-match"
 
 // Only includes TYPE_RULES (hasTypeRules) categories — the OTHER entries in
 // print/[category]/page.tsx's EXTRA_PRODUCT_SOURCES (e.g. announcement-cards)
@@ -1851,6 +1852,7 @@ export default async function ProductTypePage({
       }
     }
     const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
+    const templateProduct = matchTemplateProduct(category, typeSlug, productName)
 
     return (
       <div className="min-h-screen bg-white">
@@ -1886,6 +1888,7 @@ export default async function ProductTypePage({
                   productName={productName}
                   content={productContent ?? null}
                   isBusinessCards={isBusinessCards}
+                  templateProduct={templateProduct}
                 />
               </div>
             </div>
@@ -2347,6 +2350,8 @@ export default async function ProductTypePage({
     }
   }
 
+  const templateProduct = matchTemplateProduct(category, typeSlug, typeLabel)
+
   return (
     <div className="min-h-screen bg-white">
       <div className="border-b border-slate-200 py-2 px-4">
@@ -2394,6 +2399,7 @@ export default async function ProductTypePage({
                   productName={typeLabel}
                   content={productContent ?? null}
                   isBusinessCards={isBusinessCardsType}
+                  templateProduct={templateProduct}
                 />
               </div>
             </div>

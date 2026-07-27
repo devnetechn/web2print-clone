@@ -39,15 +39,15 @@ function fmt(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(3).replace(/0+$/, "").replace(/\.$/, "")
 }
 
-export function ProductTemplatesPanel({ product }: { product: TemplateProduct }) {
-  const sizes = product.sizes
+export function ProductTemplatesPanel({ product }: { product: TemplateProduct | null }) {
+  const sizes = product?.sizes ?? []
   const [sizeIdx, setSizeIdx] = useState(0)
   const selected: TemplateSize | undefined = sizes[sizeIdx]
 
   const dims = useMemo(() => (selected ? parseInches(selected.size) : null), [selected])
 
-  if (!sizes.length) {
-    return <p className="text-sm text-slate-500">Templates coming soon.</p>
+  if (!product || !sizes.length) {
+    return <p className="text-sm text-slate-500">Design templates for this product are coming soon.</p>
   }
 
   return (

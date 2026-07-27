@@ -57,6 +57,10 @@ interface ProductInfoTabsProps {
   productName: string
   content: ProductContent | null
   isBusinessCards?: boolean
+  // The matched design-template family (sizes + variants) for THIS product,
+  // resolved server-side from the scraped 4over template catalog. Powers the
+  // Templates tab. Null when no family matched (rare) → "coming soon".
+  templateProduct?: TemplateProduct | null
 }
 
 export function ProductInfoTabs({
@@ -65,10 +69,10 @@ export function ProductInfoTabs({
   productName,
   content,
   isBusinessCards = false,
+  templateProduct = null,
 }: ProductInfoTabsProps) {
   const [specsState, setSpecsState] = useState<SpecsState>({ status: "idle" })
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set())
-  const [openTemplates, setOpenTemplates] = useState<Set<number>>(new Set())
 
   const handleTabChange = (tab: string) => {
     if (tab === "specs" && (specsState.status === "idle" || specsState.status === "error")) {
@@ -153,16 +157,7 @@ export function ProductInfoTabs({
       return next
     })
 
-  const toggleTemplate = (i: number) =>
-    setOpenTemplates(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
-      return next
-    })
-
   const faqs: FAQ[] = content?.faqs ?? []
-  const templateUrls: TemplateLink[] = content?.template_urls ?? []
-  const filePrepInfo: FilePrepInfo | null = content?.template_file_prep ?? null
 
   return (
     <Tabs defaultValue="description" onValueChange={handleTabChange} className="w-full">
@@ -229,56 +224,8 @@ export function ProductInfoTabs({
       </TabsContent>
 
       {/* Templates */}
-      <TabsContent value="templates" className="mt-6 space-y-6">
-        {filePrepInfo && (
-          <div className="bg-slate-50 rounded-lg p-4 text-sm space-y-1 text-slate-700">
-            {filePrepInfo.note && (
-              <p className="italic text-slate-500 mb-3">{filePrepInfo.note}</p>
-            )}
-            <p><span className="font-medium">Resolution:</span> {filePrepInfo.resolution}</p>
-            <p><span className="font-medium">Color Mode:</span> {filePrepInfo.color_mode}</p>
-            <p><span className="font-medium">Bleed:</span> {filePrepInfo.bleed}</p>
-            <p>
-              <span className="font-medium">File Types:</span>{" "}
-              {filePrepInfo.file_types.join(", ")}
-            </p>
-          </div>
-        )}
-        {templateUrls.length > 0 ? (
-          <div className="divide-y border rounded-lg overflow-hidden">
-            {templateUrls.map((t, i) => (
-              <div key={i}>
-                <button
-                  onClick={() => toggleTemplate(i)}
-                  aria-expanded={openTemplates.has(i)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <span className="font-medium text-slate-800">{t.size}</span>
-                  {openTemplates.has(i) ? (
-                    <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  )}
-                </button>
-                {openTemplates.has(i) && (
-                  <div className="px-4 py-3 bg-slate-50 border-t">
-                    <a
-                      href={t.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-[#e07b39] hover:underline"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download Template
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">Templates coming soon.</p>
-        )}
+      <TabsContent value="templates" className="mt-6">
+        <ProductTemplatesPanel product={templateProduct} />
       </TabsContent>
 
       {/* FAQs */}

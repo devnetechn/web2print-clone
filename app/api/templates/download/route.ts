@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
   // Stable pathname inside our Blob store, mirroring the source path.
   const relative = src.slice(SOURCE_PREFIX.length)
   const blobPath = `templates/${relative}`
-  const filename = relative.split("/").pop() || "template"
+  const filename =
+    request.nextUrl.searchParams.get("filename") || relative.split("/").pop() || "template"
 
   try {
     // 1. Already mirrored? Serve from Blob.
