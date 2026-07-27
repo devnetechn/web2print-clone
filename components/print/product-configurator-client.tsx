@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment, type ChangeEvent } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart, Zap, FileText } from "lucide-react"
+import { Loader2, Share2, Upload, Clock, ShoppingCart, Zap, FileText } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { uploadDesignFile } from "@/app/actions/design-upload"
 import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName, translateTurnaroundName } from "@/lib/4over/option-labels"
-import { DESIGN_STUDIO_ENABLED } from "@/lib/feature-flags"
 
 interface ListItem {
   name: string
@@ -1817,32 +1816,6 @@ export function ProductConfiguratorClient({
       <div className="mt-6">
         <h3 className="text-base font-semibold text-slate-900 mb-3">What would you like to do?</h3>
         <div className="space-y-3">
-          {DESIGN_STUDIO_ENABLED && (
-            <Link
-              href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
-              className="flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-                <Palette className="h-5 w-5" />
-              </span>
-              <span>
-                <span className="block font-medium text-slate-900">Custom Design</span>
-                <span className="block text-xs text-slate-500">Design online in our Design Studio</span>
-              </span>
-            </Link>
-          )}
-          <button
-            type="button"
-            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-              <LayoutTemplate className="h-5 w-5" />
-            </span>
-            <span>
-              <span className="block font-medium text-slate-900">Browse Design</span>
-              <span className="block text-xs text-slate-500">Choose from our template collection</span>
-            </span>
-          </button>
           <input
             ref={fileInputRef}
             type="file"
@@ -1895,6 +1868,24 @@ export function ProductConfiguratorClient({
               </p>
             </div>
           )}
+          {/* Skip artwork for now: adds this configuration to the cart with no
+              design file and continues straight to checkout, where the file can
+              be uploaded on the cart page instead. Disabled until a price is
+              resolved, same as Buy Now. */}
+          <button
+            type="button"
+            onClick={buyNow}
+            disabled={price == null}
+            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left disabled:opacity-60"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
+              <Clock className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block font-medium text-slate-900">Upload Artwork later</span>
+              <span className="block text-xs text-slate-500">Continue to checkout and send your files after</span>
+            </span>
+          </button>
         </div>
       </div>
     </div>

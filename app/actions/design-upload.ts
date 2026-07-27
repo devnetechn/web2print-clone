@@ -6,15 +6,15 @@ const BUCKET = "design-uploads"
 
 // Uses the admin (service role) client to write into the private
 // "design-uploads" bucket — sidesteps needing storage.objects RLS policies
-// set up in the Supabase dashboard first. Still requires a logged-in
-// session (checked here) so an anonymous caller can't upload arbitrary
-// files even though the write itself bypasses RLS.
+// set up in the Supabase dashboard first. Uploads are allowed for anonymous
+// visitors too, since shoppers configure and attach artwork on the product
+// page *before* they're prompted to log in at Add to Cart / Buy Now. Files
+// land in a private bucket and are only reachable via signed URLs, so there's
+// no arbitrary-public-write exposure. Logged-in users get their files grouped
+// under their user id; everyone else lands under an "anonymous" prefix.
 export async function uploadDesignFile(formData: FormData) {
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
-  if (!userData.user) {
-    return { success: false, error: "Not logged in" }
-  }
 
   const file = formData.get("file") as File | null
   if (!file) {
@@ -22,7 +22,8 @@ export async function uploadDesignFile(formData: FormData) {
   }
 
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
-  const path = `${userData.user.id}/${Date.now()}-${safeName}`
+  const prefix = userData.user?.id ?? "anonymous"
+  const path = `${prefix}/${Date.now()}-${safeName}`
 
   const admin = createAdminClient()
   const { error } = await admin.storage.from(BUCKET).upload(path, file, {
