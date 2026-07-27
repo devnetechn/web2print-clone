@@ -19,7 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 
-type NavLink = { label: string; href: string; muted?: boolean; accent?: boolean }
+type NavLink = { label: string; href: string; muted?: boolean; accent?: boolean; comingSoon?: boolean }
 type NavGroup = { id: string; label: string; href?: string; accent?: boolean; links: NavLink[] }
 
 // Simplified top nav per the homepage restructure: About, Industries We Serve,

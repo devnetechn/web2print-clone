@@ -41,12 +41,12 @@ export function IndustryPage({ data }: { data: IndustryData }) {
               <CtaButtons slug={data.slug} />
             </div>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 shadow-lg">
+          <div className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 shadow-lg">
             <Image
               src={data.heroImage || "/placeholder.svg"}
               alt={`${data.name} printing from Web2Print USA`}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
             />
@@ -61,12 +61,12 @@ export function IndustryPage({ data }: { data: IndustryData }) {
             const flip = i % 2 === 1
             return (
               <section key={section.title} className="grid items-center gap-8 md:grid-cols-2">
-                <div className={`relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 shadow-md ${flip ? "md:order-2" : ""}`}>
+                <div className={`group relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100 shadow-md ${flip ? "md:order-2" : ""}`}>
                   <Image
                     src={section.image || "/placeholder.svg"}
                     alt={section.title}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </div>
@@ -89,20 +89,6 @@ export function IndustryPage({ data }: { data: IndustryData }) {
           })}
         </div>
       </div>
-
-      {/* Proof slot (flagged placeholder) */}
-      <section className="border-y border-dashed border-slate-300 bg-slate-50">
-        <div className="container mx-auto px-4 py-12 text-center">
-          <div className="mx-auto max-w-2xl rounded-xl border border-dashed border-slate-300 bg-white p-8">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Proof / testimonials</div>
-            <p className="mt-2 text-sm text-slate-500">
-              {"[PLACEHOLDER — "}
-              {data.proofNote}
-              {"]"}
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* CTA band */}
       <section className="bg-[#2c327a]">

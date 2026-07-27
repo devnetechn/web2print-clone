@@ -91,14 +91,20 @@ export function StorefrontFooter() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/services" className="hover:text-[#e42a27]">
+                  <span className="flex items-center gap-2 text-slate-400 cursor-not-allowed">
                     Get Found on Google
-                  </Link>
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Coming Soon
+                    </span>
+                  </span>
                 </li>
                 <li>
-                  <Link href="/services" className="hover:text-[#e42a27]">
+                  <span className="flex items-center gap-2 text-slate-400 cursor-not-allowed">
                     Graphic Design
-                  </Link>
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Coming Soon
+                    </span>
+                  </span>
                 </li>
                 <li>
                   <Link href="/quote" className="hover:text-[#e42a27]">

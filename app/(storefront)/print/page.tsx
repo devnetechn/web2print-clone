@@ -39,7 +39,7 @@ export default function PrintShopHome() {
           {TOP_CATEGORIES.map((cat) => (
             <div key={cat.slug} className="group text-center">
               <Link href={`/print/${cat.slug}`}>
-                <div className="aspect-square bg-slate-100 mb-3 overflow-hidden rounded">
+                <div className="aspect-square bg-slate-100 mb-3 overflow-hidden rounded-xl">
                   <img
                     src={CATEGORY_IMAGES[cat.slug]}
                     alt={cat.name}

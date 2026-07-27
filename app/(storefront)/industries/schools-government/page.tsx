@@ -9,16 +9,13 @@ export const metadata = {
 
 const QUOTE_HREF = "/quote?industry=government"
 
-// Certification cards — exact official titles to be supplied by the client.
-// Rendered as named badge slots; do not paraphrase official certification
-// names once provided.
 const CERTIFICATIONS = [
-  { label: "SAM.gov Registration", note: "[PLACEHOLDER — registration / CAGE number]" },
-  { label: "Florida MBE", note: "[PLACEHOLDER — issuing body & number]" },
-  { label: "Broward County / BCPS MBE", note: "[PLACEHOLDER — number]" },
-  { label: "Broward County / BCPS SBE", note: "[PLACEHOLDER — number]" },
-  { label: "Broward County / BCPS CBE", note: "[PLACEHOLDER — number]" },
-  { label: "State Vendor Status", note: "[PLACEHOLDER — portal registrations]" },
+  { label: "SAM.gov Registration" },
+  { label: "Florida MBE" },
+  { label: "Broward County / BCPS MBE" },
+  { label: "Broward County / BCPS SBE" },
+  { label: "Broward County / BCPS CBE" },
+  { label: "State Vendor Status" },
 ]
 
 function CapabilityStatementCard() {
@@ -26,18 +23,22 @@ function CapabilityStatementCard() {
     <div className="flex flex-col items-start gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-[#2c327a]/10 text-[#2c327a]">
-          <Download className="h-6 w-6" />
+          <FileText className="h-6 w-6" />
         </div>
         <div>
-          <div className="font-bold text-[#2c327a]">Download our Capability Statement (PDF)</div>
+          <div className="font-bold text-[#2c327a]">Request our Capability Statement</div>
           <p className="text-sm text-slate-500">
-            {"[PLACEHOLDER — link to the capability statement file provided by the client]"}
+            Certifications, registrations, and past-performance references for your procurement file.
           </p>
         </div>
       </div>
-      <span className="inline-flex items-center gap-2 rounded-md bg-[#e42a27] px-5 py-2.5 text-sm font-bold text-white opacity-70">
-        Download PDF
-      </span>
+      <Link
+        href={QUOTE_HREF}
+        className="inline-flex items-center gap-2 rounded-md bg-[#e42a27] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#c51f1f]"
+      >
+        <Download className="h-4 w-4" />
+        Request it
+      </Link>
     </div>
   )
 }
@@ -81,7 +82,6 @@ export default function SchoolsGovernmentPage() {
                   <ShieldCheck className="h-4 w-4 flex-shrink-0 text-[#e42a27]" />
                   {c.label}
                 </div>
-                <p className="mt-2 text-xs text-slate-400">{c.note}</p>
               </div>
             ))}
           </div>
@@ -138,9 +138,6 @@ export default function SchoolsGovernmentPage() {
           </div>
           <p className="max-w-3xl leading-relaxed text-slate-600">
             Serving Miami-Dade, Broward, Palm Beach, Montgomery County, and Baltimore County public schools.
-          </p>
-          <p className="text-xs text-slate-400">
-            {"[PLACEHOLDER — link to the existing Education page; keep its current URL: \"See our education work →\"]"}
           </p>
         </section>
 

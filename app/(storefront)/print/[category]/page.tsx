@@ -1923,7 +1923,7 @@ export default async function PrintCategoryPage({
               ? boxesPackagingFlatItems.map((item) => (
                   <div key={item.href} className="group text-center">
                     <Link href={item.href}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                         <Image
                           src={item.image}
                           alt={item.name}
@@ -1941,7 +1941,7 @@ export default async function PrintCategoryPage({
               : group.subcategories.map((sub) => (
                   <div key={sub.slug} className="group text-center">
                     <Link href={`/print/${sub.slug}`}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                         <Image
                           src={sub.image}
                           alt={sub.name}
@@ -2164,7 +2164,7 @@ export default async function PrintCategoryPage({
             {sortedTypes.map(({ rule, image }) => (
               <div key={rule.slug} className="group text-center">
                 <Link href={`/print/${category}/${rule.slug}`}>
-                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                     <Image
                       src={image}
                       alt={rule.label}
@@ -2325,7 +2325,7 @@ export default async function PrintCategoryPage({
                 return (
                   <div key={product.product_uuid} className="group text-center">
                     <Link href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                         <Image
                           src={resolveProductImage(category, product.product_description, leaf.image)}
                           alt={product.product_description}

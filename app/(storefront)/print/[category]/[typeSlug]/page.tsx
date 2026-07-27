@@ -1886,15 +1886,17 @@ export default async function ProductTypePage({
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
           <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             <div>
-              <div className="aspect-square w-full max-w-[520px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
-                <Image
-                  src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
-                  alt={productName}
-                  fill
-                  sizes="520px"
-                  priority
-                  className="object-contain"
-                />
+              <div className="w-full max-w-[520px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="group aspect-square relative overflow-hidden rounded-lg bg-slate-100">
+                  <Image
+                    src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
+                    alt={productName}
+                    fill
+                    sizes="520px"
+                    priority
+                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                </div>
               </div>
               <div className="mt-6">
                 <ProductInfoTabs
@@ -2397,15 +2399,17 @@ export default async function ProductTypePage({
           <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image + info tabs */}
             <div>
-              <div className="aspect-square w-full max-w-[520px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
-                <Image
-                  src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
-                  alt={typeLabel}
-                  fill
-                  sizes="520px"
-                  priority
-                  className="object-contain"
-                />
+              <div className="w-full max-w-[520px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="group aspect-square relative overflow-hidden rounded-lg bg-slate-100">
+                  <Image
+                    src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
+                    alt={typeLabel}
+                    fill
+                    sizes="520px"
+                    priority
+                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                </div>
               </div>
               <div className="mt-6">
                 <ProductInfoTabs
