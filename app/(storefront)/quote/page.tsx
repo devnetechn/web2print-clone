@@ -25,19 +25,25 @@ export default function QuotePage() {
 
   const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string } | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
+    setUploadError(null)
     try {
       const formData = new FormData()
       formData.append("file", file)
       const result = await uploadDesignFile(formData)
       if (result.success) {
         setUploadedFile({ fileName: result.fileName!, url: result.url! })
+      } else {
+        setUploadError(result.error || "Upload failed. Please try again.")
       }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed")
     } finally {
       setUploading(false)
       e.target.value = ""
@@ -172,6 +178,7 @@ export default function QuotePage() {
                     {uploading ? "Uploading..." : uploadedFile ? uploadedFile.fileName : "Attach a sketch, photo, or sample file"}
                   </span>
                 </button>
+                {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
               </div>
 
               {error && <p className="text-sm text-red-500">{error}</p>}

@@ -94,6 +94,7 @@ export default function CartPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadTargetId, setUploadTargetId] = useState<string | null>(null)
   const [uploadingItemId, setUploadingItemId] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const startArtworkUpload = (itemId: string) => {
     setUploadTargetId(itemId)
@@ -107,6 +108,7 @@ export default function CartPage() {
     if (!file || !itemId) return
 
     setUploadingItemId(itemId)
+    setUploadError(null)
     try {
       const formData = new FormData()
       formData.append("file", file)
@@ -118,7 +120,11 @@ export default function CartPage() {
             : item
         )
         persistCart(updated)
+      } else {
+        setUploadError(result.error || "Upload failed. Please try again.")
       }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed")
     } finally {
       setUploadingItemId(null)
       setUploadTargetId(null)
@@ -212,8 +218,14 @@ export default function CartPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
+          <>
+            {uploadError && (
+              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-sm text-red-700">{uploadError}</p>
+              </div>
+            )}
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => (
                 <Card key={item.id}>
                   <CardContent className="p-4">
@@ -367,7 +379,8 @@ export default function CartPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>
