@@ -38,7 +38,6 @@ function CustomerSignUpForm() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null)
   const router = useRouter()
   // Set by product pages' Add to Cart/Buy Now when the customer isn't
   // logged in yet, so they land back on the action they were trying to
@@ -79,20 +78,6 @@ function CustomerSignUpForm() {
     }
   }
 
-  const handleOAuth = async (provider: "google" | "facebook") => {
-    setOauthLoading(provider)
-    setError(null)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
-    })
-    if (error) {
-      setError(error.message)
-      setOauthLoading(null)
-    }
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
       <div className="w-full max-w-md">
@@ -102,35 +87,6 @@ function CustomerSignUpForm() {
             <CardDescription>Sign up for Web2Print USA</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full gap-2"
-                disabled={!!oauthLoading}
-                onClick={() => handleOAuth("google")}
-              >
-                <GoogleIcon />
-                {oauthLoading === "google" ? "Redirecting..." : "Continue with Google"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full gap-2"
-                disabled={!!oauthLoading}
-                onClick={() => handleOAuth("facebook")}
-              >
-                <FacebookIcon />
-                {oauthLoading === "facebook" ? "Redirecting..." : "Continue with Facebook"}
-              </Button>
-            </div>
-
-            <div className="my-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-slate-200" />
-              <span className="text-xs text-slate-400">OR</span>
-              <div className="h-px flex-1 bg-slate-200" />
-            </div>
-
             <form onSubmit={handleSignUp}>
               <div className="flex flex-col gap-4">
                 <div className="grid gap-2">

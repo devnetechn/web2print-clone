@@ -4,12 +4,33 @@ import { createAdminClient, createClient } from "@/lib/supabase/server"
 
 const BUCKET = "design-uploads"
 
+async function ensureBucketExists() {
+  const admin = createAdminClient()
+  try {
+    await admin.storage.getBucket(BUCKET)
+  } catch {
+    try {
+      await admin.storage.createBucket(BUCKET, { public: false })
+      console.log(`[upload-design-file] Created missing bucket: ${BUCKET}`)
+    } catch (createError) {
+      console.error(`[upload-design-file] Failed to create bucket:`, createError)
+      throw new Error(`Storage bucket initialization failed. Contact support.`)
+    }
+  }
+}
+
 // Uses the admin (service role) client to write into the private
 // "design-uploads" bucket — sidesteps needing storage.objects RLS policies
 // set up in the Supabase dashboard first. Still requires a logged-in
 // session (checked here) so an anonymous caller can't upload arbitrary
 // files even though the write itself bypasses RLS.
 export async function uploadDesignFile(formData: FormData) {
+  try {
+    await ensureBucketExists()
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Storage not available" }
+  }
+
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
   if (!userData.user) {
@@ -30,6 +51,7 @@ export async function uploadDesignFile(formData: FormData) {
     upsert: false,
   })
   if (error) {
+    console.error(`[upload-design-file] Upload to bucket '${BUCKET}' failed:`, error)
     return { success: false, error: error.message }
   }
 
