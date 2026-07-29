@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment, type ChangeEvent } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Share2, Palette, Upload, LayoutTemplate, ShoppingCart, Zap, FileText } from "lucide-react"
+import { Loader2, Share2, Upload, Clock, ShoppingCart, Zap, FileText } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { uploadDesignFile } from "@/app/actions/design-upload"
 import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName, translateTurnaroundName } from "@/lib/4over/option-labels"
-import { DESIGN_STUDIO_ENABLED } from "@/lib/feature-flags"
 
 interface ListItem {
   name: string
@@ -1317,19 +1316,19 @@ export function ProductConfiguratorClient({
     if (items.length === 0) return null
     if (items.length === 1 && !forceDropdown) {
       return (
-        <div className="flex items-center justify-between py-3 border-b border-slate-100">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
           <label className="text-sm font-medium text-slate-700">{label}</label>
-          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 min-w-[220px] text-center">
+          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 w-full sm:w-auto sm:min-w-[220px] text-center">
             {items[0].name}
           </div>
         </div>
       )
     }
     return (
-      <div className="flex items-center justify-between py-3 border-b border-slate-100">
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
         <label className="text-sm font-medium text-slate-700">{label}</label>
         <Select value={value} onValueChange={onChange}>
-          <SelectTrigger className="border-slate-200 min-w-[220px]">
+          <SelectTrigger className="border-slate-200 w-full sm:w-auto sm:min-w-[220px]">
             <SelectValue placeholder={`Select ${label}`} />
           </SelectTrigger>
           <SelectContent>
@@ -1354,9 +1353,9 @@ export function ProductConfiguratorClient({
     if (items.length === 0) return null
     if (items.length === 1) {
       return (
-        <div className="flex items-center justify-between py-3 border-b border-slate-100">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
           <label className="text-sm font-medium text-slate-700">{label}</label>
-          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 min-w-[220px] text-center">
+          <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 w-full sm:w-auto sm:min-w-[220px] text-center">
             {items[0].option_name || items[0].option_description}
           </div>
         </div>
@@ -1411,14 +1410,14 @@ export function ProductConfiguratorClient({
                   {/* ── BC FIELD ORDER (matches 4over) ── */}
 
                   {/* PROJECT NAME / P.O. */}
-                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                     <label className="text-sm font-medium text-slate-700">Project Name / P.O.</label>
                     <input
                       type="text"
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
                       placeholder="Name Your Project"
-                      className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                      className="border border-slate-200 rounded px-3 py-2 text-sm w-full sm:w-auto sm:min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
                     />
                   </div>
 
@@ -1493,9 +1492,9 @@ export function ProductConfiguratorClient({
 
                   {/* JOB SAMPLES checkbox — BC only, opt-in, +$9.99 via quote API */}
                   {jobSamplesGroup && (
-                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                       <label className="text-sm font-medium text-slate-700">Job Samples</label>
-                      <label className="flex items-center gap-2 cursor-pointer min-w-[220px]">
+                      <label className="flex items-center gap-2 cursor-pointer w-full sm:w-auto sm:min-w-[220px]">
                         <input
                           type="checkbox"
                           checked={jobSamplesChecked}
@@ -1515,14 +1514,14 @@ export function ProductConfiguratorClient({
                   {/* ── ALL-INCLUSIVE FIELD ORDER (matches 4over) ── */}
 
                   {/* PROJECT NAME / P.O. */}
-                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                     <label className="text-sm font-medium text-slate-700">Project Name / P.O.</label>
                     <input
                       type="text"
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
                       placeholder="Name Your Project"
-                      className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                      className="border border-slate-200 rounded px-3 py-2 text-sm w-full sm:w-auto sm:min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
                     />
                   </div>
 
@@ -1563,9 +1562,9 @@ export function ProductConfiguratorClient({
 
                   {/* JOB SAMPLES checkbox */}
                   {jobSamplesGroup && (
-                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                       <label className="text-sm font-medium text-slate-700">Job Samples</label>
-                      <label className="flex items-center gap-2 cursor-pointer min-w-[220px]">
+                      <label className="flex items-center gap-2 cursor-pointer w-full sm:w-auto sm:min-w-[220px]">
                         <input
                           type="checkbox"
                           checked={jobSamplesChecked}
@@ -1582,9 +1581,9 @@ export function ProductConfiguratorClient({
 
                   {/* DIGITAL PROOFS checkbox */}
                   {digitalProofsGroup && (
-                    <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                       <label className="text-sm font-medium text-slate-700">Digital Proofs</label>
-                      <label className="flex items-center gap-2 cursor-pointer min-w-[220px]">
+                      <label className="flex items-center gap-2 cursor-pointer w-full sm:w-auto sm:min-w-[220px]">
                         <input
                           type="checkbox"
                           checked={digitalProofsChecked}
@@ -1604,14 +1603,14 @@ export function ProductConfiguratorClient({
                   {/* ── NON-BC FIELD ORDER ── */}
 
                   {/* PROJECT NAME / P.O. */}
-                  <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                  <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                     <label className="text-sm font-medium text-slate-700">Project Name / P.O.</label>
                     <input
                       type="text"
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
                       placeholder="Name Your Project"
-                      className="border border-slate-200 rounded px-3 py-2 text-sm min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
+                      className="border border-slate-200 rounded px-3 py-2 text-sm w-full sm:w-auto sm:min-w-[220px] focus:outline-none focus:ring-1 focus:ring-[#e07b39]"
                     />
                   </div>
 
@@ -1621,9 +1620,9 @@ export function ProductConfiguratorClient({
                       {renderListRow("Width", bannerWidthItems, bannerWidth, setBannerWidth, true)}
                       {renderListRow("Height", bannerHeightItems, bannerHeight, setBannerHeight, true)}
                       {bannerWidth && bannerHeight && (
-                        <div className="flex items-center justify-between py-3 border-b border-slate-100">
+                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0 py-3 border-b border-slate-100">
                           <label className="text-sm font-medium text-slate-700">Your Dimensions</label>
-                          <span className="text-sm text-slate-600 min-w-[220px] text-center">
+                          <span className="text-sm text-slate-600 w-full sm:w-auto sm:min-w-[220px] text-center">
                             {bannerWidth} × {bannerHeight}
                           </span>
                         </div>
@@ -1817,32 +1816,6 @@ export function ProductConfiguratorClient({
       <div className="mt-6">
         <h3 className="text-base font-semibold text-slate-900 mb-3">What would you like to do?</h3>
         <div className="space-y-3">
-          {DESIGN_STUDIO_ENABLED && (
-            <Link
-              href={`/design-studio${productUuid ? `?product=${productUuid}` : ""}`}
-              className="flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-                <Palette className="h-5 w-5" />
-              </span>
-              <span>
-                <span className="block font-medium text-slate-900">Custom Design</span>
-                <span className="block text-xs text-slate-500">Design online in our Design Studio</span>
-              </span>
-            </Link>
-          )}
-          <button
-            type="button"
-            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
-              <LayoutTemplate className="h-5 w-5" />
-            </span>
-            <span>
-              <span className="block font-medium text-slate-900">Browse Design</span>
-              <span className="block text-xs text-slate-500">Choose from our template collection</span>
-            </span>
-          </button>
           <input
             ref={fileInputRef}
             type="file"
@@ -1895,6 +1868,24 @@ export function ProductConfiguratorClient({
               </p>
             </div>
           )}
+          {/* Skip artwork for now: adds this configuration to the cart with no
+              design file and continues straight to checkout, where the file can
+              be uploaded on the cart page instead. Disabled until a price is
+              resolved, same as Buy Now. */}
+          <button
+            type="button"
+            onClick={buyNow}
+            disabled={price == null}
+            className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left disabled:opacity-60"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0">
+              <Clock className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block font-medium text-slate-900">Upload Artwork later</span>
+              <span className="block text-xs text-slate-500">Continue to checkout and send your files after</span>
+            </span>
+          </button>
         </div>
       </div>
     </div>

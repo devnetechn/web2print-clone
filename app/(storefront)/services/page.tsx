@@ -1,4 +1,13 @@
+import type { Metadata } from "next"
 import Link from "next/link"
+import { canonical } from "@/lib/seo"
+
+export const metadata: Metadata = {
+  title: "Business Services",
+  description:
+    "Beyond print: LLC registration, web design, graphic design, and getting found on Google — Web2Print USA helps you launch and grow your brand.",
+  ...canonical("/services"),
+}
 
 export default function ServicesPage() {
   return (

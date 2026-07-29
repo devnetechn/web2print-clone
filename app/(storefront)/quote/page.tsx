@@ -1,7 +1,8 @@
 "use client"
 
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react"
+import { useRef, useState, useEffect, type ChangeEvent, type FormEvent } from "react"
 import Link from "next/link"
+import { INDUSTRIES } from "@/lib/industries"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,7 +27,28 @@ export default function QuotePage() {
   const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [industryLabel, setIndustryLabel] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Pre-tag the quote when arriving from an industry page (?industry=slug) or a
+  // category tile (?product=name), so sales sees the context up front.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const industrySlug = params.get("industry")
+    const product = params.get("product")
+    if (industrySlug) {
+      const match = INDUSTRIES[industrySlug]
+      if (match) {
+        setIndustryLabel(match.name)
+        setQuoteTitle((t) => t || `${match.name} print order`)
+        setDescription((d) => d || `I'm in ${match.name} and I'd like a quote for: `)
+      }
+    } else if (product) {
+      const nice = product.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+      setQuoteTitle((t) => t || `${nice} quote`)
+      setDescription((d) => d || `I'd like a quote for ${nice}: `)
+    }
+  }, [])
 
   const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -110,6 +132,12 @@ export default function QuotePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {industryLabel && (
+              <div className="mb-4 rounded-md border border-[#2c327a]/20 bg-[#2c327a]/5 px-4 py-3 text-sm text-[#2c327a]">
+                Quoting for <span className="font-semibold">{industryLabel}</span> — we&apos;ve pre-filled a few details
+                to speed things up.
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">

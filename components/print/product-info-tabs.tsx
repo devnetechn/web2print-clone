@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Download } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { ProductContent, FAQ, FilePrepInfo, TemplateLink } from "@/lib/print/product-content"
+import type { ProductContent } from "@/lib/print/product-content"
+import type { TemplateProduct } from "@/lib/print/templates"
+import { ProductTemplatesPanel } from "@/components/print/product-templates-panel"
+import { DEFAULT_PRODUCT_FAQS } from "@/lib/seo"
 
 // Mirrors the same regex used in product-configurator-client — display-only cleanup
 const BC_SIZE_SUFFIX = /\s*\((Oval|Fold\s*Over|Round\s*Corners?)\)\s*$/i
@@ -55,6 +57,10 @@ interface ProductInfoTabsProps {
   productName: string
   content: ProductContent | null
   isBusinessCards?: boolean
+  // The matched design-template family (sizes + variants) for THIS product,
+  // resolved server-side from the scraped 4over template catalog. Powers the
+  // Templates tab. Null when no family matched (rare) → "coming soon".
+  templateProduct?: TemplateProduct | null
 }
 
 export function ProductInfoTabs({
@@ -63,10 +69,9 @@ export function ProductInfoTabs({
   productName,
   content,
   isBusinessCards = false,
+  templateProduct = null,
 }: ProductInfoTabsProps) {
   const [specsState, setSpecsState] = useState<SpecsState>({ status: "idle" })
-  const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set())
-  const [openTemplates, setOpenTemplates] = useState<Set<number>>(new Set())
 
   const handleTabChange = (tab: string) => {
     if (tab === "specs" && (specsState.status === "idle" || specsState.status === "error")) {
@@ -144,34 +149,22 @@ export function ProductInfoTabs({
     }
   }
 
-  const toggleFaq = (i: number) =>
-    setOpenFaqs(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
-      return next
-    })
-
-  const toggleTemplate = (i: number) =>
-    setOpenTemplates(prev => {
-      const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
-      return next
-    })
-
-  const faqs: FAQ[] = content?.faqs ?? []
-  const templateUrls: TemplateLink[] = content?.template_urls ?? []
-  const filePrepInfo: FilePrepInfo | null = content?.template_file_prep ?? null
-
   return (
+    <>
     <Tabs defaultValue="description" onValueChange={handleTabChange} className="w-full">
-      <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0">
-        {(["description", "specs", "templates", "faqs"] as const).map(tab => (
+      <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-auto p-0 gap-0 overflow-x-auto">
+        {([
+          { value: "description", label: "Description" },
+          { value: "specs", label: "Specs" },
+          { value: "templates", label: "Templates" },
+          { value: "faq", label: "FAQ" },
+        ] as const).map(tab => (
           <TabsTrigger
-            key={tab}
-            value={tab}
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] px-6 py-3 text-sm font-medium bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            key={tab.value}
+            value={tab.value}
+            className="flex-shrink-0 whitespace-nowrap rounded-none border-b-2 border-transparent data-[state=active]:border-[#e07b39] data-[state=active]:text-[#e07b39] px-3 sm:px-6 py-3 text-sm font-medium bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
-            {tab === "faqs" ? "FAQs" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -227,89 +220,35 @@ export function ProductInfoTabs({
       </TabsContent>
 
       {/* Templates */}
-      <TabsContent value="templates" className="mt-6 space-y-6">
-        {filePrepInfo && (
-          <div className="bg-slate-50 rounded-lg p-4 text-sm space-y-1 text-slate-700">
-            {filePrepInfo.note && (
-              <p className="italic text-slate-500 mb-3">{filePrepInfo.note}</p>
-            )}
-            <p><span className="font-medium">Resolution:</span> {filePrepInfo.resolution}</p>
-            <p><span className="font-medium">Color Mode:</span> {filePrepInfo.color_mode}</p>
-            <p><span className="font-medium">Bleed:</span> {filePrepInfo.bleed}</p>
-            <p>
-              <span className="font-medium">File Types:</span>{" "}
-              {filePrepInfo.file_types.join(", ")}
-            </p>
-          </div>
-        )}
-        {templateUrls.length > 0 ? (
-          <div className="divide-y border rounded-lg overflow-hidden">
-            {templateUrls.map((t, i) => (
-              <div key={i}>
-                <button
-                  onClick={() => toggleTemplate(i)}
-                  aria-expanded={openTemplates.has(i)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <span className="font-medium text-slate-800">{t.size}</span>
-                  {openTemplates.has(i) ? (
-                    <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  )}
-                </button>
-                {openTemplates.has(i) && (
-                  <div className="px-4 py-3 bg-slate-50 border-t">
-                    <a
-                      href={t.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-[#e07b39] hover:underline"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download Template
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">Templates coming soon.</p>
-        )}
+      <TabsContent value="templates" className="mt-6">
+        <ProductTemplatesPanel product={templateProduct} />
       </TabsContent>
 
-      {/* FAQs */}
-      <TabsContent value="faqs" className="mt-6">
-        {faqs.length > 0 ? (
-          <div className="divide-y border rounded-lg overflow-hidden">
-            {faqs.map((faq, i) => (
-              <div key={i}>
-                <button
-                  onClick={() => toggleFaq(i)}
-                  aria-expanded={openFaqs.has(i)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <span className="font-medium text-slate-800">{faq.q}</span>
-                  {openFaqs.has(i) ? (
-                    <ChevronDown className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  )}
-                </button>
-                {openFaqs.has(i) && (
-                  <div className="px-4 py-4 bg-slate-50 border-t text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    {faq.a}
-                  </div>
-                )}
+      {/* FAQ — forceMount keeps the Q&A text in the DOM even when the tab is
+          inactive, so it stays in sync with the FAQPage JSON-LD (§5) that
+          Google requires present on the page. data-[state=inactive]:hidden
+          handles the show/hide via CSS instead of unmounting. */}
+      <TabsContent
+        value="faq"
+        forceMount
+        className="mt-6 data-[state=inactive]:hidden"
+      >
+        <section aria-labelledby="product-faq-heading">
+          <h2 id="product-faq-heading" className="sr-only">
+            Frequently Asked Questions
+          </h2>
+          <dl className="divide-y divide-slate-200">
+            {DEFAULT_PRODUCT_FAQS.map((faq) => (
+              <div key={faq.question} className="py-4">
+                <dt className="font-semibold text-slate-800">{faq.question}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-slate-600">{faq.answer}</dd>
               </div>
             ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">FAQs coming soon.</p>
-        )}
+          </dl>
+        </section>
       </TabsContent>
     </Tabs>
+    </>
   )
 }
 

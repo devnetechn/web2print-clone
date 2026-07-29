@@ -80,7 +80,7 @@ const RULES: Record<string, ImageRule[]> = {
     { test: /dull\s*book/i, image: "/images/cat/booklets/dull-book-satin-aq.jpg" },
     { test: /gloss\s*cover/i, image: "/images/cat/booklets/gloss-cover-aq.jpg" },
     { test: /gloss\s*book/i, image: "/images/cat/booklets/gloss.jpg" },
-    { test: /matte\s*book/i, image: "/images/cat/booklets/matte-book-uncoated.jpg" },
+    { test: /matte\s*book/i, image: "/images/cat/booklets/matte-book-uncoated.png" },
     { test: /premium|opaque/i, image: "/images/cat/booklets/premium-opaque-uncoated.jpg" },
   ],
   letterheads: [

@@ -1,36 +1,49 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Montserrat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/toaster'
+import { SITE_URL } from '@/lib/seo'
 import './globals.css'
 
 const montserrat = Montserrat({ 
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-montserrat",
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#2c327a',
+}
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default:
+      'Web2Print USA | Print That Means Business — Cards, Banners, Apparel & Business Services',
+    template: '%s | Web2Print USA',
   },
+  description:
+    'Business cards, banners, custom apparel, and business services — LLC registration, web design, and getting found on Google. National print power, first-name service.',
+  generator: 'v0.app',
+  openGraph: {
+    type: 'website',
+    siteName: 'Web2Print USA',
+    title: 'Web2Print USA | Print That Means Business',
+    description:
+      'Business cards, banners, custom apparel, and business services — national print power, first-name service.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Web2Print USA — Print That Means Business' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Web2Print USA | Print That Means Business',
+    description:
+      'Business cards, banners, custom apparel, and business services — national print power, first-name service.',
+    images: ['/og-image.png'],
+  },
+  // Favicons are provided by the app/icon.png and app/apple-icon.png file
+  // conventions (Web2Print "W2P" mark), which Next.js wires up automatically.
 }
 
 export default function RootLayout({

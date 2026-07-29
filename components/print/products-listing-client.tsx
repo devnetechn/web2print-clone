@@ -49,20 +49,15 @@ export function ProductsListingClient({ products, currentSort, categoryUuid }: P
       {products.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {products.map((product) => (
-            <div key={product.product_uuid} className="border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h2 className="text-base font-semibold text-slate-900 mb-4">
+            <Link
+              key={product.product_uuid}
+              href={product.href}
+              className="block border border-slate-200 rounded-lg p-6 hover:shadow-md hover:border-[#e07b39] transition-all"
+            >
+              <h2 className="text-base font-semibold text-slate-900">
                 {product.product_description}
               </h2>
-
-              <div className="flex justify-center">
-                <Link
-                  href={product.href}
-                  className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                >
-                  View details <span className="text-base leading-none">›</span>
-                </Link>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

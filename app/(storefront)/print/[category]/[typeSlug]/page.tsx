@@ -7,6 +7,9 @@ import { SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/li
 import { resolveProductImage } from "@/lib/print/product-images"
 import { ProductInfoTabs } from "@/components/print/product-info-tabs"
 import type { ProductContent } from "@/lib/print/product-content"
+import { matchTemplateProduct } from "@/lib/print/template-match"
+import { JsonLd } from "@/components/seo/json-ld"
+import { canonical, categoryDescription, breadcrumbSchema, productSchema, faqSchema, DEFAULT_PRODUCT_FAQS } from "@/lib/seo"
 
 // Only includes TYPE_RULES (hasTypeRules) categories — the OTHER entries in
 // print/[category]/page.tsx's EXTRA_PRODUCT_SOURCES (e.g. announcement-cards)
@@ -1438,6 +1441,36 @@ function groupKey(desc: string, isBusinessCards = false): string {
     .join(" ")
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; typeSlug: string }>
+}) {
+  const { category, typeSlug } = await params
+  const label =
+    TYPE_LABELS[typeSlug] ||
+    typeSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  const description = categoryDescription(typeSlug, label)
+  const image =
+    TYPE_IMAGES[category]?.[typeSlug] ||
+    SLUG_TO_CATEGORY[category]?.image ||
+    "/images/products/product-default.jpg"
+  const path = `/print/${category}/${typeSlug}`
+  return {
+    title: label,
+    description,
+    // Clean canonical drops the ?uuid= query so every variant of this page
+    // consolidates to one indexable URL.
+    ...canonical(path),
+    openGraph: {
+      title: `${label} | Web2Print USA`,
+      description,
+      url: path,
+      images: [{ url: image, alt: label }],
+    },
+  }
+}
+
 export default async function ProductTypePage({
   params,
   searchParams,
@@ -1851,33 +1884,57 @@ export default async function ProductTypePage({
       }
     }
     const typeLabel = TYPE_LABELS[typeSlug] || typeSlug.replace(/-/g, " ")
+    const templateProduct = matchTemplateProduct(category, typeSlug, productName)
 
     return (
       <div className="min-h-screen bg-white">
+        <JsonLd
+          data={[
+            productSchema({
+              name: productName,
+              description: categoryDescription(typeSlug, productName),
+              image: resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg"),
+              path: `/print/${category}/${typeSlug}`,
+              sku: product?.product_code || undefined,
+            }),
+            breadcrumbSchema([
+              { name: "Home", path: "/" },
+              ...(leaf ? [{ name: leaf.parentLabel, path: `/print/${leaf.parentSlug}` }] : []),
+              ...(leaf && leaf.name !== productName ? [{ name: leaf.name, path: `/print/${category}` }] : []),
+              { name: productName, path: `/print/${category}/${typeSlug}` },
+            ]),
+            faqSchema(DEFAULT_PRODUCT_FAQS),
+          ]}
+        />
         <div className="border-b border-slate-200 py-2 px-4">
           <div className="container mx-auto">
             <p className="text-sm text-slate-500">
-              <Link href="/" className="hover:text-[#e42a27]">Home</Link>
-              <span className="mx-2">&gt;</span>
-              {leaf && <><Link href={`/print/${leaf.parentSlug}`} className="hover:text-[#e42a27]">{leaf.parentLabel}</Link><span className="mx-2">&gt;</span></>}
+  <Link href="/" className="hover:text-[#e42a27]">Home</Link>
+  <span className="mx-2">&gt;</span>
+  {leaf && <><Link href={`/print/${leaf.parentSlug}`} className="hover:text-[#e42a27]">{leaf.parentLabel}</Link><span className="mx-2">&gt;</span></>}
               {leaf && leaf.name !== productName && <><Link href={`/print/${category}`} className="hover:text-[#e42a27]">{leaf.name}</Link><span className="mx-2">&gt;</span></>}
               <span className="text-[#e07b39]">{productName}</span>
             </p>
           </div>
         </div>
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-6">{productName}</h1>
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
-                <Image
-                  src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
-                  alt={productName}
-                  fill
-                  sizes="360px"
-                  priority
-                  className="object-contain"
-                />
+              {/* Spacer matches the configurator's "Price Calculator" header
+                  height so the image lines up with the calculator card. */}
+              <div className="hidden lg:block mb-4 h-7" aria-hidden="true" />
+              <div className="w-full max-w-[520px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="group aspect-square relative overflow-hidden rounded-lg bg-slate-100">
+                  <Image
+                    src={resolveProductImage(category, productName, leaf?.image || "/images/products/product-default.jpg")}
+                    alt={productName}
+                    fill
+                    sizes="520px"
+                    priority
+                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                </div>
               </div>
               <div className="mt-6">
                 <ProductInfoTabs
@@ -1886,6 +1943,7 @@ export default async function ProductTypePage({
                   productName={productName}
                   content={productContent ?? null}
                   isBusinessCards={isBusinessCards}
+                  templateProduct={templateProduct}
                 />
               </div>
             </div>
@@ -1948,8 +2006,8 @@ export default async function ProductTypePage({
     if (!rows || rows.length === 0) {
       console.log("[v0] No products in DB for category", uuid, "- fetching from 4over API...")
       const apiResult = await getAllProductsForCategory(uuid)
-      if (apiResult.success && apiResult.data?.entities?.length > 0) {
-        const apiProducts = apiResult.data.entities
+      if (apiResult.success && (apiResult.data?.entities?.length ?? 0) > 0) {
+        const apiProducts = apiResult.data!.entities!
         console.log("[v0] Got", apiProducts.length, "products from 4over API")
 
         const productsToInsert = apiProducts.map((p: any) => ({
@@ -2347,8 +2405,27 @@ export default async function ProductTypePage({
     }
   }
 
+  const templateProduct = matchTemplateProduct(category, typeSlug, typeLabel)
+
   return (
     <div className="min-h-screen bg-white">
+      <JsonLd
+        data={[
+          productSchema({
+            name: typeLabel,
+            description: categoryDescription(typeSlug, typeLabel),
+            image: TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg",
+            path: `/print/${category}/${typeSlug}`,
+          }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            ...(leaf ? [{ name: leaf.parentLabel, path: `/print/${leaf.parentSlug}` }] : []),
+            ...(leaf && leaf.name !== typeLabel ? [{ name: leaf.name, path: `/print/${category}` }] : []),
+            { name: typeLabel, path: `/print/${category}/${typeSlug}` },
+          ]),
+          faqSchema(DEFAULT_PRODUCT_FAQS),
+        ]}
+      />
       <div className="border-b border-slate-200 py-2 px-4">
         <div className="container mx-auto">
           <p className="text-sm text-slate-500">
@@ -2365,7 +2442,7 @@ export default async function ProductTypePage({
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">{typeLabel}</h1>
 
         {matchedProducts.length === 0 ? (
@@ -2374,18 +2451,23 @@ export default async function ProductTypePage({
             <Link href={`/print/${category}`} className="text-[#e42a27] hover:underline">Back to {leaf?.name}</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_minmax(0,640px)] gap-8 items-start">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,640px)] gap-8 items-start">
             {/* Left: product image + info tabs */}
             <div>
-              <div className="aspect-square w-full max-w-[360px] bg-slate-100 rounded overflow-hidden border border-slate-200 relative">
-                <Image
-                  src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
-                  alt={typeLabel}
-                  fill
-                  sizes="360px"
-                  priority
-                  className="object-contain"
-                />
+              {/* Spacer matches the configurator's "Price Calculator" header
+                  height so the image lines up with the calculator card. */}
+              <div className="hidden lg:block mb-4 h-7" aria-hidden="true" />
+              <div className="w-full max-w-[520px] rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="group aspect-square relative overflow-hidden rounded-lg bg-slate-100">
+                  <Image
+                    src={TYPE_IMAGES[category]?.[typeSlug] || leaf?.image || "/images/products/product-default.jpg"}
+                    alt={typeLabel}
+                    fill
+                    sizes="520px"
+                    priority
+                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                </div>
               </div>
               <div className="mt-6">
                 <ProductInfoTabs
@@ -2394,6 +2476,7 @@ export default async function ProductTypePage({
                   productName={typeLabel}
                   content={productContent ?? null}
                   isBusinessCards={isBusinessCardsType}
+                  templateProduct={templateProduct}
                 />
               </div>
             </div>

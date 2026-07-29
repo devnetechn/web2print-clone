@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server"
 import { getAllProductsForCategory } from "@/lib/4over/client"
 import { GROUPS, SLUG_TO_CATEGORY, SIZE_GROUPED_PARENTS, matchesAllKeywords } from "@/lib/print/categories"
 import { resolveProductImage } from "@/lib/print/product-images"
+import { JsonLd } from "@/components/seo/json-ld"
+import { canonical, categoryDescription, breadcrumbSchema } from "@/lib/seo"
 
 // =====================================================================
 // PRODUCT TYPE GROUPING RULES per spec
@@ -1837,6 +1839,29 @@ function groupKey(desc: string, isBusinessCards = false): string {
     .join(" ")
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>
+}) {
+  const { category } = await params
+  const label =
+    GROUPS[category]?.label ||
+    SLUG_TO_CATEGORY[category]?.name ||
+    category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  const description = categoryDescription(category, label)
+  return {
+    title: `${label} Printing`,
+    description,
+    ...canonical(`/print/${category}`),
+    openGraph: {
+      title: `${label} Printing | Web2Print USA`,
+      description,
+      url: `/print/${category}`,
+    },
+  }
+}
+
 export default async function PrintCategoryPage({
   params,
 }: {
@@ -1888,6 +1913,12 @@ export default async function PrintCategoryPage({
 
     return (
       <div className="min-h-screen bg-white">
+        <JsonLd
+          data={breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: group.label, path: `/print/${category}` },
+          ])}
+        />
         <div className="border-b border-slate-200 py-2 px-4">
           <div className="container mx-auto">
             <p className="text-sm text-slate-500">
@@ -1907,7 +1938,7 @@ export default async function PrintCategoryPage({
               ? boxesPackagingFlatItems.map((item) => (
                   <div key={item.href} className="group text-center">
                     <Link href={item.href}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                         <Image
                           src={item.image}
                           alt={item.name}
@@ -1917,19 +1948,15 @@ export default async function PrintCategoryPage({
                         />
                       </div>
                     </Link>
-                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{item.name}</h2>
-                    <Link
-                      href={item.href}
-                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
-                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    <Link href={item.href} className="hover:text-[#e07b39]">
+                      <h2 className="text-sm font-semibold text-slate-900">{item.name}</h2>
                     </Link>
                   </div>
                 ))
               : group.subcategories.map((sub) => (
                   <div key={sub.slug} className="group text-center">
                     <Link href={`/print/${sub.slug}`}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                         <Image
                           src={sub.image}
                           alt={sub.name}
@@ -1939,12 +1966,8 @@ export default async function PrintCategoryPage({
                         />
                       </div>
                     </Link>
-                    <h2 className="text-sm font-semibold text-slate-900 mb-3">{sub.name}</h2>
-                    <Link
-                      href={`/print/${sub.slug}`}
-                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
-                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    <Link href={`/print/${sub.slug}`} className="hover:text-[#e07b39]">
+                      <h2 className="text-sm font-semibold text-slate-900">{sub.name}</h2>
                     </Link>
                   </div>
                 ))}
@@ -1993,8 +2016,8 @@ export default async function PrintCategoryPage({
     if (!rows || rows.length === 0) {
       console.log("[v0] No products in DB for", label, "- fetching from 4over API...")
       const apiResult = await getAllProductsForCategory(categoryUuid)
-      if (apiResult.success && apiResult.data?.entities?.length > 0) {
-        const apiProducts = apiResult.data.entities
+      if (apiResult.success && (apiResult.data?.entities?.length ?? 0) > 0) {
+        const apiProducts = apiResult.data!.entities!
         console.log("[v0] Got", apiProducts.length, "products from 4over API for", label)
 
         const productsToInsert = apiProducts.map((p: any) => ({
@@ -2126,6 +2149,13 @@ export default async function PrintCategoryPage({
 
     return (
       <div className="min-h-screen bg-white">
+        <JsonLd
+          data={breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: leaf.parentLabel, path: `/print/${leaf.parentSlug}` },
+            { name: leaf.name, path: `/print/${category}` },
+          ])}
+        />
         <div className="border-b border-slate-200 py-2 px-4">
           <div className="container mx-auto">
             <p className="text-sm text-slate-500">
@@ -2156,7 +2186,7 @@ export default async function PrintCategoryPage({
             {sortedTypes.map(({ rule, image }) => (
               <div key={rule.slug} className="group text-center">
                 <Link href={`/print/${category}/${rule.slug}`}>
-                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                  <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                     <Image
                       src={image}
                       alt={rule.label}
@@ -2166,12 +2196,8 @@ export default async function PrintCategoryPage({
                     />
                   </div>
                 </Link>
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 text-balance">{rule.label}</h3>
-                <Link
-                  href={`/print/${category}/${rule.slug}`}
-                  className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                >
-                  View details <span className="text-base leading-none">&rsaquo;</span>
+                <Link href={`/print/${category}/${rule.slug}`} className="hover:text-[#e07b39]">
+                  <h3 className="text-sm font-semibold text-slate-900 text-balance">{rule.label}</h3>
                 </Link>
               </div>
             ))}
@@ -2283,6 +2309,13 @@ export default async function PrintCategoryPage({
 
   return (
     <div className="min-h-screen bg-white">
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: leaf.parentLabel, path: `/print/${leaf.parentSlug}` },
+          { name: leaf.name, path: `/print/${category}` },
+        ])}
+      />
       <div className="border-b border-slate-200 py-2 px-4">
         <div className="container mx-auto">
           <p className="text-sm text-slate-500">
@@ -2321,7 +2354,7 @@ export default async function PrintCategoryPage({
                 return (
                   <div key={product.product_uuid} className="group text-center">
                     <Link href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}>
-                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative">
+                      <div className="aspect-square bg-slate-100 mb-3 overflow-hidden relative rounded-xl">
                         <Image
                           src={resolveProductImage(category, product.product_description, leaf.image)}
                           alt={product.product_description}
@@ -2331,12 +2364,8 @@ export default async function PrintCategoryPage({
                         />
                       </div>
                     </Link>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3 text-balance">{product.product_description}</h3>
-                    <Link
-                      href={`/print/${category}/${slug}?uuid=${product.product_uuid}`}
-                      className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-                    >
-                      View details <span className="text-base leading-none">&rsaquo;</span>
+                    <Link href={`/print/${category}/${slug}?uuid=${product.product_uuid}`} className="hover:text-[#e07b39]">
+                      <h3 className="text-sm font-semibold text-slate-900 text-balance">{product.product_description}</h3>
                     </Link>
                   </div>
                 )

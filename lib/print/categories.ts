@@ -82,7 +82,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
     label: "Marketing Products",
     subcategories: [
       { name: "Flyers and Brochures", uuid: "4edd37b2-c6d5-4938-b6c7-35e09cd7bf76", slug: "flyers-and-brochures", image: "/images/cat/flyers-and-brochures.jpg" },
-      { name: "Trading Cards", uuid: "b45e4b55-a3cd-4897-9506-69ba456189e7", slug: "trading-cards", image: "/images/categories/postcards.jpg" },
+      { name: "Trading Cards", uuid: "b45e4b55-a3cd-4897-9506-69ba456189e7", slug: "trading-cards", image: "/images/cat/trading-cards.jpg" },
       { name: "Postcards", uuid: "6f4148e7-3842-4d8b-99f8-6d31c2f71883", slug: "postcards", image: "/images/cat/postcards.jpg" },
       { name: "Presentation Folders", uuid: "d69c91dd-f208-4736-a47b-a0a628d88103", slug: "presentation-folders", image: "/images/cat/presentation-folders.jpg" },
       // fourprintshop's literal /marketing-material/announcement-cards/products/
@@ -157,7 +157,7 @@ export const GROUPS: Record<string, { label: string; subcategories: SubCategory[
       // shape variant) are nested inside the same "Adhesive Vinyl" 4over
       // category as Wall Decals — scoped here via keyword (previously thought
       // unavailable in our sandbox; it isn't, it just has no own category).
-      { name: "Floor Graphics", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "floor-graphics", image: "/images/signs/wall-decals.jpg", keyword: "floor graphic" },
+      { name: "Floor Graphics", uuid: "4bf65303-b799-4f45-b3d9-6cc105eb78a4", slug: "floor-graphics", image: "/images/signs/floor-graphics.jpg", keyword: "floor graphic" },
       { name: "Vehicle Magnets", uuid: "5b0ab4cc-8ab1-4377-b42d-d3db500a9e44", slug: "vehicle-magnets", image: "/images/signs/vehicle-magnets.jpg" },
       { name: "Banner Stands", uuid: "a98dc51f-d371-479a-8ebb-c65749065971", slug: "banner-stands", image: "/images/signs/banner-stands.jpg" },
       { name: "Displays", uuid: "cbef836a-a2f0-47a0-8cc7-67dee8a4b0ab", slug: "displays", image: "/images/signs/displays.jpg" },

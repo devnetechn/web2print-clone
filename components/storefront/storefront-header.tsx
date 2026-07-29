@@ -2,13 +2,85 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, Phone, ShoppingCart } from "lucide-react"
+import { Phone, ShoppingCart, Menu } from "lucide-react"
 import { useState, useEffect } from "react"
-import { APPAREL_ENABLED } from "@/lib/feature-flags"
+import { HeaderSearch } from "@/components/storefront/header-search"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
+type NavLink = { label: string; href: string; muted?: boolean; accent?: boolean; comingSoon?: boolean }
+type NavGroup = { id: string; label: string; href?: string; accent?: boolean; links: NavLink[] }
+
+// Simplified top nav per the homepage restructure: About, Industries We Serve,
+// Printing, Beyond Print. "About" is a simple link (no dropdown). Beyond Print
+// groups the business-services offerings; every link resolves to a real route
+// (the services hub, website design, storefront makeover, or the quote form) so
+// nothing 404s.
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: "about",
+    label: "About",
+    href: "/about",
+    links: [],
+  },
+  {
+    id: "industries",
+    label: "Industries We Serve",
+    href: "/industries",
+    links: [
+      { label: "Beauty & Grooming", href: "/industries/beauty-grooming" },
+      { label: "Home Services & Trades", href: "/industries/home-services-trades" },
+      { label: "Food & Restaurants", href: "/industries/food-restaurants" },
+      { label: "Real Estate Pros", href: "/industries/real-estate" },
+      { label: "Medical & Dental Practices", href: "/industries/medical-dental" },
+      { label: "Nightlife & Events", href: "/industries/nightlife-events" },
+      { label: "Schools & Government", href: "/industries/schools-government" },
+      { label: "View All Industries", href: "/industries", accent: true },
+    ],
+  },
+  {
+    id: "printing",
+    label: "Printing",
+    href: "/print",
+    links: [
+      { label: "Business Cards", href: "/print/business-cards" },
+      { label: "Marketing Products", href: "/print/marketing-materials" },
+      { label: "Signs & Banners", href: "/print/signs-banners" },
+      { label: "Boxes & Packaging", href: "/print/boxes-packaging" },
+      { label: "Roll Labels & Stickers", href: "/print/roll-labels-stickers" },
+      { label: "Promo Products", href: "/print/promo-products" },
+      { label: "View All", href: "/print", accent: true },
+    ],
+  },
+  {
+    id: "beyond-print",
+    label: "Beyond Print",
+    href: "/services",
+    links: [
+      { label: "Start a Business", href: "/services" },
+      { label: "Web Design", href: "/services/website-design" },
+      { label: "Get Found on Google", href: "/services", comingSoon: true },
+      { label: "Graphic Design", href: "/services", comingSoon: true },
+      { label: "Storefront Makeover", href: "/services/storefront-makeover" },
+      { label: "Request a Quote", href: "/quote", accent: true },
+    ],
+  },
+]
 
 export function StorefrontHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
 
   // Listen for cart changes
@@ -21,15 +93,15 @@ export function StorefrontHeader() {
         setCartCount(0)
       }
     }
-    
+
     updateCartCount()
-    
+
     // Listen for storage events (cross-tab updates)
     window.addEventListener("storage", updateCartCount)
-    
+
     // Also poll periodically for same-tab updates
     const interval = setInterval(updateCartCount, 1000)
-    
+
     return () => {
       window.removeEventListener("storage", updateCartCount)
       clearInterval(interval)
@@ -39,31 +111,131 @@ export function StorefrontHeader() {
   return (
     <header>
       {/* Main Header Row - Logo, Search, Phone, Order Tracking, Login */}
-      <div className="bg-white py-4 border-b">
+      <div className="bg-white py-3 md:py-4 border-b">
         <div className="container mx-auto px-4">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
+            {/* Mobile menu trigger */}
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden -ml-2 h-11 w-11 text-[#2c327a] hover:text-[#2c327a] hover:bg-[#2c327a]/10"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-7 w-7" strokeWidth={2.75} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
+                <SheetHeader className="px-4 py-4 border-b text-left">
+                  <SheetTitle>
+                    <img src="/logo.png" alt="Web2Print USA Solutions" className="h-10" />
+                  </SheetTitle>
+                </SheetHeader>
+
+                {/* Mobile accordion navigation */}
+                <nav className="px-2 py-2">
+                  <Accordion type="single" collapsible className="w-full">
+                    {NAV_GROUPS.filter((group) => group.id !== "beyond-print").map((group) =>
+                      group.links.length === 0 ? (
+                        // No dropdown (e.g. About) -> render as a direct link
+                        <Link
+                          key={group.id}
+                          href={group.href || "#"}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex px-2 py-3 text-sm font-medium text-slate-800 hover:text-[#e42a27] border-b border-slate-100"
+                        >
+                          {group.label}
+                        </Link>
+                      ) : (
+                        <AccordionItem key={group.id} value={group.id} className="border-b border-slate-100">
+                          <AccordionTrigger
+                            className={`px-2 py-3 text-sm font-medium hover:no-underline ${
+                              group.accent ? "text-[#e42a27] font-semibold" : "text-slate-800"
+                            }`}
+                          >
+                            {group.label}
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-2">
+                            <div className="flex flex-col">
+                              {group.href && (
+                                <Link
+                                  href={group.href}
+                                  onClick={() => setMobileOpen(false)}
+                                  className="px-4 py-2 text-sm font-semibold text-[#2c327a] hover:text-[#e42a27]"
+                                >
+                                  {group.label} Home
+                                </Link>
+                              )}
+                              {group.links.map((link) =>
+                                link.comingSoon ? (
+                                  <span
+                                    key={link.href + link.label}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 cursor-not-allowed"
+                                  >
+                                    {link.label}
+                                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                      Coming Soon
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <Link
+                                    key={link.href + link.label}
+                                    href={link.href}
+                                    onClick={() => setMobileOpen(false)}
+                                    className={`px-4 py-2 text-sm hover:text-[#e42a27] ${
+                                      link.accent ? "text-[#e42a27] font-semibold" : "text-slate-600"
+                                    }`}
+                                  >
+                                    {link.label}
+                                  </Link>
+                                ),
+                              )}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      )
+                    )}
+                  </Accordion>
+
+                  {/* Mobile utility links (Login/Register removed -> sign-in
+                      now lives in the cart/checkout flow) */}
+                  <div className="mt-2 flex flex-col gap-1 border-t border-slate-100 pt-2">
+                    <Link
+                      href="/tracking"
+                      onClick={() => setMobileOpen(false)}
+                      className="px-2 py-3 text-sm text-slate-700 hover:text-[#e42a27]"
+                    >
+                      Order Tracking
+                    </Link>
+                    <a
+                      href="tel:888-843-6867"
+                      className="px-2 py-3 text-sm font-semibold text-slate-800 hover:text-[#e42a27]"
+                    >
+                      Call 888-843-6867
+                    </a>
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
+
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-14" />
+              <img src="/logo.png" alt="Web2Print USA Solutions" className="h-20 md:h-24" />
             </Link>
 
-            {/* Search Box */}
-            <div className="relative flex-1 max-w-md">
-              <Input
-                placeholder="Search our products here"
-                className="w-full pr-10 h-10 border-slate-300 rounded-full bg-white"
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="absolute right-1 top-1 h-8 w-8 rounded-full text-slate-500 hover:text-[#2c327a]"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
+            {/* Spacer pushes the search + right-side cluster together toward the
+                right, so the search sits next to the phone number. */}
+            <div className="flex-1" />
+
+            {/* Search Box - hidden on small screens (available in mobile menu).
+                Self-contained: recent searches, categories, trending. */}
+            <div className="hidden md:block md:mr-6 lg:mr-8">
+              <HeaderSearch variant="desktop" />
             </div>
 
-            {/* Phone */}
-            <div className="flex items-center gap-2 text-sm">
+            {/* Phone - hidden below lg */}
+            <div className="hidden lg:flex items-center gap-2 text-sm">
               <Phone className="h-5 w-5 text-slate-600" />
               <div className="flex flex-col leading-tight">
                 <span className="text-slate-500 text-xs">Phone</span>
@@ -73,14 +245,34 @@ export function StorefrontHeader() {
               </div>
             </div>
 
-            {/* UPS Order Tracking */}
-            <Link href="/tracking" className="flex items-center gap-2 text-sm hover:text-[#e42a27]">
+            {/* UPS Order Tracking - hidden below lg */}
+            <Link href="/tracking" className="hidden lg:flex items-center gap-2 text-sm hover:text-[#e42a27]">
               <img src="https://www.ups.com/assets/resources/images/UPS_logo.svg" alt="UPS" className="h-5 w-auto" />
               <span className="text-slate-700">Order Tracking</span>
             </Link>
 
-            {/* Cart */}
-            <Link href="/cart" className="relative flex items-center gap-2 text-sm text-slate-700 hover:text-[#e42a27]">
+            {/* CTA buttons - both stay visible on mobile per spec.
+                Login/Register was removed from the header; sign-in now lives
+                inside the cart/checkout flow. */}
+            <Link
+              href="/quote"
+              className="hidden sm:inline-flex items-center rounded-md border-2 border-[#2c327a] px-3 py-2 text-xs font-bold text-[#2c327a] transition-colors hover:bg-[#2c327a] hover:text-white lg:px-4 lg:text-sm"
+            >
+              Get Quote
+            </Link>
+            <Link
+              href="/print"
+              className="inline-flex items-center rounded-md bg-[#e42a27] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#c51f1f] lg:px-4 lg:text-sm"
+            >
+              Shop Print
+            </Link>
+
+            {/* Cart - always visible */}
+            <Link
+              href="/cart"
+              className="relative flex items-center gap-2 text-sm text-slate-700 hover:text-[#e42a27]"
+              aria-label="Cart"
+            >
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#e42a27] text-white text-xs font-bold rounded-full flex items-center justify-center">
@@ -88,141 +280,73 @@ export function StorefrontHeader() {
                 </span>
               )}
             </Link>
+          </div>
 
-            {/* Login/Register */}
-            <Link href="/account/login" className="text-sm text-slate-700 hover:text-[#e42a27]">
-              Login/Register
-            </Link>
+          {/* Always-visible full-width mobile search (like the reference).
+              Hidden on md+ where the inline top-bar search is used instead. */}
+          <div className="md:hidden pb-3">
+            <HeaderSearch variant="mobile" />
           </div>
         </div>
       </div>
 
-      {/* Navigation Bar */}
-      <nav className="bg-[#2c327a]">
+      {/* Desktop Navigation Bar - hidden below lg */}
+      <nav className="bg-[#2c327a] hidden lg:block">
         <div className="container mx-auto px-4">
           <ul className="flex justify-center text-sm font-medium">
-            {/* Custom Apparel - Primary CTA */}
-            {APPAREL_ENABLED && (
-            <li
-              className="border-r border-white/30 relative"
-              onMouseEnter={() => setOpenMenu("merch")}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
-              <Link 
-                href="/merch"
-                className="block px-6 py-3 text-white bg-[#e42a27] hover:bg-[#c51f1f] cursor-pointer font-semibold"
-              >
-                Custom Apparel
-              </Link>
-              {openMenu === "merch" && (
-                <div className="absolute left-0 top-full bg-white shadow-lg min-w-[260px] z-[100]">
-                  <Link href="/merch" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100 font-semibold">Shop All Apparel</Link>
-                  <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase">By Category</div>
-                  <Link href="/merch?category=crew-neck-tees" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">T-Shirts</Link>
-                  <Link href="/merch?category=polos" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Polos</Link>
-                  <Link href="/merch?category=hoodies" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Hoodies & Sweatshirts</Link>
-                  <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase border-t">By Print Method</div>
-                  <Link href="/merch?method=silkscreen" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Screen Printing</Link>
-                  <Link href="/merch?method=embroidery" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Embroidery</Link>
-                  <Link href="/merch?method=dtg" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">DTG Printing</Link>
-                  <Link href="/merch/quote" className="block px-4 py-3 text-[#e42a27] hover:bg-[#e42a27] hover:text-white font-semibold">Request a Quote</Link>
-                </div>
-              )}
-            </li>
-            )}
-            {/* Industries We Serve */}
-            <li 
-              className="border-r border-white/30 relative"
-              onMouseEnter={() => setOpenMenu("industries")}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
-              <span 
-                onClick={() => setOpenMenu(openMenu === "industries" ? null : "industries")}
-                className="block px-6 py-3 text-white hover:bg-white/10 cursor-pointer"
-              >
-                Industries We Serve
-              </span>
-              {openMenu === "industries" && (
-                <div className="absolute left-0 top-full bg-white shadow-lg min-w-[220px] z-[100]">
-                  <Link href="/industries/trade-shows" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Trade Shows & Events</Link>
-                  <Link href="/industries/schools" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Schools & Universities</Link>
-                  <Link href="/industries/government" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Government Agencies</Link>
-                  <Link href="/industries/corporate" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Corporate & Enterprise</Link>
-                  <Link href="/industries/restaurants" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Restaurants</Link>
-                  <Link href="/industries/nonprofits" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white">Non-Profits</Link>
-                </div>
-              )}
-            </li>
-            {/* Printing dropdown */}
-            <li 
-              className="border-r border-white/30 relative"
-              onMouseEnter={() => setOpenMenu("printing")}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
-              <Link 
-                href="/print"
-                className="block px-6 py-3 text-white hover:bg-white/10 cursor-pointer"
-              >
-                Printing
-              </Link>
-              {openMenu === "printing" && (
-                <div className="absolute left-0 top-full bg-white shadow-lg min-w-[240px] z-[100]">
-                  <Link href="/print/business-cards" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Business Cards</Link>
-                  <Link href="/print/marketing-materials" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Marketing Products</Link>
-                  <Link href="/print/signs-banners" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Signs & Banners</Link>
-                  <Link href="/print/boxes-packaging" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Boxes & Packaging</Link>
-                  <Link href="/print/roll-labels-stickers" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Roll Labels & Stickers</Link>
-                  <Link href="/print/promo-products" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Promo Products</Link>
-                  {/* 2026-07-10: "Direct Mail Services" link removed from this
-                      dropdown per explicit user request. 2026-07-11: EDDM/
-                      Direct Mail Services removed entirely (not just this nav
-                      link) per Boss Dwayne's follow-up request -- the
-                      underlying "/print/eddm" page no longer exists. */}
-                  <Link href="/print" className="block px-4 py-3 text-[#e42a27] hover:bg-[#e42a27] hover:text-white font-semibold">View All</Link>
-                </div>
-              )}
-            </li>
-            {/* Business Programs */}
-            <li 
-              className="border-r border-white/30 relative"
-              onMouseEnter={() => setOpenMenu("programs")}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
-              <span 
-                onClick={() => setOpenMenu(openMenu === "programs" ? null : "programs")}
-                className="block px-6 py-3 text-white hover:bg-white/10 cursor-pointer"
-              >
-                Business Programs
-              </span>
-              {openMenu === "programs" && (
-                <div className="absolute left-0 top-full bg-white shadow-lg min-w-[220px] z-[100]">
-                  <Link href="/programs/reseller" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Reseller Program</Link>
-                  <Link href="/programs/wholesale" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Wholesale</Link>
-                  <Link href="/programs/affiliate" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white">Affiliate Program</Link>
-                </div>
-              )}
-            </li>
-            {/* Business Services */}
-            <li 
-              className="border-r border-white/30 relative"
-              onMouseEnter={() => setOpenMenu("services")}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
-              <span 
-                onClick={() => setOpenMenu(openMenu === "services" ? null : "services")}
-                className="block px-6 py-3 text-white hover:bg-white/10 cursor-pointer"
-              >
-                Business Services
-              </span>
-              {openMenu === "services" && (
-                <div className="absolute left-0 top-full bg-white shadow-lg min-w-[220px] z-[100]">
-                  <Link href="/services/website-design" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Website Design</Link>
-                  <Link href="/services/storefront-makeover" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Storefront Makeover</Link>
-                  <Link href="/services/graphic-design" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white border-b border-slate-100">Graphic Design</Link>
-                  <Link href="/services/branding" className="block px-4 py-3 text-slate-700 hover:bg-[#2c327a] hover:text-white">Branding</Link>
-                </div>
-              )}
-            </li>
+            {NAV_GROUPS.map((group) => {
+              const hasDropdown = group.links.length > 0
+              return (
+                <li
+                  key={group.id}
+                  className="border-r border-white/30 relative first:border-l"
+                  onMouseEnter={() => hasDropdown && setOpenMenu(group.id)}
+                  onMouseLeave={() => setOpenMenu(null)}
+                >
+                  {group.href ? (
+                    <Link href={group.href} className="block px-6 py-3 text-white hover:bg-white/10 cursor-pointer">
+                      {group.label}
+                    </Link>
+                  ) : (
+                    <span
+                      onClick={() => setOpenMenu(openMenu === group.id ? null : group.id)}
+                      className="block px-6 py-3 text-white hover:bg-white/10 cursor-pointer"
+                    >
+                      {group.label}
+                    </span>
+                  )}
+                  {hasDropdown && openMenu === group.id && (
+                    <div className="absolute left-0 top-full bg-white shadow-lg min-w-[240px] z-[100]">
+                      {group.links.map((link, i) =>
+                        link.comingSoon ? (
+                          <span
+                            key={link.href + link.label}
+                            className={`flex items-center justify-between gap-2 px-4 py-3 text-slate-400 cursor-not-allowed ${
+                              i < group.links.length - 1 ? "border-b border-slate-100" : ""
+                            }`}
+                          >
+                            {link.label}
+                            <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                              Coming Soon
+                            </span>
+                          </span>
+                        ) : (
+                          <Link
+                            key={link.href + link.label}
+                            href={link.href}
+                            className={`block px-4 py-3 hover:bg-[#2c327a] hover:text-white ${
+                              i < group.links.length - 1 ? "border-b border-slate-100" : ""
+                            } ${link.accent ? "text-[#e42a27] font-semibold hover:bg-[#e42a27]" : "text-slate-700"}`}
+                          >
+                            {link.label}
+                          </Link>
+                        ),
+                      )}
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
       </nav>

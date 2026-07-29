@@ -1,4 +1,11 @@
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Professional Printing",
+  description:
+    "Order business cards, marketing materials, signs & banners, packaging, labels, and promo products online at Web2Print USA — live pricing and fast nationwide shipping.",
+}
 
 const TOP_CATEGORIES = [
   { name: "Business Cards", slug: "business-cards", description: "Premium quality business cards in various stocks and finishes" },
@@ -9,13 +16,15 @@ const TOP_CATEGORIES = [
   { name: "Promo Products", slug: "promo-products", description: "T-shirts, tote bags, mugs, and promotional items" },
 ]
 
+// Real site product photography (same assets used on the homepage grid),
+// replacing the earlier generic placeholder images.
 const CATEGORY_IMAGES: Record<string, string> = {
-  "business-cards": "/images/categories/business-cards.jpg",
-  "marketing-materials": "/images/categories/flyers.jpg",
-  "signs-banners": "/images/categories/posters.jpg",
-  "boxes-packaging": "/images/categories/notepads.jpg",
-  "roll-labels-stickers": "/images/categories/postcards.jpg",
-  "promo-products": "/images/categories/magnets.jpg",
+  "business-cards": "/images/cat/business-cards/foil-worx.jpg",
+  "marketing-materials": "/images/cat/flyers-and-brochures.jpg",
+  "signs-banners": "/images/cat/outdoor-banners/scrim-vinyl.jpg",
+  "boxes-packaging": "/images/cat/packaging.jpg",
+  "roll-labels-stickers": "/images/cat/roll-labels.jpg",
+  "promo-products": "/images/cat/mugs.jpg",
 }
 
 export default function PrintShopHome() {
@@ -39,7 +48,7 @@ export default function PrintShopHome() {
           {TOP_CATEGORIES.map((cat) => (
             <div key={cat.slug} className="group text-center">
               <Link href={`/print/${cat.slug}`}>
-                <div className="aspect-square bg-slate-100 mb-3 overflow-hidden rounded">
+                <div className="aspect-square bg-slate-100 mb-3 overflow-hidden rounded-xl">
                   <img
                     src={CATEGORY_IMAGES[cat.slug]}
                     alt={cat.name}
@@ -47,14 +56,10 @@ export default function PrintShopHome() {
                   />
                 </div>
               </Link>
-              <h2 className="text-base font-semibold text-slate-900 mb-1">{cat.name}</h2>
-              <p className="text-xs text-slate-500 mb-3">{cat.description}</p>
-              <Link
-                href={`/print/${cat.slug}`}
-                className="inline-flex items-center gap-1 bg-[#e07b39] hover:bg-[#c9692a] text-white text-sm font-medium px-4 py-2 rounded transition-colors"
-              >
-                View details <span className="text-base leading-none">&rsaquo;</span>
+              <Link href={`/print/${cat.slug}`} className="hover:text-[#e07b39]">
+                <h2 className="text-base font-semibold text-slate-900 mb-1">{cat.name}</h2>
               </Link>
+              <p className="text-xs text-slate-500">{cat.description}</p>
             </div>
           ))}
         </div>
