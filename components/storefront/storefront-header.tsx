@@ -1,10 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Phone, ShoppingCart, Menu, User } from "lucide-react"
+import { Phone, ShoppingCart, Menu, User, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { HeaderSearch } from "@/components/storefront/header-search"
+import { createClient } from "@/lib/supabase/client"
 import {
   Sheet,
   SheetContent,
@@ -18,6 +20,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type NavLink = { label: string; href: string; muted?: boolean; accent?: boolean; comingSoon?: boolean }
 type NavGroup = { id: string; label: string; href?: string; accent?: boolean; links: NavLink[] }
@@ -79,9 +89,11 @@ const NAV_GROUPS: NavGroup[] = [
 ]
 
 export function StorefrontHeader() {
+  const router = useRouter()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
 
   // Listen for cart changes
   useEffect(() => {
@@ -107,6 +119,26 @@ export function StorefrontHeader() {
       clearInterval(interval)
     }
   }, [])
+
+  // Track login state so the header can switch between "Login" and an
+  // account menu with Logout, and stay in sync across tabs / sign-in events.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null))
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null)
+    })
+
+    return () => subscription.subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/")
+    router.refresh()
+  }
 
   return (
     <header>
@@ -267,14 +299,39 @@ export function StorefrontHeader() {
               Shop Print
             </Link>
 
-            {/* Account - always visible */}
-            <Link
-              href="/account/login"
-              className="flex items-center text-sm text-slate-700 hover:text-[#e42a27]"
-              aria-label="Login or Sign Up"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            {/* Account - always visible. Shows a plain login link when
+                signed out, or a dropdown with Logout when signed in. */}
+            {userEmail ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center text-sm text-slate-700 hover:text-[#e42a27]"
+                    aria-label="Account menu"
+                  >
+                    <User className="h-5 w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="truncate font-normal text-slate-500">
+                    {userEmail}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <LogOut className="h-4 w-4" />
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                href="/account/login"
+                className="flex items-center text-sm text-slate-700 hover:text-[#e42a27]"
+                aria-label="Login or Sign Up"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            )}
 
             {/* Cart - always visible */}
             <Link
