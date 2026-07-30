@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Phone, ShoppingCart, Menu } from "lucide-react"
+import { Phone, ShoppingCart, Menu, User } from "lucide-react"
 import { useState, useEffect } from "react"
 import { HeaderSearch } from "@/components/storefront/header-search"
 import {
@@ -265,6 +265,15 @@ export function StorefrontHeader() {
               className="inline-flex items-center rounded-md bg-[#e42a27] px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-[#c51f1f] lg:px-4 lg:text-sm"
             >
               Shop Print
+            </Link>
+
+            {/* Account - always visible */}
+            <Link
+              href="/account/login"
+              className="flex items-center text-sm text-slate-700 hover:text-[#e42a27]"
+              aria-label="Login or Sign Up"
+            >
+              <User className="h-5 w-5" />
             </Link>
 
             {/* Cart - always visible */}
