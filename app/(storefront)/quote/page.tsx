@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, type ChangeEvent, type FormEvent } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { INDUSTRIES } from "@/lib/industries"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,8 +12,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { CheckCircle2, Loader2, Upload, FileText } from "lucide-react"
 import { submitQuoteRequest } from "@/app/actions/quotes"
 import { uploadDesignFile } from "@/app/actions/design-upload"
+import { createClient } from "@/lib/supabase/client"
 
 export default function QuotePage() {
+  const router = useRouter()
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
@@ -49,6 +52,16 @@ export default function QuotePage() {
       setDescription((d) => d || `I'd like a quote for ${nice}: `)
     }
   }, [])
+
+  const handleUploadClick = async () => {
+    const supabase = createClient()
+    const { data } = await supabase.auth.getUser()
+    if (!data.user) {
+      router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+      return
+    }
+    fileInputRef.current?.click()
+  }
 
   const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -191,7 +204,7 @@ export default function QuotePage() {
                 <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelected} />
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleUploadClick}
                   disabled={uploading}
                   className="w-full flex items-center gap-3 border border-slate-200 rounded-lg p-3 hover:border-[#e07b39] transition-all text-left disabled:opacity-60"
                 >
