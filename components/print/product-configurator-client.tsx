@@ -1825,7 +1825,10 @@ export function ProductConfiguratorClient({
           />
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={async () => {
+              if (!(await requireAuth())) return
+              fileInputRef.current?.click()
+            }}
             disabled={uploading}
             className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left disabled:opacity-60"
           >

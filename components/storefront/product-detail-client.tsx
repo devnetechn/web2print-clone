@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef, useCallback, type ChangeEvent } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -55,6 +57,7 @@ type ParsedOptions = {
 }
 
 export function ProductDetailClient({ product, options }: { product: Product; options: ProductOption[] }) {
+  const router = useRouter()
   const [selectedColorspec, setSelectedColorspec] = useState<string>("")
   const [selectedRunsize, setSelectedRunsize] = useState<string>("")
   const [selectedTurnaround, setSelectedTurnaround] = useState<string>("")
@@ -78,6 +81,16 @@ export function ProductDetailClient({ product, options }: { product: Product; op
     { fileName: string; url: string; path: string; contentType: string } | null
   >(null)
   const { toast } = useToast()
+
+  // Same login gate as the /print configurator's Upload Design button —
+  // sends the customer to login/register with `next` back to this exact
+  // product page so they land right back here once signed in.
+  const requireAuth = useCallback(async () => {
+    const { data } = await createClient().auth.getUser()
+    if (data.user) return true
+    router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+    return false
+  }, [router])
 
   const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -623,7 +636,11 @@ export function ProductDetailClient({ product, options }: { product: Product; op
                           />
                           <Card
                             className="border-2 border-dashed hover:border-primary transition-colors cursor-pointer"
-                            onClick={() => !uploading && fileInputRef.current?.click()}
+                            onClick={async () => {
+                              if (uploading) return
+                              if (!(await requireAuth())) return
+                              fileInputRef.current?.click()
+                            }}
                           >
                             <CardContent className="p-6 text-center">
                               {uploading ? (
