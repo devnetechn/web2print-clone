@@ -44,6 +44,7 @@ export async function createOrderAndCheckoutSession({
   multiAddresses,
   subtotal,
   shippingCost,
+  shippingMethod,
   discount,
   tax,
   total,
@@ -66,6 +67,10 @@ export async function createOrderAndCheckoutSession({
   }[]
   subtotal: number
   shippingCost: number
+  // The real carrier service code/name 4over quoted at checkout — carried
+  // through so push-order.ts can submit the job with the same shipping
+  // method the customer was actually charged for.
+  shippingMethod?: { code: string; service: string }
   discount: number
   tax: number
   total: number
@@ -108,6 +113,8 @@ export async function createOrderAndCheckoutSession({
           country: shippingForm.country,
           companyName: shippingForm.companyName,
           mobileNumber: shippingForm.mobileNumber,
+          shippingCode: shippingMethod?.code,
+          shippingService: shippingMethod?.service,
         }
 
   const notesParts = [

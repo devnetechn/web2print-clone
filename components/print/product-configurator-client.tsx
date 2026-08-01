@@ -436,7 +436,7 @@ export function ProductConfiguratorClient({
   // carried through to the cart item so it shows up in cart/checkout and
   // later in the admin order view, matching the reference backend's
   // "Upload Design" + order-thumbnail flow.
-  const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string; path: string; contentType: string } | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<{ fileName: string; url: string; path: string; contentType: string; thumbnailUrl?: string } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [projectName, setProjectName] = useState("")
@@ -447,7 +447,9 @@ export function ProductConfiguratorClient({
   const [jobSamplesChecked, setJobSamplesChecked] = useState(false)
   const [digitalProofsChecked, setDigitalProofsChecked] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const isPreviewableImage = uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff"
+  const previewImageUrl =
+    uploadedFile?.thumbnailUrl ||
+    (uploadedFile?.contentType.startsWith("image/") && uploadedFile.contentType !== "image/tiff" ? uploadedFile.url : undefined)
 
   // Unique widths derived from sizeProducts (banner mode only)
   const bannerWidthItems = useMemo<ListItem[]>(() => {
@@ -541,7 +543,13 @@ export function ProductConfiguratorClient({
       if (uploadErr) throw uploadErr
       const result = await finalizeDesignUpload(created.path, file.name, file.type || "application/octet-stream")
       if (result.success) {
-        setUploadedFile({ fileName: result.fileName!, url: result.url!, path: result.path!, contentType: result.contentType! })
+        setUploadedFile({
+          fileName: result.fileName!,
+          url: result.url!,
+          path: result.path!,
+          contentType: result.contentType!,
+          thumbnailUrl: result.thumbnailUrl,
+        })
       } else {
         setUploadError(result.error || "Upload failed")
       }
@@ -1130,7 +1138,12 @@ export function ProductConfiguratorClient({
       projectName: projectName || undefined,
       jobSamples: jobSamplesChecked || undefined,
       designFile: uploadedFile
-        ? { fileName: uploadedFile.fileName, url: uploadedFile.url, contentType: uploadedFile.contentType }
+        ? {
+            fileName: uploadedFile.fileName,
+            url: uploadedFile.url,
+            contentType: uploadedFile.contentType,
+            thumbnailUrl: uploadedFile.thumbnailUrl,
+          }
         : undefined,
     }
   }, [
@@ -1841,8 +1854,8 @@ export function ProductConfiguratorClient({
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e07b39]/10 text-[#e07b39] shrink-0 overflow-hidden">
               {uploading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
-              ) : isPreviewableImage ? (
-                <img src={uploadedFile!.url} alt="" className="h-full w-full object-cover" />
+              ) : previewImageUrl ? (
+                <img src={previewImageUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 <Upload className="h-5 w-5" />
               )}
@@ -1859,9 +1872,9 @@ export function ProductConfiguratorClient({
           {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
           {uploadedFile && !uploading && (
             <div className="border border-slate-200 rounded-lg p-3">
-              {isPreviewableImage ? (
+              {previewImageUrl ? (
                 <img
-                  src={uploadedFile.url}
+                  src={previewImageUrl}
                   alt={uploadedFile.fileName}
                   className="w-full max-h-64 object-contain rounded bg-slate-50"
                 />

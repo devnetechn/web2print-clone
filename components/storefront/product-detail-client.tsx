@@ -78,7 +78,7 @@ export function ProductDetailClient({ product, options }: { product: Product; op
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadedFile, setUploadedFile] = useState<
-    { fileName: string; url: string; path: string; contentType: string } | null
+    { fileName: string; url: string; path: string; contentType: string; thumbnailUrl?: string } | null
   >(null)
   const { toast } = useToast()
 
@@ -117,6 +117,7 @@ export function ProductDetailClient({ product, options }: { product: Product; op
           url: result.url!,
           path: result.path!,
           contentType: result.contentType!,
+          thumbnailUrl: result.thumbnailUrl,
         })
       } else {
         setUploadError(result.error || "Upload failed")
@@ -272,7 +273,12 @@ export function ProductDetailClient({ product, options }: { product: Product; op
       turnaroundUuid: selectedTurnaround || undefined,
       optionUuids: [],
       designFile: uploadedFile
-        ? { fileName: uploadedFile.fileName, url: uploadedFile.url, contentType: uploadedFile.contentType }
+        ? {
+            fileName: uploadedFile.fileName,
+            url: uploadedFile.url,
+            contentType: uploadedFile.contentType,
+            thumbnailUrl: uploadedFile.thumbnailUrl,
+          }
         : undefined,
     }
 

@@ -45,7 +45,7 @@ type PrintCartItem = {
   runsizeUuid?: string
   turnaroundUuid?: string
   optionUuids?: string[]
-  designFile?: { fileName: string; url: string; contentType?: string }
+  designFile?: { fileName: string; url: string; contentType?: string; thumbnailUrl?: string }
 }
 
 type ShippingForm = {
@@ -67,6 +67,7 @@ function CheckoutContent() {
   const [checkoutComplete, setCheckoutComplete] = useState(false)
   const [cartItems, setCartItems] = useState<PrintCartItem[]>([])
   const [shippingCost, setShippingCost] = useState(0)
+  const [shippingMethod, setShippingMethod] = useState<{ code: string; service: string } | null>(null)
   const [couponCode, setCouponCode] = useState("")
   const [couponApplied, setCouponApplied] = useState(false)
   const [discount, setDiscount] = useState(0)
@@ -153,6 +154,12 @@ function CheckoutContent() {
 
     setCartItems(items)
     setShippingCost(parseFloat(sessionStorage.getItem("checkout_shipping_cost") || "0"))
+    const savedShippingMethod = sessionStorage.getItem("checkout_shipping_method")
+    if (savedShippingMethod) {
+      try {
+        setShippingMethod(JSON.parse(savedShippingMethod))
+      } catch {}
+    }
 
     const savedCoupon = sessionStorage.getItem("checkout_coupon")
     if (savedCoupon) {
@@ -209,6 +216,7 @@ function CheckoutContent() {
       multiAddresses: multiAddresses.length > 0 ? multiAddresses : undefined,
       subtotal,
       shippingCost,
+      shippingMethod: shippingMethod || undefined,
       discount,
       tax,
       total,
@@ -220,7 +228,7 @@ function CheckoutContent() {
       throw new Error("Failed to start checkout")
     }
     return secret
-  }, [totalInCents, customerEmail, cartItems, shippingForm, deliveryMethod, multiAddresses, subtotal, shippingCost, discount, tax, total, poNumber, orderNotes])
+  }, [totalInCents, customerEmail, cartItems, shippingForm, deliveryMethod, multiAddresses, subtotal, shippingCost, shippingMethod, discount, tax, total, poNumber, orderNotes])
 
   const handleComplete = () => {
     setCheckoutComplete(true)

@@ -15,7 +15,7 @@ export interface PriceSummaryItem {
   size?: string
   colorspec?: string
   turnaround?: string
-  designFile?: { fileName: string; url: string; contentType?: string }
+  designFile?: { fileName: string; url: string; contentType?: string; thumbnailUrl?: string }
 }
 
 interface PriceSummaryProps {
@@ -59,7 +59,9 @@ export function PriceSummary({
           {items.map((item) => (
             <div key={item.id} className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-100 overflow-hidden">
-                {item.designFile?.contentType?.startsWith("image/") && item.designFile.contentType !== "image/tiff" ? (
+                {item.designFile?.thumbnailUrl ? (
+                  <img src={item.designFile.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                ) : item.designFile?.contentType?.startsWith("image/") && item.designFile.contentType !== "image/tiff" ? (
                   <img src={item.designFile.url} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <Package className="h-5 w-5 text-slate-400" />

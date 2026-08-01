@@ -212,6 +212,7 @@ export default function ShippingStepPage() {
       sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied, discount }))
       sessionStorage.setItem("checkout_shipping_cost", "0")
       sessionStorage.setItem("checkout_delivery_method", "pickup")
+      sessionStorage.removeItem("checkout_shipping_method")
       router.push("/checkout")
       return
     }
@@ -221,6 +222,10 @@ export default function ShippingStepPage() {
     // otherwise fall back to the same flat-rate logic the old single-page
     // cart used, so behavior doesn't regress for non-4over carts.
     let shippingCost = subtotal > 100 ? 0 : 9.99
+    // The actual carrier service code/name 4over quoted, carried through to
+    // the order so push-order.ts can submit the job with the same shipping
+    // method the customer was charged for, instead of a hardcoded guess.
+    let shippingMethod: { code: string; service: string } | null = null
     const fourOverItem = cartItems.find((item) => item.productUuid && item.colorspecUuid && item.runsizeUuid && item.turnaroundUuid)
     if (fourOverItem) {
       try {
@@ -249,6 +254,9 @@ export default function ShippingStepPage() {
         const options = data.options || data.shipping_options
         if (options?.length > 0) {
           shippingCost = parseFloat(options[0].price || options[0].rate || options[0].shipping_price || "0") || shippingCost
+          if (options[0].code) {
+            shippingMethod = { code: String(options[0].code), service: String(options[0].service || options[0].code) }
+          }
         }
       } catch (e) {
         console.error("Shipping quote error, using flat rate:", e)
@@ -259,6 +267,11 @@ export default function ShippingStepPage() {
     sessionStorage.setItem("checkout_coupon", JSON.stringify({ code: couponCode, applied: couponApplied, discount }))
     sessionStorage.setItem("checkout_shipping_cost", String(shippingCost))
     sessionStorage.setItem("checkout_delivery_method", "shipping")
+    if (shippingMethod) {
+      sessionStorage.setItem("checkout_shipping_method", JSON.stringify(shippingMethod))
+    } else {
+      sessionStorage.removeItem("checkout_shipping_method")
+    }
 
     router.push("/checkout")
   }

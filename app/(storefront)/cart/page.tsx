@@ -30,7 +30,7 @@ type PrintCartItem = {
   colorspecUuid?: string
   runsizeUuid?: string
   turnaroundUuid?: string
-  designFile?: { fileName: string; url: string; contentType?: string }
+  designFile?: { fileName: string; url: string; contentType?: string; thumbnailUrl?: string }
 }
 
 export default function CartPage() {
@@ -123,7 +123,15 @@ export default function CartPage() {
       if (result.success) {
         const updated = cartItems.map((item) =>
           item.id === itemId
-            ? { ...item, designFile: { fileName: result.fileName!, url: result.url!, contentType: result.contentType! } }
+            ? {
+                ...item,
+                designFile: {
+                  fileName: result.fileName!,
+                  url: result.url!,
+                  contentType: result.contentType!,
+                  thumbnailUrl: result.thumbnailUrl,
+                },
+              }
             : item
         )
         persistCart(updated)
@@ -241,6 +249,8 @@ export default function CartPage() {
                         <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center overflow-hidden">
                           {uploadingItemId === item.id ? (
                             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                          ) : item.designFile?.thumbnailUrl ? (
+                            <img src={item.designFile.thumbnailUrl} alt={item.designFile.fileName} className="h-full w-full object-cover" />
                           ) : item.designFile?.contentType?.startsWith("image/") && item.designFile.contentType !== "image/tiff" ? (
                             <img src={item.designFile.url} alt={item.designFile.fileName} className="h-full w-full object-cover" />
                           ) : item.designFile ? (

@@ -98,6 +98,15 @@ export async function pushOrderToFourOver(orderId: string, profileToken: string)
   //   payment.profile_token, even for is_test_order.
   // - The success response's job_ids is an OBJECT keyed by 4over's job
   //   ID, not an array - {"X123-001": {customer_job_id, status, ...}}.
+  // The real carrier the customer was quoted and charged at checkout
+  // (app/(storefront)/checkout/shipping/page.tsx), saved onto the order's
+  // shipping_address. Pickup orders and any order placed before this was
+  // added won't have it - "FREE UPS Ground"/"03f" (the example pair from
+  // 4over's own docs, unconfirmed) is the last-resort fallback only.
+  const shipper = addr.shippingCode
+    ? { shipping_method: addr.shippingService || addr.shippingCode, shipping_code: addr.shippingCode }
+    : { shipping_method: "FREE UPS Ground", shipping_code: "03f" }
+
   const jobs: FourOverJob[] = fourOverItems.map((item: any) => {
     const opts = item.options || {}
     return {
@@ -110,10 +119,7 @@ export async function pushOrderToFourOver(orderId: string, profileToken: string)
       job_name: item.product_name || `Item ${item.id}`,
       skip_files: true,
       ship_to: shipTo,
-      // No confirmed real shipping_code from 4over's sandbox yet -
-      // "FREE UPS Ground" / "03f" is the example pair from their own
-      // docs (see FourOverJob's comment in lib/4over/client.ts).
-      shipper: { shipping_method: "FREE UPS Ground", shipping_code: "03f" },
+      shipper,
     }
   })
 

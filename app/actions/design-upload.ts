@@ -1,6 +1,7 @@
 "use server"
 
 import { createAdminClient, createClient } from "@/lib/supabase/server"
+import { renderPdfThumbnail } from "@/lib/pdf-thumbnail"
 
 const BUCKET = "design-uploads"
 
@@ -69,11 +70,47 @@ export async function finalizeDesignUpload(path: string, fileName: string, conte
     return { success: false, error: signError.message }
   }
 
+  const thumbnailUrl = await tryGenerateThumbnail(admin, path, contentType)
+
   return {
     success: true,
     path,
     fileName,
     url: signed.signedUrl,
     contentType,
+    thumbnailUrl,
+  }
+}
+
+// Best-effort — a customer's uploaded file is still perfectly usable
+// without a preview image, so any failure here (corrupt PDF, oversized
+// file, render timeout) just falls back to the generic file-type icon
+// instead of failing the whole upload.
+async function tryGenerateThumbnail(
+  admin: ReturnType<typeof createAdminClient>,
+  path: string,
+  contentType: string,
+): Promise<string | undefined> {
+  if (contentType !== "application/pdf") return undefined
+
+  try {
+    const { data: fileBlob, error: downloadError } = await admin.storage.from(BUCKET).download(path)
+    if (downloadError || !fileBlob) return undefined
+
+    const bytes = new Uint8Array(await fileBlob.arrayBuffer())
+    const thumbBuffer = await renderPdfThumbnail(bytes)
+
+    const thumbPath = `${path}.thumb.png`
+    const { error: uploadError } = await admin.storage.from(BUCKET).upload(thumbPath, thumbBuffer, {
+      contentType: "image/png",
+      upsert: true,
+    })
+    if (uploadError) return undefined
+
+    const { data: signedThumb } = await admin.storage.from(BUCKET).createSignedUrl(thumbPath, 60 * 60 * 24 * 365)
+    return signedThumb?.signedUrl
+  } catch (error) {
+    console.error(`[design-upload] Thumbnail generation failed for ${path}:`, error)
+    return undefined
   }
 }
