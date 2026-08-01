@@ -55,7 +55,7 @@ function CustomerSignUpForm() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+          emailRedirectTo: `${window.location.origin}${next}`,
           data: {
             full_name: fullName,
             phone,
