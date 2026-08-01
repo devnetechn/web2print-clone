@@ -514,6 +514,10 @@ export function ProductConfiguratorClient({
   const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!(await requireAuth())) {
+      e.target.value = ""
+      return
+    }
     setUploading(true)
     setUploadError(null)
     try {
@@ -531,7 +535,7 @@ export function ProductConfiguratorClient({
       setUploading(false)
       e.target.value = ""
     }
-  }, [])
+  }, [requireAuth])
 
   // Monotonic request id: only the response from the most recent cascade
   // request is allowed to update state. Prevents a stale (size+oldStock+oldCoating)
@@ -1825,10 +1829,7 @@ export function ProductConfiguratorClient({
           />
           <button
             type="button"
-            onClick={async () => {
-              if (!(await requireAuth())) return
-              fileInputRef.current?.click()
-            }}
+            onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             className="w-full flex items-center gap-4 border border-slate-200 rounded-lg p-4 hover:border-[#e07b39] hover:shadow-sm transition-all text-left disabled:opacity-60"
           >

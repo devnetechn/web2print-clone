@@ -95,6 +95,10 @@ export function ProductDetailClient({ product, options }: { product: Product; op
   const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (!(await requireAuth())) {
+      e.target.value = ""
+      return
+    }
     setUploading(true)
     setUploadError(null)
     try {
@@ -117,7 +121,7 @@ export function ProductDetailClient({ product, options }: { product: Product; op
       setUploading(false)
       e.target.value = ""
     }
-  }, [])
+  }, [requireAuth])
   
   const is4over = product.fourover_id && product.print_provider === "4over"
 
@@ -636,9 +640,8 @@ export function ProductDetailClient({ product, options }: { product: Product; op
                           />
                           <Card
                             className="border-2 border-dashed hover:border-primary transition-colors cursor-pointer"
-                            onClick={async () => {
+                            onClick={() => {
                               if (uploading) return
-                              if (!(await requireAuth())) return
                               fileInputRef.current?.click()
                             }}
                           >
