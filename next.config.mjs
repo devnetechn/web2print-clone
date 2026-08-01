@@ -22,6 +22,8 @@ const nextConfig = {
     "/**/*": [
       "./node_modules/@napi-rs/canvas-linux-x64-gnu/**/*",
       "./node_modules/pdfjs-dist/legacy/build/*.mjs",
+      "./node_modules/pdfjs-dist/standard_fonts/**/*",
+      "./node_modules/pdfjs-dist/cmaps/**/*",
     ],
   },
   experimental: {

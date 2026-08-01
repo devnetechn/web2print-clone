@@ -26,14 +26,29 @@ export async function renderPdfThumbnail(bytes: Uint8Array): Promise<Buffer> {
   // valid specifier for dynamic import().
   const { createRequire } = await import("module")
   const { pathToFileURL } = await import("url")
+  const path = await import("path")
+  const require = createRequire(import.meta.url)
   pdfjsLib.GlobalWorkerOptions.workerSrc = pathToFileURL(
-    createRequire(import.meta.url).resolve("pdfjs-dist/legacy/build/pdf.worker.mjs"),
+    require.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs"),
   ).toString()
+
+  // Same underlying problem as the worker file: pdf.js falls back to
+  // fetching its standard (non-embedded) font and CMap data from the
+  // filesystem relative to its own package directory, which breaks once
+  // deployed. Resolve pdfjs-dist's own package.json to find its real
+  // on-disk root, then point at the standard_fonts/ and cmaps/ folders
+  // that ship inside it directly.
+  const pkgDir = path.dirname(require.resolve("pdfjs-dist/package.json"))
+  const standardFontDataUrl = pathToFileURL(path.join(pkgDir, "standard_fonts") + path.sep).toString()
+  const cMapUrl = pathToFileURL(path.join(pkgDir, "cmaps") + path.sep).toString()
 
   const loadingTask = pdfjsLib.getDocument({
     data: bytes,
     disableFontFace: true,
     useSystemFonts: true,
+    standardFontDataUrl,
+    cMapUrl,
+    cMapPacked: true,
   })
   const doc = await loadingTask.promise
   try {
