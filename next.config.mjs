@@ -21,9 +21,11 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/**/*": [
       "./node_modules/@napi-rs/canvas-linux-x64-gnu/**/*",
-      "./node_modules/pdfjs-dist/legacy/build/*.mjs",
-      "./node_modules/pdfjs-dist/standard_fonts/**/*",
-      "./node_modules/pdfjs-dist/cmaps/**/*",
+      // The whole package, not just legacy/build — pdf.js also loads
+      // standard_fonts/, cmaps/, iccs/, and wasm/ from sibling folders at
+      // runtime, all invisible to static analysis the same way the worker
+      // file is. Including the lot avoids finding the next one the hard way.
+      "./node_modules/pdfjs-dist/**/*",
     ],
   },
   experimental: {

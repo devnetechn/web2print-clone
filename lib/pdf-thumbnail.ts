@@ -33,22 +33,24 @@ export async function renderPdfThumbnail(bytes: Uint8Array): Promise<Buffer> {
   ).toString()
 
   // Same underlying problem as the worker file: pdf.js falls back to
-  // fetching its standard (non-embedded) font and CMap data from the
+  // fetching several kinds of bundled data — standard (non-embedded) fonts,
+  // CMaps, ICC color profiles, and wasm codecs (JBIG2/OpenJPEG) — from the
   // filesystem relative to its own package directory, which breaks once
   // deployed. Resolve pdfjs-dist's own package.json to find its real
-  // on-disk root, then point at the standard_fonts/ and cmaps/ folders
-  // that ship inside it directly.
+  // on-disk root, then point every one of these at the folder that ships
+  // inside it directly, so none of them fall through to that broken path.
   const pkgDir = path.dirname(require.resolve("pdfjs-dist/package.json"))
-  const standardFontDataUrl = pathToFileURL(path.join(pkgDir, "standard_fonts") + path.sep).toString()
-  const cMapUrl = pathToFileURL(path.join(pkgDir, "cmaps") + path.sep).toString()
+  const dirUrl = (name: string) => pathToFileURL(path.join(pkgDir, name) + path.sep).toString()
 
   const loadingTask = pdfjsLib.getDocument({
     data: bytes,
     disableFontFace: true,
     useSystemFonts: true,
-    standardFontDataUrl,
-    cMapUrl,
+    standardFontDataUrl: dirUrl("standard_fonts"),
+    cMapUrl: dirUrl("cmaps"),
     cMapPacked: true,
+    iccUrl: dirUrl("iccs"),
+    wasmUrl: dirUrl("wasm"),
   })
   const doc = await loadingTask.promise
   try {
