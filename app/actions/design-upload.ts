@@ -11,20 +11,21 @@ async function ensureBucketExists() {
   } catch {
     try {
       await admin.storage.createBucket(BUCKET, { public: false })
-      console.log(`[upload-design-file] Created missing bucket: ${BUCKET}`)
+      console.log(`[design-upload] Created missing bucket: ${BUCKET}`)
     } catch (createError) {
-      console.error(`[upload-design-file] Failed to create bucket:`, createError)
+      console.error(`[design-upload] Failed to create bucket:`, createError)
       throw new Error(`Storage bucket initialization failed. Contact support.`)
     }
   }
 }
 
-// Uses the admin (service role) client to write into the private
-// "design-uploads" bucket — sidesteps needing storage.objects RLS policies
-// set up in the Supabase dashboard first. Still requires a logged-in
-// session (checked here) so an anonymous caller can't upload arbitrary
-// files even though the write itself bypasses RLS.
-export async function uploadDesignFile(formData: FormData) {
+// Returns a short-lived signed URL the browser uploads directly to.
+// Vercel's serverless functions cap request bodies around 4.5MB — well
+// under what print-ready artwork (PDF/AI/EPS/TIFF) commonly runs — so the
+// file bytes have to go straight from the browser to Supabase Storage
+// instead of through a Server Action. Still requires a logged-in session
+// (checked here) so an anonymous caller can't mint an upload URL.
+export async function createDesignUploadUrl(fileName: string) {
   try {
     await ensureBucketExists()
   } catch (error) {
@@ -37,27 +38,30 @@ export async function uploadDesignFile(formData: FormData) {
     return { success: false, error: "Not logged in" }
   }
 
-  const file = formData.get("file") as File | null
-  if (!file) {
-    return { success: false, error: "No file provided" }
-  }
-
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_")
   const path = `${userData.user.id}/${Date.now()}-${safeName}`
 
   const admin = createAdminClient()
-  const { error } = await admin.storage.from(BUCKET).upload(path, file, {
-    contentType: file.type || "application/octet-stream",
-    upsert: false,
-  })
+  const { data, error } = await admin.storage.from(BUCKET).createSignedUploadUrl(path)
   if (error) {
-    console.error(`[upload-design-file] Upload to bucket '${BUCKET}' failed:`, error)
+    console.error(`[design-upload] createSignedUploadUrl failed:`, error)
     return { success: false, error: error.message }
   }
 
-  // Bucket is private — a signed URL (long-lived, since print orders can sit
-  // for days before production) is needed for the cart/checkout/admin UI to
-  // actually display or re-download the file later.
+  return { success: true, path, token: data.token }
+}
+
+// Called once the browser's direct upload to the signed URL succeeds —
+// hands back a long-lived signed read URL (bucket is private) for the
+// cart/checkout/admin UI to display or re-download the file later.
+export async function finalizeDesignUpload(path: string, fileName: string, contentType: string) {
+  const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user || !path.startsWith(`${userData.user.id}/`)) {
+    return { success: false, error: "Not logged in" }
+  }
+
+  const admin = createAdminClient()
   const { data: signed, error: signError } = await admin.storage
     .from(BUCKET)
     .createSignedUrl(path, 60 * 60 * 24 * 365)
@@ -68,8 +72,8 @@ export async function uploadDesignFile(formData: FormData) {
   return {
     success: true,
     path,
-    fileName: file.name,
+    fileName,
     url: signed.signedUrl,
-    contentType: file.type || "application/octet-stream",
+    contentType,
   }
 }

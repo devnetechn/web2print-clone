@@ -13,7 +13,8 @@ import {
 import { CheckoutSteps } from "@/components/checkout/checkout-steps"
 import { PriceSummary } from "@/components/checkout/price-summary"
 import { useRequireCustomerAuth } from "@/hooks/use-require-customer-auth"
-import { uploadDesignFile } from "@/app/actions/design-upload"
+import { createDesignUploadUrl, finalizeDesignUpload } from "@/app/actions/design-upload"
+import { createClient } from "@/lib/supabase/client"
 import { validateCoupon } from "@/app/actions/coupons"
 
 type PrintCartItem = {
@@ -110,9 +111,15 @@ export default function CartPage() {
     setUploadingItemId(itemId)
     setUploadError(null)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const result = await uploadDesignFile(formData)
+      const created = await createDesignUploadUrl(file.name)
+      if (!created.success || !created.path || !created.token) {
+        throw new Error(created.error || "Upload failed. Please try again.")
+      }
+      const { error: uploadErr } = await createClient()
+        .storage.from("design-uploads")
+        .uploadToSignedUrl(created.path, created.token, file, { contentType: file.type || undefined })
+      if (uploadErr) throw uploadErr
+      const result = await finalizeDesignUpload(created.path, file.name, file.type || "application/octet-stream")
       if (result.success) {
         const updated = cartItems.map((item) =>
           item.id === itemId

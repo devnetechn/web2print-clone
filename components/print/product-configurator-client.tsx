@@ -7,7 +7,7 @@ import { Loader2, Share2, Upload, Clock, ShoppingCart, Zap, FileText } from "luc
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { uploadDesignFile } from "@/app/actions/design-upload"
+import { createDesignUploadUrl, finalizeDesignUpload } from "@/app/actions/design-upload"
 import { translateCoatingName, translateStockName, translateColorspecName, translateBCSizeName, translateTurnaroundName } from "@/lib/4over/option-labels"
 
 interface ListItem {
@@ -531,9 +531,15 @@ export function ProductConfiguratorClient({
     setUploading(true)
     setUploadError(null)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const result = await uploadDesignFile(formData)
+      const created = await createDesignUploadUrl(file.name)
+      if (!created.success || !created.path || !created.token) {
+        throw new Error(created.error || "Upload failed")
+      }
+      const { error: uploadErr } = await createClient()
+        .storage.from("design-uploads")
+        .uploadToSignedUrl(created.path, created.token, file, { contentType: file.type || undefined })
+      if (uploadErr) throw uploadErr
+      const result = await finalizeDesignUpload(created.path, file.name, file.type || "application/octet-stream")
       if (result.success) {
         setUploadedFile({ fileName: result.fileName!, url: result.url!, path: result.path!, contentType: result.contentType! })
       } else {

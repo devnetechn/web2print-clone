@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { CheckCircle2, Loader2, Upload, FileText } from "lucide-react"
 import { submitQuoteRequest } from "@/app/actions/quotes"
-import { uploadDesignFile } from "@/app/actions/design-upload"
+import { createDesignUploadUrl, finalizeDesignUpload } from "@/app/actions/design-upload"
 import { createClient } from "@/lib/supabase/client"
 
 export default function QuotePage() {
@@ -53,25 +53,28 @@ export default function QuotePage() {
     }
   }, [])
 
-  const handleUploadClick = async () => {
-    const supabase = createClient()
-    const { data } = await supabase.auth.getUser()
-    if (!data.user) {
-      router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
-      return
-    }
-    fileInputRef.current?.click()
-  }
-
   const handleFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const supabase = createClient()
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) {
+      e.target.value = ""
+      router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+      return
+    }
     setUploading(true)
     setUploadError(null)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const result = await uploadDesignFile(formData)
+      const created = await createDesignUploadUrl(file.name)
+      if (!created.success || !created.path || !created.token) {
+        throw new Error(created.error || "Upload failed. Please try again.")
+      }
+      const { error: uploadErr } = await supabase.storage
+        .from("design-uploads")
+        .uploadToSignedUrl(created.path, created.token, file, { contentType: file.type || undefined })
+      if (uploadErr) throw uploadErr
+      const result = await finalizeDesignUpload(created.path, file.name, file.type || "application/octet-stream")
       if (result.success) {
         setUploadedFile({ fileName: result.fileName!, url: result.url! })
       } else {
@@ -204,7 +207,7 @@ export default function QuotePage() {
                 <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelected} />
                 <button
                   type="button"
-                  onClick={handleUploadClick}
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
                   className="w-full flex items-center gap-3 border border-slate-200 rounded-lg p-3 hover:border-[#e07b39] transition-all text-left disabled:opacity-60"
                 >

@@ -20,7 +20,7 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 import { DESIGN_STUDIO_ENABLED } from "@/lib/feature-flags"
-import { uploadDesignFile } from "@/app/actions/design-upload"
+import { createDesignUploadUrl, finalizeDesignUpload } from "@/app/actions/design-upload"
 import { useToast } from "@/hooks/use-toast"
 
 type Product = {
@@ -102,9 +102,15 @@ export function ProductDetailClient({ product, options }: { product: Product; op
     setUploading(true)
     setUploadError(null)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const result = await uploadDesignFile(formData)
+      const created = await createDesignUploadUrl(file.name)
+      if (!created.success || !created.path || !created.token) {
+        throw new Error(created.error || "Upload failed")
+      }
+      const { error: uploadErr } = await createClient()
+        .storage.from("design-uploads")
+        .uploadToSignedUrl(created.path, created.token, file, { contentType: file.type || undefined })
+      if (uploadErr) throw uploadErr
+      const result = await finalizeDesignUpload(created.path, file.name, file.type || "application/octet-stream")
       if (result.success) {
         setUploadedFile({
           fileName: result.fileName!,
