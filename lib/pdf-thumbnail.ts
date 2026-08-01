@@ -16,31 +16,27 @@ export async function renderPdfThumbnail(bytes: Uint8Array): Promise<Buffer> {
   const { createCanvas } = await import("@napi-rs/canvas")
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")
 
-  // Even in Node, pdf.js sets up a "fake worker" by dynamically importing
-  // pdf.worker.mjs from wherever it thinks its own package lives — a path
-  // that doesn't survive being deployed into a serverless function bundle.
-  // Resolving it explicitly through Node's own module resolution (which
-  // still works, since the file is a real sibling on disk) sidesteps that.
-  // The resolved path must be converted to a file:// URL — a bare
-  // filesystem path (especially a Windows one like "C:\...") isn't a
-  // valid specifier for dynamic import().
-  const { createRequire } = await import("module")
-  const { pathToFileURL } = await import("url")
+  // pdf.js needs several of its own bundled files (the worker, standard
+  // fonts, CMaps, ICC profiles, wasm codecs) resolved to real on-disk
+  // paths — its own relative resolution doesn't survive being deployed
+  // into a serverless bundle. The first fix used require.resolve() to find
+  // them for real, which works standalone, but Vercel logs showed it kept
+  // failing with the exact same error regardless of which files it was
+  // pointed at: Next.js's bundler statically rewrites require.resolve()
+  // call sites in *our own* code (even via a "real" Node require obtained
+  // through createRequire) into its own internal module references,
+  // handing back a bundler module id instead of a filesystem path. Plain
+  // string concatenation isn't a pattern the bundler rewrites, and
+  // process.cwd() is the deployed function's root on Vercel (confirmed by
+  // the original error naming /var/task/node_modules/... directly), so
+  // building the path by hand sidesteps the interception entirely.
   const path = await import("path")
-  const require = createRequire(import.meta.url)
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pathToFileURL(
-    require.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs"),
-  ).toString()
-
-  // Same underlying problem as the worker file: pdf.js falls back to
-  // fetching several kinds of bundled data — standard (non-embedded) fonts,
-  // CMaps, ICC color profiles, and wasm codecs (JBIG2/OpenJPEG) — from the
-  // filesystem relative to its own package directory, which breaks once
-  // deployed. Resolve pdfjs-dist's own package.json to find its real
-  // on-disk root, then point every one of these at the folder that ships
-  // inside it directly, so none of them fall through to that broken path.
-  const pkgDir = path.dirname(require.resolve("pdfjs-dist/package.json"))
+  const { pathToFileURL } = await import("url")
+  const pkgDir = path.join(process.cwd(), "node_modules", "pdfjs-dist")
   const dirUrl = (name: string) => pathToFileURL(path.join(pkgDir, name) + path.sep).toString()
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pathToFileURL(
+    path.join(pkgDir, "legacy", "build", "pdf.worker.mjs"),
+  ).toString()
 
   const loadingTask = pdfjsLib.getDocument({
     data: bytes,
