@@ -16,6 +16,20 @@ export async function renderPdfThumbnail(bytes: Uint8Array): Promise<Buffer> {
   const { createCanvas } = await import("@napi-rs/canvas")
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")
 
+  // Even in Node, pdf.js sets up a "fake worker" by dynamically importing
+  // pdf.worker.mjs from wherever it thinks its own package lives — a path
+  // that doesn't survive being deployed into a serverless function bundle.
+  // Resolving it explicitly through Node's own module resolution (which
+  // still works, since the file is a real sibling on disk) sidesteps that.
+  // The resolved path must be converted to a file:// URL — a bare
+  // filesystem path (especially a Windows one like "C:\...") isn't a
+  // valid specifier for dynamic import().
+  const { createRequire } = await import("module")
+  const { pathToFileURL } = await import("url")
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pathToFileURL(
+    createRequire(import.meta.url).resolve("pdfjs-dist/legacy/build/pdf.worker.mjs"),
+  ).toString()
+
   const loadingTask = pdfjsLib.getDocument({
     data: bytes,
     disableFontFace: true,
