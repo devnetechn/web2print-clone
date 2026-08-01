@@ -511,6 +511,16 @@ export function ProductConfiguratorClient({
     if (match) setSizeUuid(match.uuid)
   }, [isBanner, bannerWidth, bannerHeight, sizeProducts]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Both Add to Cart/Buy Now and the upload-design flow require a logged-in
+  // account — sends the customer to login/register with a `next` back to
+  // this exact product+selection so they land right back here once signed in.
+  const requireAuth = useCallback(async () => {
+    const { data } = await createClient().auth.getUser()
+    if (data.user) return true
+    router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
+    return false
+  }, [router])
+
   const handleFileSelected = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -1135,17 +1145,6 @@ export function ProductConfiguratorClient({
     projectName,
     jobSamplesChecked,
   ])
-
-  // Both Add to Cart and Buy Now require a logged-in account before
-  // touching the cart at all — sends the customer to login/register with
-  // a `next` back to this exact product+selection so they land right back
-  // here (cart write still hasn't happened yet) once they're signed in.
-  const requireAuth = useCallback(async () => {
-    const { data } = await createClient().auth.getUser()
-    if (data.user) return true
-    router.push(`/account/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`)
-    return false
-  }, [router])
 
   // Add the current configuration to the print cart and stay on the page —
   // for customers who want to keep configuring other products before
